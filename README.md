@@ -6,7 +6,7 @@ An original mobile mechanical strategy and action game. Players wire a compact g
 
 ## Project status
 
-Early playable prototype. The Unity core and Flutter/Flame client include the mechanical network, lane combat, a campaign route, local stars, daily contracts, and a weekly offline event. Encounter variety, production art, and mobile packaging remain in progress. See [development status](docs/DEVELOPMENT_STATUS.md), [phase roadmap](docs/PHASE_ROADMAP.md), and [backlog](docs/TASK_BACKLOG.md).
+Early playable prototype. The Unity core and Flutter/Flame client include the mechanical network, lane combat, a campaign route, stars, daily contracts, a weekly offline event, streaks, chests and boosters, all paid through an idempotent wallet ledger. Ad placement rules are built and tested, but no ad or purchase SDK is integrated yet. Encounter variety, production art, and mobile packaging remain in progress. See [development status](docs/DEVELOPMENT_STATUS.md), [phase roadmap](docs/PHASE_ROADMAP.md), and [backlog](docs/TASK_BACKLOG.md).
 
 ## Structure
 

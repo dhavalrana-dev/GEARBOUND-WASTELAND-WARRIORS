@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../economy/economy_rules.dart';
+import '../economy/wallet.dart';
 import 'rewards.dart';
 
 const campaignLevels = <CampaignLevel>[
@@ -121,11 +123,22 @@ class EventRewardTier {
   final int scrap;
 }
 
-/// Local, offline campaign state. The event is a weekly score chase with fixed
-/// rewards; it has no paid rolls, energy timer, or server requirement.
+/// Thrown when a save was written by a newer build; the store must not
+/// overwrite it.
+class UnsupportedSaveVersion implements Exception {
+  const UnsupportedSaveVersion(this.version);
+  final int version;
+  @override
+  String toString() => 'UnsupportedSaveVersion($version)';
+}
+
+/// Local, offline campaign state. Every reward goes through [wallet], an
+/// idempotent ledger, so a claim replayed after a crash or a duplicate tap can
+/// never pay twice. See docs/REWARD_TRANSACTION_SYSTEM.md and
+/// docs/SAVE_MIGRATION.md.
 class CampaignProgress {
   CampaignProgress({
-    this.scrap = 0,
+    int scrap = 0,
     Map<String, int>? bestStars,
     this.dayKey = '',
     Map<String, int>? contractProgress,
@@ -139,15 +152,24 @@ class CampaignProgress {
     Set<int>? claimedStarChests,
     this.loginStep = 0,
     this.lastLoginClaimDay = '',
-  }) : boosters = boosters ?? {},
+    Wallet? wallet,
+    this.lastObservedUtc = '',
+    this.migratedFromVersion,
+  }) : wallet = wallet ?? Wallet(rules: defaultAssetRules()),
        claimedStarChests = claimedStarChests ?? {},
        bestStars = bestStars ?? {},
        contractProgress = contractProgress ?? {},
        claimedContracts = claimedContracts ?? {},
        claimedEventTiers = claimedEventTiers ?? {},
-       weeklyBestStars = weeklyBestStars ?? {};
+       weeklyBestStars = weeklyBestStars ?? {} {
+    if (wallet == null) {
+      _seedLegacyBalances(scrap, boosters ?? const {}, 'seed');
+    }
+  }
 
-  int scrap;
+  static const saveVersion = 3;
+
+  final Wallet wallet;
   final Map<String, int> bestStars;
   String dayKey;
   final Map<String, int> contractProgress;
@@ -159,28 +181,42 @@ class CampaignProgress {
 
   /// Consecutive victories, capped at [winStreakMaxLevel]; a defeat resets it.
   int winStreak;
-  final Map<String, int> boosters;
   final Set<int> claimedStarChests;
 
   /// Supply Log days claimed so far. Missed days pause the track, never reset it.
   int loginStep;
   String lastLoginClaimDay;
 
-  static const saveVersion = 2;
+  /// Latest device time seen (UTC ISO-8601). Earlier readings are treated as
+  /// this time, so rolling the clock back cannot reopen daily or weekly claims.
+  String lastObservedUtc;
+  bool clockRollbackDetected = false;
+
+  /// Set when this object was migrated from an older save format.
+  final int? migratedFromVersion;
+
+  /// Permanent earned currency (pre-v3 saves called this `scrap`).
+  int get scrap => wallet.balance(Currency.workshopScrap);
+  Map<String, int> get boosters => {
+    for (final b in boosterDefinitions)
+      if (wallet.balance(b.id) > 0) b.id: wallet.balance(b.id),
+  };
 
   int get totalStars => bestStars.values.fold(0, (sum, stars) => sum + stars);
-  int boosterCount(String id) => boosters[id] ?? 0;
+  int boosterCount(String id) => wallet.balance(id);
   RewardBundle get nextLoginReward =>
       loginTrackDays[loginStep % loginTrackDays.length];
 
   bool canClaimLogin({DateTime? at}) =>
-      lastLoginClaimDay != _dateKey(at ?? DateTime.now());
+      lastLoginClaimDay != _dateKey(_effectiveNow(at, observe: false));
 
   bool claimLogin({DateTime? at}) {
-    final now = at ?? DateTime.now();
+    final now = _effectiveNow(at);
     _ensurePeriods(now);
-    if (!canClaimLogin(at: now)) return false;
-    _grant(nextLoginReward);
+    if (lastLoginClaimDay == _dateKey(now)) return false;
+    if (!_grant(nextLoginReward, 'supply_log:$loginStep', 'supply_log', now)) {
+      return false;
+    }
     loginStep++;
     lastLoginClaimDay = _dateKey(now);
     return true;
@@ -191,34 +227,56 @@ class CampaignProgress {
       totalStars >= stars &&
       !claimedStarChests.contains(stars);
 
-  bool claimStarChest(int stars) {
+  bool claimStarChest(int stars, {DateTime? at}) {
     if (!canClaimStarChest(stars)) return false;
+    final reward = starChests
+        .firstWhere((chest) => chest.stars == stars)
+        .reward;
+    if (!_grant(reward, 'star_chest:$stars', 'star_chest', _effectiveNow(at))) {
+      return false;
+    }
     claimedStarChests.add(stars);
-    _grant(starChests.firstWhere((chest) => chest.stars == stars).reward);
     return true;
   }
 
-  /// Removes one booster for the coming battle. Boosters are earned only.
-  bool consumeBooster(String id) {
-    final count = boosters[id] ?? 0;
-    if (count < 1) return false;
-    if (count == 1) {
-      boosters.remove(id);
-    } else {
-      boosters[id] = count - 1;
-    }
-    return true;
+  /// Removes one booster for a mission attempt. [attemptKey] identifies the
+  /// attempt so a retried start never consumes twice.
+  bool consumeBooster(String id, {String? attemptKey, DateTime? at}) {
+    final key = 'booster_use:${attemptKey ?? 'auto-${wallet.sequence}'}:$id';
+    if (wallet.hasProcessed(key)) return true;
+    return wallet
+        .apply(
+          TxnRequest(
+            idempotencyKey: key,
+            type: 'spend',
+            source: 'mission_start',
+            referenceId: attemptKey ?? '',
+            deltas: [TxnDelta(id, -1)],
+          ),
+          at: _effectiveNow(at, observe: false),
+        )
+        .applied;
   }
 
   void recordDefeat() => winStreak = 0;
 
-  void _grant(RewardBundle reward) {
-    scrap += reward.scrap;
-    for (final entry in reward.boosters.entries) {
-      final cap = boosterMaxStack(entry.key);
-      final next = (boosters[entry.key] ?? 0) + entry.value;
-      boosters[entry.key] = next > cap ? cap : next;
-    }
+  bool _grant(RewardBundle reward, String key, String source, DateTime at) {
+    final deltas = [
+      if (reward.scrap > 0) TxnDelta(Currency.workshopScrap, reward.scrap),
+      for (final entry in reward.boosters.entries)
+        if (entry.value > 0) TxnDelta(entry.key, entry.value),
+    ];
+    if (deltas.isEmpty) return true;
+    final result = wallet.apply(
+      TxnRequest(
+        idempotencyKey: key,
+        type: 'grant',
+        source: source,
+        deltas: deltas,
+      ),
+      at: at,
+    );
+    return result.status != TxnStatus.rejected;
   }
 
   int get unlockedLevelIndex {
@@ -234,23 +292,26 @@ class CampaignProgress {
   int starsFor(String levelId) => bestStars[levelId] ?? 0;
   int contractValue(String id) => contractProgress[id] ?? 0;
 
-  void refreshPeriods({DateTime? at}) => _ensurePeriods(at ?? DateTime.now());
+  void refreshPeriods({DateTime? at}) => _ensurePeriods(_effectiveNow(at));
 
   void recordSetup(int poweredGearCount, {DateTime? at}) {
-    _ensurePeriods(at ?? DateTime.now());
+    final now = _effectiveNow(at);
+    _ensurePeriods(now);
     final def = dailyContracts.firstWhere((task) => task.id == 'daily-power');
     if (claimedContracts.contains(def.id)) return;
     final setupCount = poweredGearCount.clamp(0, def.target).toInt();
     final bestSetup = contractProgress[def.id] ?? 0;
     contractProgress[def.id] = setupCount > bestSetup ? setupCount : bestSetup;
-    _completeContractIfReady(def);
+    _completeContractIfReady(def, now);
   }
 
   void recordLaneCommand({DateTime? at}) {
-    _ensurePeriods(at ?? DateTime.now());
+    final now = _effectiveNow(at);
+    _ensurePeriods(now);
     _advanceContract(
       dailyContracts.firstWhere((task) => task.id == 'daily-command'),
       1,
+      now,
     );
   }
 
@@ -262,7 +323,8 @@ class CampaignProgress {
         stars > 3) {
       return false;
     }
-    _ensurePeriods(at ?? DateTime.now());
+    final now = _effectiveNow(at);
+    _ensurePeriods(now);
     final levelIndex = campaignLevels.indexWhere(
       (level) => level.id == levelId,
     );
@@ -276,40 +338,75 @@ class CampaignProgress {
       weeklyBestStars[levelId] = stars;
       eventPoints += stars - previousWeekly;
     }
-    if (firstClear) scrap += 3 + stars;
+    if (firstClear) {
+      _grant(
+        RewardBundle(scrap: 3 + stars),
+        'first_clear:$levelId',
+        'campaign',
+        now,
+      );
+    }
     if (winStreak < winStreakMaxLevel) winStreak++;
     _advanceContract(
       dailyContracts.firstWhere((task) => task.id == 'daily-win'),
       1,
+      now,
     );
     return true;
   }
 
-  bool claimEventTier(int points) {
+  bool claimEventTier(int points, {DateTime? at}) {
     final tier = eventRewardTiers
         .where((item) => item.points == points)
         .firstOrNull;
     if (tier == null ||
         eventPoints < tier.points ||
-        !claimedEventTiers.add(points)) {
+        claimedEventTiers.contains(points)) {
       return false;
     }
-    scrap += tier.scrap;
+    if (!_grant(
+      RewardBundle(scrap: tier.scrap),
+      'scrapstorm:$weekKey:$points',
+      'scrapstorm',
+      _effectiveNow(at),
+    )) {
+      return false;
+    }
+    claimedEventTiers.add(points);
     return true;
   }
 
-  void _advanceContract(ContractDefinition task, int amount) {
+  void _advanceContract(ContractDefinition task, int amount, DateTime now) {
     if (claimedContracts.contains(task.id)) return;
     final next = (contractProgress[task.id] ?? 0) + amount;
     contractProgress[task.id] = next.clamp(0, task.target).toInt();
-    _completeContractIfReady(task);
+    _completeContractIfReady(task, now);
   }
 
-  void _completeContractIfReady(ContractDefinition task) {
+  void _completeContractIfReady(ContractDefinition task, DateTime now) {
     if (contractProgress[task.id] == task.target &&
-        claimedContracts.add(task.id)) {
-      scrap += task.scrapReward;
+        !claimedContracts.contains(task.id) &&
+        _grant(
+          RewardBundle(scrap: task.scrapReward),
+          'contract:$dayKey:${task.id}',
+          'daily_contract',
+          now,
+        )) {
+      claimedContracts.add(task.id);
     }
+  }
+
+  /// Monotonic clock: a reading earlier than the latest one seen is replaced
+  /// by the latest, so daily and weekly periods never move backwards.
+  DateTime _effectiveNow(DateTime? at, {bool observe = true}) {
+    final now = at ?? DateTime.now();
+    final last = DateTime.tryParse(lastObservedUtc);
+    if (last != null && now.toUtc().isBefore(last)) {
+      if (observe) clockRollbackDetected = true;
+      return now.isUtc ? last : last.toLocal();
+    }
+    if (observe) lastObservedUtc = now.toUtc().toIso8601String();
+    return now;
   }
 
   void _ensurePeriods(DateTime now) {
@@ -333,55 +430,135 @@ class CampaignProgress {
     }
   }
 
+  void _seedLegacyBalances(int scrap, Map<String, int> boosters, String tag) {
+    if (scrap > 0) {
+      wallet.apply(
+        TxnRequest(
+          idempotencyKey: 'migration:$tag:workshop_scrap',
+          type: 'migration',
+          source: 'save_v2',
+          deltas: [TxnDelta(Currency.workshopScrap, scrap)],
+        ),
+        at: DateTime.utc(2026),
+      );
+    }
+    final known = {
+      for (final entry in boosters.entries)
+        if (entry.value > 0 &&
+            wallet.rules.boosterMaxStack.containsKey(entry.key))
+          entry.key: entry.value,
+    };
+    if (known.isNotEmpty) {
+      wallet.apply(
+        TxnRequest(
+          idempotencyKey: 'migration:$tag:boosters',
+          type: 'migration',
+          source: 'save_v2',
+          deltas: [for (final e in known.entries) TxnDelta(e.key, e.value)],
+        ),
+        at: DateTime.utc(2026),
+      );
+    }
+  }
+
   Map<String, Object?> toJson() => {
     'saveVersion': saveVersion,
-    'winStreak': winStreak,
-    'boosters': boosters,
-    'claimedStarChests': claimedStarChests.toList()..sort(),
-    'loginStep': loginStep,
-    'lastLoginClaimDay': lastLoginClaimDay,
-    'scrap': scrap,
-    'bestStars': bestStars,
-    'dayKey': dayKey,
-    'contractProgress': contractProgress,
-    'claimedContracts': claimedContracts.toList()..sort(),
-    'weekKey': weekKey,
-    'eventPoints': eventPoints,
-    'claimedEventTiers': claimedEventTiers.toList()..sort(),
-    'weeklyBestStars': weeklyBestStars,
+    'campaign': {
+      'bestStars': bestStars,
+      'winStreak': winStreak,
+      'claimedStarChests': claimedStarChests.toList()..sort(),
+      'loginStep': loginStep,
+      'lastLoginClaimDay': lastLoginClaimDay,
+    },
+    'periods': {
+      'dayKey': dayKey,
+      'contractProgress': contractProgress,
+      'claimedContracts': claimedContracts.toList()..sort(),
+      'weekKey': weekKey,
+      'eventPoints': eventPoints,
+      'claimedEventTiers': claimedEventTiers.toList()..sort(),
+      'weeklyBestStars': weeklyBestStars,
+    },
+    'wallet': wallet.toJson(),
+    'clock': {'lastObservedUtc': lastObservedUtc},
   };
 
-  factory CampaignProgress.fromJson(Map<String, Object?> json) =>
-      CampaignProgress(
-        scrap: json['scrap'] as int? ?? 0,
-        bestStars: _intMap(json['bestStars']),
-        dayKey: json['dayKey'] as String? ?? '',
-        contractProgress: _intMap(json['contractProgress']),
-        claimedContracts: (json['claimedContracts'] as List<Object?>? ?? [])
-            .whereType<String>()
-            .toSet(),
-        weekKey: json['weekKey'] as String? ?? '',
-        eventPoints: json['eventPoints'] as int? ?? 0,
-        claimedEventTiers: (json['claimedEventTiers'] as List<Object?>? ?? [])
-            .whereType<int>()
-            .toSet(),
-        weeklyBestStars: _intMap(json['weeklyBestStars']),
-        winStreak: ((json['winStreak'] as int?) ?? 0)
-            .clamp(0, winStreakMaxLevel)
-            .toInt(),
-        boosters: _intMap(json['boosters']),
-        claimedStarChests: (json['claimedStarChests'] as List<Object?>? ?? [])
-            .whereType<int>()
-            .toSet(),
-        loginStep: ((json['loginStep'] as int?) ?? 0) < 0
-            ? 0
-            : (json['loginStep'] as int?) ?? 0,
-        lastLoginClaimDay: json['lastLoginClaimDay'] as String? ?? '',
-      );
+  /// Reads save versions 1–3. Versions 1 and 2 were flat maps whose `scrap`
+  /// and `boosters` become ledger-backed `workshop_scrap` and booster balances.
+  factory CampaignProgress.fromJson(Map<String, Object?> json) {
+    final version = json['saveVersion'] as int? ?? 1;
+    if (version > saveVersion) throw UnsupportedSaveVersion(version);
+    if (version < 3) return _fromLegacy(json, version);
+
+    final campaign = json['campaign'] as Map<String, Object?>? ?? {};
+    final periods = json['periods'] as Map<String, Object?>? ?? {};
+    final clock = json['clock'] as Map<String, Object?>? ?? {};
+    return CampaignProgress(
+      bestStars: _stars(campaign['bestStars']),
+      winStreak: _streak(campaign['winStreak']),
+      claimedStarChests: _ints(campaign['claimedStarChests']),
+      loginStep: _nonNegative(campaign['loginStep']),
+      lastLoginClaimDay: campaign['lastLoginClaimDay'] as String? ?? '',
+      dayKey: periods['dayKey'] as String? ?? '',
+      contractProgress: _intMap(periods['contractProgress']),
+      claimedContracts: _strings(periods['claimedContracts']),
+      weekKey: periods['weekKey'] as String? ?? '',
+      eventPoints: _nonNegative(periods['eventPoints']),
+      claimedEventTiers: _ints(periods['claimedEventTiers']),
+      weeklyBestStars: _stars(periods['weeklyBestStars']),
+      wallet: Wallet.fromJson(
+        json['wallet'] as Map<String, Object?>? ?? {},
+        defaultAssetRules(),
+      ),
+      lastObservedUtc: clock['lastObservedUtc'] as String? ?? '',
+    );
+  }
+
+  static CampaignProgress _fromLegacy(Map<String, Object?> json, int version) {
+    final progress = CampaignProgress(
+      bestStars: _stars(json['bestStars']),
+      dayKey: json['dayKey'] as String? ?? '',
+      contractProgress: _intMap(json['contractProgress']),
+      claimedContracts: _strings(json['claimedContracts']),
+      weekKey: json['weekKey'] as String? ?? '',
+      eventPoints: _nonNegative(json['eventPoints']),
+      claimedEventTiers: _ints(json['claimedEventTiers']),
+      weeklyBestStars: _stars(json['weeklyBestStars']),
+      winStreak: _streak(json['winStreak']),
+      claimedStarChests: _ints(json['claimedStarChests']),
+      loginStep: _nonNegative(json['loginStep']),
+      lastLoginClaimDay: json['lastLoginClaimDay'] as String? ?? '',
+      wallet: Wallet(rules: defaultAssetRules()),
+      migratedFromVersion: version,
+    );
+    progress._seedLegacyBalances(
+      _nonNegative(json['scrap']),
+      _intMap(json['boosters']),
+      'v$version',
+    );
+    // Contracts and event tiers paid out before v3 have no ledger entry;
+    // mark their keys processed so they can never be paid again.
+    final legacyKeys = [
+      for (final id in progress.claimedContracts)
+        'contract:${progress.dayKey}:$id',
+      for (final points in progress.claimedEventTiers)
+        'scrapstorm:${progress.weekKey}:$points',
+      for (final stars in progress.claimedStarChests) 'star_chest:$stars',
+      for (final id in progress.bestStars.keys) 'first_clear:$id',
+      for (var step = 0; step < progress.loginStep; step++) 'supply_log:$step',
+    ];
+    progress.wallet.markProcessed(legacyKeys);
+    return progress;
+  }
 
   String encode() => jsonEncode(toJson());
-  factory CampaignProgress.decode(String source) =>
-      CampaignProgress.fromJson(jsonDecode(source) as Map<String, Object?>);
+  factory CampaignProgress.decode(String source) {
+    final decoded = jsonDecode(source);
+    if (decoded is! Map<String, Object?>) {
+      throw const FormatException('Save root is not an object.');
+    }
+    return CampaignProgress.fromJson(decoded);
+  }
 
   static Map<String, int> _intMap(Object? value) => {
     if (value is Map<Object?, Object?>)
@@ -389,6 +566,20 @@ class CampaignProgress {
         if (entry.key is String && entry.value is int)
           entry.key as String: entry.value as int,
   };
+
+  static Map<String, int> _stars(Object? value) => {
+    for (final entry in _intMap(value).entries)
+      if (entry.value >= 1) entry.key: entry.value > 3 ? 3 : entry.value,
+  };
+
+  static Set<int> _ints(Object? value) =>
+      (value is List ? value : const []).whereType<int>().toSet();
+  static Set<String> _strings(Object? value) =>
+      (value is List ? value : const []).whereType<String>().toSet();
+  static int _nonNegative(Object? value) =>
+      value is int && value > 0 ? value : 0;
+  static int _streak(Object? value) =>
+      _nonNegative(value).clamp(0, winStreakMaxLevel).toInt();
 
   static String _dateKey(DateTime value) =>
       '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';

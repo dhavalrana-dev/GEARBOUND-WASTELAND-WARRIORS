@@ -19,6 +19,8 @@ void main() {
       'gears/starter_gears.json',
       'enemies/enemies.json',
       'economy/shop.json',
+      'economy/currencies.json',
+      'monetization/ad_policy.json',
       'waves/mission_001.json',
       'missions/campaign_route.json',
       'events/progression_rewards.json',

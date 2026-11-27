@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "currencies": [
+    { "id": "battle_scrap", "name": "Battle Scrap", "scope": "mission", "premium": false, "max": 100000, "description": "Temporary mission currency for buying and merging gears. Never persists after a mission." },
+    { "id": "workshop_scrap", "name": "Workshop Scrap", "scope": "persistent", "premium": false, "max": 10000000, "description": "Permanent earned currency. Pre-v3 saves stored this as 'scrap'." },
+    { "id": "alloy", "name": "Alloy", "scope": "persistent", "premium": true, "max": 10000000, "description": "Premium currency. Grants require a verified purchase or server-verified reward." },
+    { "id": "blueprints", "name": "Blueprints", "scope": "persistent", "premium": false, "max": 1000000, "description": "Hero and equipment unlocks." },
+    { "id": "event_tokens", "name": "Event Tokens", "scope": "event", "premium": false, "max": 1000000, "description": "Event-specific earned currency." },
+    { "id": "xp", "name": "Experience", "scope": "persistent", "premium": false, "max": 2000000000, "description": "Player level progression." }
+  ]
+}

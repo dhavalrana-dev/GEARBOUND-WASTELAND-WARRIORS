@@ -31,6 +31,9 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Wave director from shared JSON | Yes | Yes (runtime assets; route node 1 migrated) | mission_001_spawns ✔ both |
 | Campaign route, stars, contracts, weekly event | No | Yes | — |
 | Streak, star chests, Supply Log, boosters | No | Yes | progression_rewards.json ↔ Dart constants |
+| Wallet ledger (idempotency, premium verification, caps) | Yes | Yes | reward_transaction_cases ✔ both |
+| Ad placement policy | Yes | Yes | ad_policy_cases ✔ both |
+| Save migration v1/v2 → v3 | n/a (no Unity save yet) | Yes | save_migration_cases (Dart) |
 | Presentation / input | No | Prototype | — |
 
 ## Combat trace parity (spec scenario 4)

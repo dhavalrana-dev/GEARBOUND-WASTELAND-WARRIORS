@@ -1,0 +1,7 @@
+# Shared data and generated fixtures are compared byte-for-byte across engines
+# and against their Flutter asset copies, so they must be LF on every platform.
+*.json text eol=lf
+*.py   text eol=lf
+*.dart text eol=lf
+*.cs   text eol=lf
+*.md   text eol=lf

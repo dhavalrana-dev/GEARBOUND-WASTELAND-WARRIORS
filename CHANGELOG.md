@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Repository audit (`docs/REPOSITORY_AUDIT.md`). Fixed a line-ending bug that failed the asset-sync test after a branch switch by adding `.gitattributes`.
+- Economy foundation: idempotent wallet ledger with separated currencies (Dart + C#), save v3 with v1/v2 migration, a two-slot store with corruption recovery and serialized writes, and a clock-rollback guard.
+- Ad placement policy engine (Dart + C#) and a mock-provider rewarded-ad controller that grants exactly once. Ads stay disabled; no SDK is integrated.
+- Revised the `AGENTS.md` monetization policy for rewarded ads, transition interstitials and fixed-content IAP.
+- The workshop header now shows the real Workshop Scrap instead of a hard-coded 24.
 - Verified cross-engine combat parity: Dart reproduces the per-tick traces of 4 shared scenarios produced by the Unity C# simulation.
 - Flutter now bundles shared JSON as runtime assets with a drift check; the first route node loads its wave from shared mission data.
 - Added widget tests for the rewards card and the Vanguard loadout toggle.

@@ -56,9 +56,26 @@ This roadmap is the delivery order for the game. Each phase ends in a playable, 
 
 **Exit criteria:** release-candidate build passes platform validation and a structured external playtest.
 
+## Commercial extension phases (spec of 2026-11-27)
+
+| Phase | Scope | Status |
+|---|---|---|
+| A | Repository audit, baseline | **Done.** `REPOSITORY_AUDIT.md` |
+| B | Ledger, currencies, save migration, recovery | **Done** (local only; server verification is Phase H) |
+| C | Contract pools, weekly contracts, achievements, XP, mastery | Planned (GB-032) |
+| D | Event engine: Scrapstorm v2, Gear Frenzy, Engineering Trials | Planned (GB-033) |
+| E | Shop/placement UI, campaign data, Unity client, production art | Planned (GB-030, GB-024, GB-025) |
+| F | Ads | Policy and mock done (GB-029); SDK blocked (GB-034) |
+| G | In-app purchases | Blocked on store accounts and backend (GB-035) |
+| H | Backend: auth, cloud save, trusted time, verification | Not started; needs an account decision |
+| I | Cross-engine parity for progression | Ledger and ad policy at parity; campaign progression is Flutter-only |
+| J | Device builds, profiling, sandbox tests, store review | Blocked on the Android NDK license and devices |
+
+Real-money purchases stay disabled until Phases G and H are verified in sandbox.
+
 ## Reward and event principles
 
-- Scrap and event tiers are earned through play. No paid random rewards, forced timers, or pay-to-win boosts.
+- Gameplay rewards are earned through play. Optional ads and fixed-content purchases follow `AGENTS.md`; there are no paid random rewards, forced timers or pay-to-win difficulty spikes.
 - Daily contracts and weekly scoring are additive goals; they never block campaign progress.
 - Stars reward skill and preparedness, while every completed level unlocks the next route node.
 - The current prototype uses local device dates and saves. Do not advertise a real-time global event until server scheduling and clock-abuse handling exist.
