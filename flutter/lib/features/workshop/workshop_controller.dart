@@ -114,7 +114,7 @@ class WorkshopController {
     required this.shop,
     required this.rules,
     required int seed,
-  }) : _rng = SeededRandom(seed),
+  }) : _rng = SeededRandom(mixSeed32(seed)),
        seed = seed,
        wallet = Wallet(rules: defaultAssetRules(), profileId: 'mission') {
     for (final starter in rules.starterGears) {
@@ -281,6 +281,31 @@ class WorkshopController {
     selected = null;
     _undo.clear();
     locked = true;
+  }
+
+  /// Reopens the workshop between waves: pays the cleared wave's reward in
+  /// battle scrap (once per wave number, through the ledger), resets the
+  /// reroll price and rolls fresh offers. The board is kept as built.
+  WorkshopAction beginIntermission({
+    required int clearedWave,
+    required int rewardScrap,
+  }) {
+    if (!locked) return WorkshopAction.ok;
+    if (rewardScrap > 0) {
+      wallet.apply(
+        TxnRequest(
+          idempotencyKey: 'wave_reward:$clearedWave',
+          type: 'grant',
+          source: 'wave_reward',
+          referenceId: 'wave $clearedWave',
+          deltas: [TxnDelta(Currency.battleScrap, rewardScrap)],
+        ),
+      );
+    }
+    locked = false;
+    rerollsTaken = 0;
+    _rollOffers();
+    return WorkshopAction.ok;
   }
 
   /// Drops a dragged gear from [from] onto [to]: moves it to an empty cell,

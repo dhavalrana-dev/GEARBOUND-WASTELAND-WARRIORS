@@ -171,8 +171,8 @@ void main() {
     expect(c.sellSelected(), WorkshopAction.locked);
   });
 
-  test('the starter board alone holds the first route node with hero help', () {
-    // Not a balance guarantee: documents that the opening loadout is viable.
+  test('starter press plus two side presses wins route node 1 wave 1', () {
+    // Not a balance guarantee; see mission_balance_test.dart for the measured guards.
     final c = make();
     c.board.place(
       GearNode(
@@ -363,6 +363,45 @@ void main() {
       expect(p.valid, isTrue);
       expect(p.state, NetworkState.unpowered); // (1,1) has no powered neighbour
       expect(w.previewAt(0, 1, from: (x: 1, y: 2)).state, NetworkState.powered);
+    });
+  });
+
+  group('intermission', () {
+    test('reopens the shop with the wave reward, fresh offers and full price reset', () {
+      final w = make(seed: 5);
+      w.reroll();
+      w.reroll();
+      final scrapBefore = w.battleScrap;
+      w.lock();
+      expect(
+        w.beginIntermission(clearedWave: 1, rewardScrap: 4),
+        WorkshopAction.ok,
+      );
+      expect(w.locked, isFalse);
+      expect(w.battleScrap, scrapBefore + 4);
+      expect(w.rerollPrice, 1);
+      expect(w.offers.whereType<String>(), isNotEmpty);
+      expect(w.canUndo, isFalse);
+    });
+
+    test('a wave reward is paid only once even if intermission repeats', () {
+      final w = make();
+      w.lock();
+      w.beginIntermission(clearedWave: 1, rewardScrap: 4);
+      w.lock();
+      w.beginIntermission(clearedWave: 1, rewardScrap: 4);
+      expect(w.battleScrap, shop.startingScrap + 4);
+    });
+
+    test('the board survives the intermission unchanged', () {
+      final w = make();
+      final before = [for (final n in w.board.nodes) '${n.id}@${n.x},${n.y}']
+        ..sort();
+      w.lock();
+      w.beginIntermission(clearedWave: 1, rewardScrap: 3);
+      final after = [for (final n in w.board.nodes) '${n.id}@${n.x},${n.y}']
+        ..sort();
+      expect(after, before);
     });
   });
 }

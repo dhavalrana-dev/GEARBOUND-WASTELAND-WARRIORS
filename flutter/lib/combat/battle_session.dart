@@ -2,7 +2,12 @@ import '../mechanical/gear_network.dart';
 import '../mechanical/gear_output_system.dart';
 import 'combat_simulation.dart';
 
-enum BattlePhase { preparation, combat, victory, defeat }
+/// Mission phases. `intermission` sits between waves: combat is paused, the
+/// fortress keeps its damage, the hero returns to the fortress line keeping
+/// its health and lane, and gear-produced soldiers
+/// withdraw, so each wave tests the machine rather than a carried-over army.
+/// The workshop may be edited before [BattleSession.start] begins the next wave.
+enum BattlePhase { preparation, combat, intermission, victory, defeat }
 
 class WaveSpawnEvent {
   WaveSpawnEvent({
@@ -70,10 +75,12 @@ class BattleSession {
     required this.board,
     required this.network,
     required this.wave,
+    List<WaveDefinition> laterWaves = const [],
     int heroId = 1,
     CombatSimulation? combat,
     GearOutputSystem? outputs,
-  }) : heroId = heroId,
+  }) : waves = List.unmodifiable([wave, ...laterWaves]),
+       heroId = heroId,
        combat = combat ?? CombatSimulation(),
        outputs = outputs ?? GearOutputSystem() {
     if (!this.combat.combatants.any((unit) => unit.id == heroId)) {
@@ -96,29 +103,53 @@ class BattleSession {
 
   final GearBoard board;
   GearNetworkResult network;
+
+  /// First wave (kept for single-wave callers).
   final WaveDefinition wave;
+
+  /// Every wave in order; a single-wave session behaves exactly as before.
+  final List<WaveDefinition> waves;
   final CombatSimulation combat;
   final GearOutputSystem outputs;
   final int heroId;
   BattlePhase phase = BattlePhase.preparation;
   int elapsedTicks = 0;
+
+  /// Total wave rewards earned so far this mission.
   int scrapReward = 0;
+
+  /// Reward of the most recently cleared wave.
+  int lastWaveReward = 0;
+  int waveIndex = 0;
+  int _waveStartTick = 0;
   int _nextSpawnIndex = 0;
   int _nextEnemyId = 1000;
 
   void refreshNetwork() => network = GearNetwork.rebuild(board);
   bool moveHeroToLane(int lane) => combat.moveLane(heroId, lane);
 
+  WaveDefinition get currentWave => waves[waveIndex];
+  bool get isFinalWave => waveIndex == waves.length - 1;
+
+  /// Starts the first wave from preparation, or the next wave from an
+  /// intermission. Spawn ticks are relative to each wave's start.
   bool start() {
-    if (phase != BattlePhase.preparation) return false;
+    if (phase == BattlePhase.intermission) {
+      waveIndex++;
+      _nextSpawnIndex = 0;
+      _waveStartTick = elapsedTicks;
+    } else if (phase != BattlePhase.preparation) {
+      return false;
+    }
     phase = BattlePhase.combat;
     return true;
   }
 
   void tick() {
     if (phase != BattlePhase.combat) return;
+    final wave = currentWave;
     while (_nextSpawnIndex < wave.spawns.length &&
-        wave.spawns[_nextSpawnIndex].tick <= elapsedTicks) {
+        wave.spawns[_nextSpawnIndex].tick <= elapsedTicks - _waveStartTick) {
       final spawn = wave.spawns[_nextSpawnIndex++];
       combat.add(
         Combatant(
@@ -146,8 +177,21 @@ class BattleSession {
         !combat.combatants.any(
           (unit) => unit.isAlive && unit.faction == CombatFaction.enemy,
         )) {
-      phase = BattlePhase.victory;
-      scrapReward = wave.rewardScrap;
+      lastWaveReward = wave.rewardScrap;
+      scrapReward += wave.rewardScrap;
+      if (isFinalWave) {
+        phase = BattlePhase.victory;
+      } else {
+        phase = BattlePhase.intermission;
+        combat.withdraw(
+          (unit) => unit.faction == CombatFaction.friendly && unit.id != heroId,
+        );
+        // The hero returns to the fortress line (health and lane are kept),
+        // so every wave starts from the same position.
+        for (final unit in combat.combatants) {
+          if (unit.id == heroId) unit.positionMm = 0;
+        }
+      }
     }
   }
 }

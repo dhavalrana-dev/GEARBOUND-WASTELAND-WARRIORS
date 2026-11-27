@@ -34,3 +34,17 @@ class SeededRandom {
     return (nextUint() * exclusiveMax) >> 32;
   }
 }
+
+/// murmur3 `fmix32` finalizer. Use it to derive a generator seed from small or
+/// sequential integers: xorshift32's first outputs for small seeds are tiny
+/// (seed 1 → 270369), which multiply-shift maps to index 0 almost every time.
+/// Shared seed-derivation rule; Unity must use the same function.
+int mixSeed32(int seed) {
+  var h = seed & 0xFFFFFFFF;
+  h ^= h >> 16;
+  h = (h * 0x85EBCA6B) & 0xFFFFFFFF;
+  h ^= h >> 13;
+  h = (h * 0xC2B2AE35) & 0xFFFFFFFF;
+  h ^= h >> 16;
+  return h;
+}

@@ -41,6 +41,13 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
   late final BattleSession _session;
   late GearNetworkResult _network;
   WorkshopController? _workshop;
+  late final List<WaveDefinition> _waves;
+  int _intermissionsHandled = 0;
+
+  /// Board edits are allowed before the first wave and between waves.
+  bool get _canEdit =>
+      _session.phase == BattlePhase.preparation ||
+      _session.phase == BattlePhase.intermission;
 
   /// Board cell a drag started from; null while dragging the hand gear.
   ({int x, int y})? _dragFrom;
@@ -69,11 +76,13 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       // built-in demo board, without a shop.
       _board = makeStarterBoard();
     }
+    _waves = encounterWavesForLevel(widget.levelIndex, content: widget.content);
     _network = GearNetwork.rebuild(_board);
     _session = BattleSession(
       board: _board,
       network: _network,
-      wave: encounterForLevel(widget.levelIndex, content: widget.content),
+      wave: _waves.first,
+      laterWaves: _waves.skip(1).toList(),
       combat: CombatSimulation(worldLengthMm: 10000),
     );
     _game = GearboundGame(_session)
@@ -85,6 +94,17 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       ..onDragCancelled = (() => _dragFrom = null)
       ..previewCell = _previewCell;
     _game.onSessionChanged = () {
+      if (_session.phase == BattlePhase.intermission &&
+          _intermissionsHandled <= _session.waveIndex) {
+        _intermissionsHandled = _session.waveIndex + 1;
+        _workshop?.beginIntermission(
+          clearedWave: _session.waveIndex + 1,
+          rewardScrap: _session.lastWaveReward,
+        );
+        _notice =
+            'Wave ${_session.waveIndex + 1} cleared: '
+            '+${_session.lastWaveReward} battle scrap. Rebuild, then start the next wave.';
+      }
       if (_session.phase == BattlePhase.victory && !_resultRecorded) {
         _resultRecorded = true;
         final health = _session.combat.fortressHealth;
@@ -117,14 +137,14 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
 
   void _onCellTap(int x, int y) {
     final workshop = _workshop;
-    if (workshop == null || _session.phase != BattlePhase.preparation) return;
+    if (workshop == null || !_canEdit) return;
     _show(workshop.tapCell(x, y));
     _refreshNetwork();
   }
 
   bool _onDragStart(int x, int y) {
     final workshop = _workshop;
-    if (workshop == null || _session.phase != BattlePhase.preparation) {
+    if (workshop == null || !_canEdit) {
       return false;
     }
     if (workshop.hand != null) {
@@ -206,7 +226,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
 
   Widget _shopPanel() {
     final workshop = _workshop;
-    if (workshop == null || _session.phase != BattlePhase.preparation) {
+    if (workshop == null || !_canEdit) {
       return const SizedBox.shrink();
     }
     return _ShopPanel(
@@ -239,6 +259,13 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
           .where((node) => node.state == NetworkState.powered)
           .length,
     );
+    if (_session.phase == BattlePhase.intermission) {
+      _workshop?.lock();
+      _refreshNetwork();
+      _notice = null;
+      if (_game.startWave()) setState(() {});
+      return;
+    }
     if (_session.phase != BattlePhase.preparation) return;
     _workshop?.lock();
     _refreshNetwork();
@@ -313,6 +340,8 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         .length;
     return [
       _StatusCard(
+        waveNumber: _session.waveIndex + 1,
+        waveCount: _session.waves.length,
         poweredGears: powered,
         enemiesRemaining: enemies,
         phase: _session.phase,
@@ -325,7 +354,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         onLaneDown: () => _moveHero(-1),
         onLaneUp: () => _moveHero(1),
         onStartWave: _startWave,
-        canStartWave: _session.phase == BattlePhase.preparation,
+        canStartWave: _canEdit,
         isCombat: _session.phase == BattlePhase.combat,
       ),
       if (_session.phase == BattlePhase.victory ||
@@ -454,10 +483,14 @@ class _Header extends StatelessWidget {
 
 class _StatusCard extends StatelessWidget {
   const _StatusCard({
+    required this.waveNumber,
+    required this.waveCount,
     required this.poweredGears,
     required this.enemiesRemaining,
     required this.phase,
   });
+  final int waveNumber;
+  final int waveCount;
   final int poweredGears;
   final int enemiesRemaining;
   final BattlePhase phase;
@@ -475,7 +508,7 @@ class _StatusCard extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '$poweredGears powered · ${_phaseLabel(phase)} · $enemiesRemaining raiders',
+            'Wave $waveNumber/$waveCount · ${_phaseLabel(phase)} · $poweredGears powered · $enemiesRemaining raiders',
             style: const TextStyle(
               color: GbColors.cream,
               fontWeight: FontWeight.w600,
@@ -559,6 +592,7 @@ class _Actions extends StatelessWidget {
 
 String _phaseLabel(BattlePhase phase) => switch (phase) {
   BattlePhase.preparation => 'PREP',
+  BattlePhase.intermission => 'REBUILD',
   BattlePhase.combat => 'LIVE',
   BattlePhase.victory => 'CLEAR',
   BattlePhase.defeat => 'DEFEAT',

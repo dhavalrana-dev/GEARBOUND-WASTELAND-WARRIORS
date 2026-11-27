@@ -467,9 +467,12 @@ class WorkshopBoardView extends PositionComponent
     }
     final footerY = panelRect.bottom - 20;
     final phaseText = switch (session.phase) {
-      BattlePhase.preparation => 'WAVE 1 · READY',
-      BattlePhase.combat => 'WAVE 1 · TICK ${session.elapsedTicks}',
-      BattlePhase.victory => 'WAVE CLEAR · +${session.scrapReward} SCRAP',
+      BattlePhase.preparation => 'WAVE 1/${session.waves.length} · READY',
+      BattlePhase.combat =>
+        'WAVE ${session.waveIndex + 1}/${session.waves.length} · TICK ${session.elapsedTicks}',
+      BattlePhase.intermission =>
+        'WAVE ${session.waveIndex + 1} CLEAR · +${session.lastWaveReward} SCRAP · REBUILD',
+      BattlePhase.victory => 'MISSION CLEAR · +${session.scrapReward} SCRAP',
       BattlePhase.defeat => 'WAYFARER DISABLED',
     };
     canvas.drawParagraph(

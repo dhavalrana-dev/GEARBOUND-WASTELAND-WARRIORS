@@ -9,6 +9,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **GB-025 multi-wave missions on `feature/workshop-drag-undo`** (same branch as GB-039, uncommitted). `BattleSession` supports waves with an intermission in both engines. Route node `copperwash-01` is now the 3-wave shared mission `copperwash_01`; wave 1 is identical to the old encounter. Each intermission pays the wave reward in battle scrap, rolls fresh offers and reopens the workshop.
 - **GB-039 on `feature/workshop-drag-undo`.** The workshop has drag-and-drop with a ghost and a live target preview (green powered, amber unpowered, red invalid), moving placed gears, and undo for place, move, merge and sell. Undoing a sale charges the refund back through the ledger. Buys and rerolls are not undoable. The selected gear shows its status: power, lane and spawn interval.
 - **Production art direction v2 and the 19-phase roadmap applied on `docs/production-art-and-roadmap`** (stacked on PR #4). Added the 316-record vertical-slice asset manifest, all `planned`; no art exists and no art gate has started. Started roadmap P0 #1: the Android toolchain is diagnosed in `docs/TOOLCHAIN_REPORT.md`, and the fix is blocked on you.
 - **GB-030/GB-031 on `feature/workshop-shop-ui`.** The workshop now has a real gear shop: buy, tap-to-place, merge, sell and reroll with mission-scoped battle scrap through the ledger. `gearbound_app.dart` is split into `features/campaign`, `features/workshop` and `design_system`. The demo-only MOVE PRESS and rotate controls are removed.
@@ -20,6 +21,19 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 8 (multi-wave missions)
+- Flutter analyze: no issues. Flutter tests: **138/138**. Unity EditMode: **35/35** (adds 5 multi-wave tests). Validator, reference fixtures, asset sync and combat traces: clean, so the traces are unchanged and single-wave sessions behave exactly as before.
+- **Design decisions made from measurements** (headless balance probes, later turned into tests):
+  1. **Soldiers withdraw at each intermission**, while the hero and fortress damage stay. When soldiers carried over, every later wave was trivial (full fortress at any tuning).
+  2. **The hero returns to the fortress line** at intermission, keeping health and lane, so each wave starts from the same position.
+- **Bug found: shop RNG bias for small seeds.** Across seeds 1–500 there were only 5 distinct openings, and slot 0 was always the Ratchet Booster: xorshift32's first output for a small seed is tiny, and multiply-shift maps it to index 0. Fixed by deriving the workshop seed with murmur3 `fmix32` (`mixSeed32`). The shared `xorshift32-v1` contract and its fixtures are unchanged. Openings now offer a press 420/500 times, and a press is reachable within rerolls 499/500 times.
+- **Balance of node 1** (`mission_balance_test.dart`):
+  - The starter board with an idle hero loses wave 1.
+  - One bought press plus moving the hero to the open lane wins wave 1 at 100.
+  - Covering both side lanes clears all three waves at 100. Node 1 is gentle on purpose; a wave-3 sweep showed pressure is bursty (lanes hold or collapse) and was recorded for GB-051.
+- **Test gap found:** the Flutter asset drift test listed files explicitly and missed the new mission, so a stale bundled copy passed. Fixed by adding it to the list (verified to fail on the stale copy first).
+- **Not verified:** device play, and multi-wave feel or pacing with real players.
+
 ### 2026-11-27 session 7 (workshop drag and undo)
 - Flutter analyze: no issues. Flutter tests: **120/120**. Adds 12 controller tests (move, merge-by-drag, core refusal, undo order, undo merge and sell, refund-spent refusal, no undo for reroll, hand-full refusal, lock, previews) and 2 widget tests, including a **real pointer drag through Flame's gesture system**.
 - **Bugs found by the new tests:**

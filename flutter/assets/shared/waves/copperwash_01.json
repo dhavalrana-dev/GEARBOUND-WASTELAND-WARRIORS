@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "missionId": "route.copperwash.01",
+  "waves": [
+    {"id": "wave.1", "rewardScrap": 3, "groups": [{"enemyId": "raider.basic", "count": 3, "firstSpawnTick": 0, "intervalTicks": 45, "lanePattern": [0, 1, 2]}]},
+    {"id": "wave.2", "rewardScrap": 4, "groups": [{"enemyId": "raider.basic", "count": 5, "firstSpawnTick": 0, "intervalTicks": 32, "lanePattern": [1, 0, 2, 1, 0]}, {"enemyId": "raider.runner", "count": 2, "firstSpawnTick": 50, "intervalTicks": 40, "lanePattern": [2, 0]}]},
+    {"id": "wave.3", "rewardScrap": 5, "groups": [{"enemyId": "raider.basic", "count": 6, "firstSpawnTick": 0, "intervalTicks": 24, "lanePattern": [0, 2, 1]}, {"enemyId": "raider.runner", "count": 2, "firstSpawnTick": 20, "intervalTicks": 25, "lanePattern": [0, 2, 1]}, {"enemyId": "raider.bruiser", "count": 1, "firstSpawnTick": 40, "intervalTicks": 60, "lanePattern": [2]}]}
+  ]
+}

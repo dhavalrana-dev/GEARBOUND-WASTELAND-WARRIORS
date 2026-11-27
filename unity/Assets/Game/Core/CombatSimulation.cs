@@ -84,6 +84,13 @@ namespace Gearbound.Core
             return true;
         }
 
+        /// <summary>Removes matching combatants without killing them; IDs stay reserved.</summary>
+        public int Withdraw(Func<Combatant, bool> predicate)
+        {
+            if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+            return combatants.RemoveAll(unit => predicate(unit));
+        }
+
         public bool MoveLane(int combatantId, int lane)
         {
             if (lane < 0 || lane > 2) return false;

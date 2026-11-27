@@ -50,6 +50,17 @@ WaveDefinition encounterForLevel(int levelIndex, {SharedContent? content}) {
   return WaveDefinition(id: 'wave-$id', spawns: spawns, rewardScrap: 3);
 }
 
+/// Every wave for a route node: the shared mission's waves when the node has
+/// been migrated, otherwise the single scripted wave.
+List<WaveDefinition> encounterWavesForLevel(
+  int levelIndex, {
+  SharedContent? content,
+}) {
+  final first = encounterForLevel(levelIndex, content: content);
+  final shared = content?.encounterWavesFor(campaignEncounterIds[levelIndex]);
+  return shared ?? [first];
+}
+
 const campaignEncounterIds = [
   'copperwash-01',
   'copperwash-02',

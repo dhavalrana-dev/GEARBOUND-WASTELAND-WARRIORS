@@ -62,6 +62,7 @@ def main() -> int:
     enemies_doc = load("enemies/enemies.json")
     shop = load("economy/shop.json")
     mission = load("waves/mission_001.json")
+    extra_missions = [load("waves/copperwash_01.json")]
     if None in (rules, gears_doc, enemies_doc, shop, mission):
         return report()
 
@@ -136,21 +137,24 @@ def main() -> int:
     if cheapest_useful is None or shop["startingScrap"] < cheapest_useful:
         fail("economy/shop.json", "startingScrap cannot buy any transmission or infantry gear")
 
-    unique_ids("waves/mission_001.json", mission["waves"])
-    for wave in mission["waves"]:
-        where = f"waves/mission_001.json[{wave.get('id')}]"
-        require_int(where, wave, "rewardScrap")
-        if not wave.get("groups"):
-            fail(where, "wave has no spawn groups")
-        for group in wave.get("groups", []):
-            if group.get("enemyId") not in enemy_ids:
-                fail(where, f"enemyId {group.get('enemyId')!r} is not defined in enemies.json")
-            require_int(where, group, "count", 1)
-            require_int(where, group, "firstSpawnTick")
-            require_int(where, group, "intervalTicks", 1)
-            lanes = group.get("lanePattern", [])
-            if not lanes or any(lane not in (0, 1, 2) for lane in lanes):
-                fail(where, "lanePattern must contain lanes 0-2")
+    for rel, doc in [("waves/mission_001.json", mission), ("waves/copperwash_01.json", extra_missions[0])]:
+        if doc is None:
+            continue
+        unique_ids(rel, doc["waves"])
+        for wave in doc["waves"]:
+            where = f"{rel}[{wave.get('id')}]"
+            require_int(where, wave, "rewardScrap")
+            if not wave.get("groups"):
+                fail(where, "wave has no spawn groups")
+            for group in wave.get("groups", []):
+                if group.get("enemyId") not in enemy_ids:
+                    fail(where, f"enemyId {group.get('enemyId')!r} is not defined in enemies.json")
+                require_int(where, group, "count", 1)
+                require_int(where, group, "firstSpawnTick")
+                require_int(where, group, "intervalTicks", 1)
+                lanes = group.get("lanePattern", [])
+                if not lanes or any(lane not in (0, 1, 2) for lane in lanes):
+                    fail(where, "lanePattern must contain lanes 0-2")
 
     route = load("missions/campaign_route.json")
     if route is not None:
@@ -161,8 +165,11 @@ def main() -> int:
                 fail(where, f"mission file {node.get('mission')!r} does not exist")
                 continue
             wave_ids = {w["id"] for w in json.loads(target.read_text(encoding="utf-8"))["waves"]}
-            if node.get("waveId") not in wave_ids:
-                fail(where, f"waveId {node.get('waveId')!r} not found in {node.get('mission')}")
+            node_waves = node.get("waveIds")
+            if not isinstance(node_waves, list) or not node_waves or len(set(node_waves)) != len(node_waves):
+                fail(where, "waveIds must be a non-empty list of unique wave IDs")
+            elif any(w not in wave_ids for w in node_waves):
+                fail(where, f"waveIds {node_waves} not all found in {node.get('mission')}")
 
     currencies = load("economy/currencies.json")
     currencies_ids = [c.get("id") for c in currencies["currencies"]] if currencies else []

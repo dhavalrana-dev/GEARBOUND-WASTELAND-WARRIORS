@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Multi-wave missions (GB-025) in Dart and C#: intermission phase, wave rewards in battle scrap, fresh offers and rebuild between waves, soldiers withdrawing and the hero returning between waves. Route node 1 is now the 3-wave `copperwash_01` mission, with balance tests.
+- Fixed shop RNG bias for small seeds (slot 0 was always the Ratchet Booster) with `mixSeed32` seed derivation. Fixed the asset drift test missing new mission files.
 - Workshop drag-and-drop with a ghost and a target-cell power preview, moving placed gears, undo for place, move, merge and sell, and a selected-gear status line. Fixed drag tracking running ahead of the finger, and dropping a gear onto the core silently doing nothing.
 - Replaced `ART_DIRECTION.md` with the v2 production style bible, reconciled with the game data IDs. Replaced `PHASE_ROADMAP.md` with the 19-phase v2 roadmap, mapping v1 and A–J, with the current baseline.
 - Added the vertical-slice asset manifest (`shared/art/asset_manifest.json`, 316 planned records) with a schema, validator rules and `PRODUCTION_ASSET_INVENTORY.md`.

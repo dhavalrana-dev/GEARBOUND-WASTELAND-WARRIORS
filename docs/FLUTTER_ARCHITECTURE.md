@@ -32,6 +32,8 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 4. **Drag-and-drop** (`WorkshopBoardView` with `DragCallbacks`): drag the gear in hand onto a cell to place it, or drag a placed gear to move it (free; its lane follows the new row) or onto an identical gear to merge. The target cell is tinted from `WorkshopController.previewAt`, which runs the network on a copy of the board. The core can't be dragged or dropped onto.
 5. **Undo** reverts place, move, merge and sell, last in first out, from board snapshots. Undoing a sale charges the refund back through the ledger and is refused if that scrap has been spent. Buys (use Cancel) and rerolls are deliberately not undoable.
 6. **Start wave** locks the controller, refunding any gear still in hand and clearing undo. After that, board taps and drags are ignored.
+7. **Intermission** (multi-wave missions): when a non-final wave is cleared, `BattleSession` enters `intermission`. Gear soldiers withdraw; the hero returns to the fortress line; fortress damage stays. The screen calls `WorkshopController.beginIntermission`, which pays the wave reward once per wave number through the ledger, resets the reroll price, rolls fresh offers and unlocks editing. **Start wave** then begins the next wave. The Vanguard booster and streak soldiers apply only to wave 1.
+8. **Seeds**: the workshop seeds its shop RNG with `mixSeed32(seed)` (murmur3 fmix32) to avoid xorshift32's low-entropy first outputs for small seeds.
 
 ## Layout
 - **Portrait:** the battlefield and board get 11/20 of the height; status, shop, loadout and actions scroll in the remaining 9/20.

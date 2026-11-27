@@ -22,6 +22,7 @@ void main() {
       'economy/currencies.json',
       'monetization/ad_policy.json',
       'waves/mission_001.json',
+      'waves/copperwash_01.json',
       'missions/campaign_route.json',
       'events/progression_rewards.json',
     ];
