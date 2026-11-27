@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generator": "tools/simulation/CombatTraceGenerator.cs",
+  "hash": "fnv1a32",
+  "results": [
+    { "id": "lane1-press-idle-hero", "phase": "defeat", "elapsedTicks": 604, "fortressHealth": 0, "friendlyUnitsProduced": 3, "friendlyAlive": 4, "enemiesAlive": 2, "traceHash": 2018397086,
+      "checkpoints": [1309787366, 312404646, 1814697107, 484430115, 1688506924, 2165778651, 3661846765, 3333175447, 530702486, 3356663167, 742714953, 4123930972, 2436998129, 3105930140, 2614492289, 3834046594, 4195177675, 3017410820, 1008400371, 4002856385] },
+    { "id": "side-lane-presses", "phase": "victory", "elapsedTicks": 401, "fortressHealth": 100, "friendlyUnitsProduced": 8, "friendlyAlive": 9, "enemiesAlive": 0, "traceHash": 74873236,
+      "checkpoints": [1309787366, 312404646, 2781828452, 3663659234, 1119081612, 2965192335, 1924212416, 1455717162, 2491543343, 1233295230, 1120858913, 4073933704, 2506059654] },
+    { "id": "boosted-chain-runner-wave", "phase": "defeat", "elapsedTicks": 647, "fortressHealth": 0, "friendlyUnitsProduced": 8, "friendlyAlive": 9, "enemiesAlive": 1, "traceHash": 1465857042,
+      "checkpoints": [3091044517, 1342892892, 989052430, 1653567933, 266385600, 3311762546, 2676891434, 1673077149, 2237132306, 3029817487, 4078558865, 3440995776, 282821470, 3183207766, 1948095539, 1256232365, 3609587376, 1365297820, 3965871350, 21644571, 2850410447] },
+    { "id": "boss-wave-hero-rotation", "phase": "victory", "elapsedTicks": 416, "fortressHealth": 100, "friendlyUnitsProduced": 11, "friendlyAlive": 12, "enemiesAlive": 0, "traceHash": 150724495,
+      "checkpoints": [3076556350, 3785223932, 2613157701, 1495376170, 2319931440, 1415720457, 711087275, 1982536130, 2114321118, 1065240726, 108947587, 4127120129, 592950033] }
+  ]
+}

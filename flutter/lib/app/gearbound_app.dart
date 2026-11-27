@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flame/game.dart' show GameWidget;
 
 import '../combat/battle_session.dart';
 import '../combat/combat_simulation.dart';
+import '../data/shared_content.dart';
 import '../game/gearbound_game.dart';
 import '../mechanical/gear_network.dart';
 import '../progression/campaign_progress.dart';
@@ -39,15 +41,19 @@ class GearboundApp extends StatelessWidget {
 }
 
 class CampaignHubScreen extends StatefulWidget {
-  const CampaignHubScreen({super.key});
+  const CampaignHubScreen({this.store, super.key});
+
+  /// Injected in tests; defaults to the device-backed store.
+  final CampaignStore? store;
 
   @override
   State<CampaignHubScreen> createState() => _CampaignHubScreenState();
 }
 
 class _CampaignHubScreenState extends State<CampaignHubScreen> {
-  final CampaignStore _store = CampaignStore();
+  late final CampaignStore _store = widget.store ?? CampaignStore();
   CampaignProgress? _progress;
+  SharedContent? _content;
 
   @override
   void initState() {
@@ -57,7 +63,19 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
 
   Future<void> _load() async {
     final progress = await _store.load();
-    if (mounted) setState(() => _progress = progress);
+    SharedContent? content;
+    try {
+      content = await SharedContent.load(rootBundle);
+    } on Object catch (error) {
+      // Fall back to the built-in encounter scripts rather than blocking play.
+      debugPrint('Shared content unavailable: $error');
+    }
+    if (mounted) {
+      setState(() {
+        _progress = progress;
+        _content = content;
+      });
+    }
   }
 
   Future<void> _launchLevel(int index) async {
@@ -68,6 +86,7 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
         builder: (_) => WorkshopScreen(
           levelIndex: index,
           progress: progress,
+          content: _content,
           onProgressSaved: _store.save,
         ),
       ),
@@ -569,10 +588,12 @@ class WorkshopScreen extends StatefulWidget {
     required this.levelIndex,
     required this.progress,
     required this.onProgressSaved,
+    this.content,
     super.key,
   });
   final int levelIndex;
   final CampaignProgress progress;
+  final SharedContent? content;
   final Future<void> Function(CampaignProgress) onProgressSaved;
 
   @override
@@ -596,7 +617,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     _session = BattleSession(
       board: _board,
       network: _network,
-      wave: encounterForLevel(widget.levelIndex),
+      wave: encounterForLevel(widget.levelIndex, content: widget.content),
       combat: CombatSimulation(worldLengthMm: 10000),
     );
     _game = GearboundGame(_session);

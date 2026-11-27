@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "description": "Route nodes whose encounters come from shared mission data. Nodes not listed still use flutter/lib/progression/encounters.dart until they are migrated.",
+  "nodes": [
+    { "id": "copperwash-01", "mission": "waves/mission_001.json", "waveId": "wave.1" }
+  ]
+}

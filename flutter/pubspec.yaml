@@ -19,3 +19,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Synced from ../shared by tools/build/sync_flutter_shared.py; do not edit here.
+  assets:
+    - assets/shared/configs/
+    - assets/shared/gears/
+    - assets/shared/enemies/
+    - assets/shared/economy/
+    - assets/shared/waves/
+    - assets/shared/missions/
+    - assets/shared/events/

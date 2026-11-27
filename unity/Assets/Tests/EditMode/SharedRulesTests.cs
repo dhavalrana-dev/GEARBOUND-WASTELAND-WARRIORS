@@ -128,6 +128,24 @@ namespace Gearbound.Tests
         }
 
         [Test]
+        public void CombatScenariosMatchSharedTraces()
+        {
+            var results = CombatScenarioRunner.RunAll(Read("test-fixtures/combat_scenarios.json"), Read("waves/mission_001.json"), Read("enemies/enemies.json"));
+            var expected = SharedJson.Arr(Fixture("combat_traces.json"), "results").Select(r => SharedJson.Obj(r, "result")).ToArray();
+            Assert.AreEqual(expected.Length, results.Count);
+            for (var i = 0; i < expected.Length; i++)
+            {
+                var e = expected[i];
+                var r = results[i];
+                Assert.AreEqual(SharedJson.Str(e, "id"), r.Id);
+                Assert.AreEqual(SharedJson.Str(e, "phase"), r.Phase, r.Id);
+                Assert.AreEqual(SharedJson.Int(e, "elapsedTicks"), r.ElapsedTicks, r.Id);
+                Assert.AreEqual(SharedJson.Int(e, "fortressHealth"), r.FortressHealth, r.Id);
+                Assert.AreEqual((uint)SharedJson.Long(e, "traceHash"), r.TraceHash, r.Id);
+            }
+        }
+
+        [Test]
         public void JsonReaderRejectsMalformedInput()
         {
             Assert.Throws<System.FormatException>(() => SharedJson.Parse("{\"a\":1,}"));
