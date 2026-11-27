@@ -260,6 +260,11 @@ class CampaignProgress {
 
   void recordDefeat() => winStreak = 0;
 
+  /// Leaving a mission after its first wave started counts as a loss for the
+  /// Overclock Streak, so quitting cannot protect a streak. Nothing else is
+  /// lost: no currency, stars or inventory are touched.
+  void recordAbandon() => winStreak = 0;
+
   bool _grant(RewardBundle reward, String key, String source, DateTime at) {
     final deltas = [
       if (reward.scrap > 0) TxnDelta(Currency.workshopScrap, reward.scrap),

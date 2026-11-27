@@ -34,6 +34,12 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 6. **Start wave** locks the controller, refunding any gear still in hand and clearing undo. After that, board taps and drags are ignored.
 7. **Intermission** (multi-wave missions): when a non-final wave is cleared, `BattleSession` enters `intermission`. Gear soldiers withdraw; the hero returns to the fortress line; fortress damage stays. The screen calls `WorkshopController.beginIntermission`, which pays the wave reward once per wave number through the ledger, resets the reroll price, rolls fresh offers and unlocks editing. **Start wave** then begins the next wave. The Vanguard booster and streak soldiers apply only to wave 1.
 8. **Seeds**: the workshop seeds its shop RNG with `mixSeed32(seed)` (murmur3 fmix32) to avoid xorshift32's low-entropy first outputs for small seeds.
+9. **Lifecycle** (`GearboundGame.setSimulationPaused`, screen `AppLifecycleListener`):
+   - The gameplay pause freezes the simulation while the battlefield still renders.
+   - When the app is hidden during combat it pauses, and only the player resumes.
+   - Once a mission has started, system Back opens the pause menu. Abandoning asks for confirmation and resets the Overclock Streak.
+   - Simulation catch-up is capped at 0.25 s per frame.
+   - The game widget has a `GlobalKey`, so rotation moves it between layouts instead of rebuilding it. This matters because Flame reports widget disposal as an app pause.
 
 ## Layout
 - **Portrait:** the battlefield and board get 11/20 of the height; status, shop, loadout and actions scroll in the remaining 9/20.

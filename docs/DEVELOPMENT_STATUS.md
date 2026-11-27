@@ -9,6 +9,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **GB-052 mission lifecycle on `feature/mission-lifecycle`.** Adds a gameplay pause menu (Resume; Abandon with confirmation), auto-pause when the app is hidden during combat (it never auto-resumes), system Back routed to the pause menu once a mission has started, and a 0.25 s per-frame catch-up cap.
 - **GB-025 multi-wave missions on `feature/workshop-drag-undo`** (same branch as GB-039, uncommitted). `BattleSession` supports waves with an intermission in both engines. Route node `copperwash-01` is now the 3-wave shared mission `copperwash_01`; wave 1 is identical to the old encounter. Each intermission pays the wave reward in battle scrap, rolls fresh offers and reopens the workshop.
 - **GB-039 on `feature/workshop-drag-undo`.** The workshop has drag-and-drop with a ghost and a live target preview (green powered, amber unpowered, red invalid), moving placed gears, and undo for place, move, merge and sell. Undoing a sale charges the refund back through the ledger. Buys and rerolls are not undoable. The selected gear shows its status: power, lane and spawn interval.
 - **Production art direction v2 and the 19-phase roadmap applied on `docs/production-art-and-roadmap`** (stacked on PR #4). Added the 316-record vertical-slice asset manifest, all `planned`; no art exists and no art gate has started. Started roadmap P0 #1: the Android toolchain is diagnosed in `docs/TOOLCHAIN_REPORT.md`, and the fix is blocked on you.
@@ -21,6 +22,15 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 9 (mission lifecycle)
+- Flutter analyze: no issues. Flutter tests: **147/147**. `mission_lifecycle_test.dart` adds 9 tests: pause and resume, background during combat versus preparation, the stall cap (a 10 s stall becomes at most 8 ticks), Back before and during a mission, abandon with confirmation, rotation mid-combat, and victory recorded once.
+- Validator, reference fixtures, asset sync and combat traces: clean. Unity EditMode: **not re-run** (no C# or shared data changed; last result 35/35).
+- **Bugs found:**
+  1. **Streak exploit:** system Back mid-battle left the screen without recording anything, so a losing player could keep their Overclock Streak. Back now opens the pause menu, and abandoning resets the streak.
+  2. **Rotation paused the game and crashed in a widget test:** switching layouts disposed and rebuilt the Flame `GameWidget`, and Flame reports disposal as an app pause (`lifecycleStateChange(paused)`), which triggered `setState` while the tree was locked. Fixed with a `GlobalKey` on the game widget, so it moves instead of rebuilding, and by pausing on Flutter's `AppLifecycleListener.onHide` instead of Flame's hook.
+  3. **No cap on catch-up:** after a stall, the loop fast-forwarded every missed tick in one frame. It is now capped at 0.25 s per frame.
+- **Not done:** restoring a mission after the OS kills the app (GB-053), and device verification.
+
 ### 2026-11-27 session 8 (multi-wave missions)
 - Flutter analyze: no issues. Flutter tests: **138/138**. Unity EditMode: **35/35** (adds 5 multi-wave tests). Validator, reference fixtures, asset sync and combat traces: clean, so the traces are unchanged and single-wave sessions behave exactly as before.
 - **Design decisions made from measurements** (headless balance probes, later turned into tests):

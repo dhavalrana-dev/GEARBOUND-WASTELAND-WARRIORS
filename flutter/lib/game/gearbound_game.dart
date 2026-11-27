@@ -20,6 +20,30 @@ class GearboundGame extends FlameGame {
   BattlePhase _lastNotifiedPhase = BattlePhase.preparation;
   void Function()? onSessionChanged;
 
+  /// Most simulated time one frame may catch up. Longer stalls (debugger,
+  /// slow device) are dropped instead of fast-forwarding dozens of ticks.
+  static const maxCatchUpSeconds = 0.25;
+
+  /// Gameplay pause, separate from Flame's engine pause: the battlefield
+  /// still renders, but the simulation does not advance. Only the player
+  /// resumes it; returning from the background never resumes on its own.
+  bool get simulationPaused => _simulationPaused;
+  bool _simulationPaused = false;
+
+  void setSimulationPaused(bool value) {
+    if (_simulationPaused == value) return;
+    _simulationPaused = value;
+    if (value) _simulationRemainder = 0;
+    onSessionChanged?.call();
+  }
+
+  /// Called by the screen when the app leaves the foreground. (Flame's own
+  /// `lifecycleStateChange` also fires when its widget is disposed, for
+  /// example on rotation, so it is not used for gameplay pausing.)
+  void onAppBackgrounded() {
+    if (session.phase == BattlePhase.combat) setSimulationPaused(true);
+  }
+
   /// Board cell tapped during preparation (cell coordinates, not pixels).
   void Function(int x, int y)? onCellTap;
   ({int x, int y})? Function()? selectedCell;
@@ -53,8 +77,11 @@ class GearboundGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
-    if (session.phase == BattlePhase.combat) {
+    if (session.phase == BattlePhase.combat && !_simulationPaused) {
       _simulationRemainder += dt;
+      if (_simulationRemainder > maxCatchUpSeconds) {
+        _simulationRemainder = maxCatchUpSeconds;
+      }
       const step = 1 / 30;
       while (_simulationRemainder >= step &&
           session.phase == BattlePhase.combat) {
