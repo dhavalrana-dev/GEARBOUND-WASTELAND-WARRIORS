@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    { "id": "chain-powered", "description": "Core and reciprocal east-west chain powers output", "expected": "powered" },
+    { "id": "disconnected", "description": "Output with no path to core is inactive", "expected": "unpowered" },
+    { "id": "removed-coupler", "description": "Removing middle coupler disconnects dependent output", "expected": "unpowered" },
+    { "id": "even-loop", "description": "Even mesh loop remains active", "expected": "powered" },
+    { "id": "odd-loop", "description": "Odd parity cycle jams if a future non-grid link creates one; impossible on the orthogonal MVP board", "expected": "jammed" },
+    { "id": "two-cores", "description": "Component driven by two cores is disabled", "expected": "conflicted" },
+    { "id": "booster-cap", "description": "Four boosters still grant no more than 30 percent", "expected": "30" }
+  ]
+}

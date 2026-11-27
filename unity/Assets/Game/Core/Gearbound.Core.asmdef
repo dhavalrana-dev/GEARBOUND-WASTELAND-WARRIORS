@@ -1,0 +1,5 @@
+{
+  "name": "Gearbound.Core",
+  "rootNamespace": "Gearbound.Core",
+  "autoReferenced": true
+}

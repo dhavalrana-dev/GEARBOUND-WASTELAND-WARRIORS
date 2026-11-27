@@ -1,0 +1,21 @@
+# Task backlog
+
+Statuses: `todo`, `in progress`, `blocked`, `done`. A task is done only after its acceptance evidence exists.
+
+| ID | Priority | Task | Dependencies | Acceptance criteria | Tests / deliverables | Status |
+|---|---|---|---|---|---|---|
+| GB-001 | P0 | Audit workspace and toolchains | — | Installed versions and missing tools recorded | DEVELOPMENT_STATUS.md | done |
+| GB-002 | P0 | Analyze reference games and establish original direction | GB-001 | Evidence-backed mechanics/presentation notes and boundaries | REFERENCE_GAME_ANALYSIS.md | in progress |
+| GB-003 | P0 | Define shared rules/data schema | GB-001 | Versioned schema, stable IDs, deterministic rules | shared/schema + configs | in progress |
+| GB-004 | P0 | Implement gear board, merge, and graph power traversal | GB-003 | Valid placement, merge, and deterministic active/conflict states | Unity EditMode and Mono smoke checks | in progress |
+| GB-005 | P0 | Implement fixed-tick output clocks and caps | GB-004 | Output timing is bounded and seed-independent absent RNG | Simulation tests | in progress |
+| GB-006 | P0 | Implement three-lane combat simulation | GB-003 | Hero, units, enemies, damage and fortress outcome | Combat fixtures | in progress |
+| GB-007 | P0 | Connect gear outputs to combat events | GB-005, GB-006 | Powered modules produce bounded, observable effects | Integration scenario | in progress |
+| GB-008 | P1 | Add responsive Unity presentation and input | GB-007 | Portrait and landscape maintain readable play | Layout/input tests | todo |
+| GB-009 | P1 | Produce original Rivet and gear art | Art direction | Approved layered asset specs and runtime exports | Asset inventory | todo |
+| GB-010 | P1 | Implement Flutter/Flame parity runtime | GB-003, GB-007 | Same fixtures pass under Dart implementation | Dart tests | in progress |
+| GB-011 | P1 | Implement mission loop, save, rewards and workshop | GB-007 | One mission starts, completes, saves and returns | Integration tests | in progress |
+| GB-012 | P1 | Build and profile mobile targets | GB-008, GB-011 | Android build succeeds; device performance reported | Build/profile report | todo |
+| GB-013 | P1 | Add campaign route, unlocks, and star ratings | GB-011 | Cleared nodes unlock in order; best score survives app restart | Progression model tests and route UI | in progress |
+| GB-014 | P1 | Add daily contracts and weekly event track | GB-013 | Tasks reset by day; weekly best scores and reward claims cannot be farmed | Event/task boundary tests | in progress |
+| GB-015 | P1 | Author and balance the first five route encounters | GB-013 | Distinct enemy scripts, star thresholds, and optional objectives | Encounter data and playtest notes | in progress |

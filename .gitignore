@@ -1,0 +1,17 @@
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/UserSettings/
+unity/obj/
+unity/Builds/
+flutter/.dart_tool/
+flutter/build/
+flutter/.packages
+artifacts/
+.pub-cache/
+.gradle/
+.idea/
+flutter/android/local.properties
+*.csproj
+*.sln
+*.suo
