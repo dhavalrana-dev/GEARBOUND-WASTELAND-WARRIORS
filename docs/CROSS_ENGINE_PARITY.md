@@ -39,12 +39,13 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Workshop seed derivation `mixSeed32` (fmix32) | No | Yes | Dart vectors only (GB-049) |
 | Hero SP and special (Wrench Quake) | Yes | Yes | combat_traces `boss-wave-hero-special` ✔ both; heroes.json parity tests |
 | Attack wind-up and cleave (boss telegraphs) | Yes | Yes | combat_traces (boss scenarios + `boss-cleave-crowded-lane`) ✔ both |
+| Turret projectiles (lane shots, cap 24) | Yes | Yes | combat_traces `turret-side-lanes` ✔ both |
 | Presentation / input | No | Prototype | — |
 
 ## Combat trace parity (spec scenario 4)
 
 `shared/test-fixtures/combat_scenarios.json` holds hand-written inputs: board, wave, world length and hero commands. `tools/simulation/generate_combat_traces.ps1` runs the Unity Core sources under Unity's bundled Mono and writes `combat_traces.json`.
 
-Each tick, both runners hash `tick|phase|fortress|` plus `id:lane:pos:hp:shield:state;` for every combatant in ID order, using 32-bit FNV-1a. A checkpoint hash every 30 ticks locates the first point of divergence.
+Each tick, both runners hash `tick|phase|fortress|` plus `id:lane:pos:hp:shield:state;` for every combatant in ID order, then `P{id}:{lane}:{pos};` for every live projectile (empty without turrets, so older hashes are unchanged), using 32-bit FNV-1a. A checkpoint hash every 30 ticks locates the first point of divergence.
 
-**Status:** all 4 scenarios match exactly in Dart and in the Unity editor (verified 2026-11-27). Combat currently uses no randomness. When critical hits or other random effects arrive, they must draw from `SeededRandom` in a documented order, and new scenarios must cover them.
+**Status:** all 7 scenarios match exactly in Dart and in the Unity editor (verified 2026-11-27). Combat currently uses no randomness. When critical hits or other random effects arrive, they must draw from `SeededRandom` in a documented order, and new scenarios must cover them.

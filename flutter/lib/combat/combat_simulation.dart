@@ -85,6 +85,22 @@ class Combatant {
   bool get isAlive => health > 0;
 }
 
+/// A friendly projectile travelling down a lane from the fortress line.
+class Projectile {
+  Projectile._(
+    this.id,
+    this.lane,
+    this.positionMm,
+    this.speedMmPerTick,
+    this.damage,
+  );
+  final int id;
+  final int lane;
+  int positionMm;
+  final int speedMmPerTick;
+  final int damage;
+}
+
 class CombatSimulation {
   CombatSimulation({this.fortressHealth = 100, this.worldLengthMm = 20000})
     : fortressMaxHealth = fortressHealth {
@@ -136,6 +152,34 @@ class CombatSimulation {
   List<({int attackerId, int targetId})> get lastHits =>
       List.unmodifiable(_lastHits);
   final List<({int attackerId, int targetId})> _lastHits = [];
+
+  final List<Projectile> _projectiles = [];
+  int _nextProjectileId = 1;
+
+  /// Hard cap on live projectiles; firing beyond it is refused.
+  int maxActiveProjectiles = 24;
+  List<Projectile> get projectiles => List.unmodifiable(_projectiles);
+
+  /// Launches a friendly projectile. Each tick (projectile ID order) it
+  /// advances by its speed and hits the nearest living enemy in its lane
+  /// between its old and new position; it is removed on a hit or at the end
+  /// of the field. Hits use attacker ID -projectileId (sorted before units,
+  /// never colliding with unit IDs). Mirrors Unity's FireProjectile.
+  bool fireProjectile({
+    required int lane,
+    required int startMm,
+    required int speedMmPerTick,
+    required int damage,
+  }) {
+    if (lane < 0 || lane > 2 || speedMmPerTick < 1 || damage < 1) {
+      throw ArgumentError('Invalid projectile.');
+    }
+    if (_projectiles.length >= maxActiveProjectiles) return false;
+    _projectiles.add(
+      Projectile._(_nextProjectileId++, lane, startMm, speedMmPerTick, damage),
+    );
+    return true;
+  }
 
   /// Deals [damage] (armor, reduction and shields apply as for a normal hit)
   /// to every living combatant of [faction] in [lane] within [radiusMm] of
@@ -213,6 +257,41 @@ class CombatSimulation {
     }
 
     final events = <({int targetId, int attackerId, int damage})>[];
+    for (final shot in [
+      ..._projectiles,
+    ]..sort((a, b) => a.id.compareTo(b.id))) {
+      final from = shot.positionMm;
+      final to = from + shot.speedMmPerTick > worldLengthMm
+          ? worldLengthMm
+          : from + shot.speedMmPerTick;
+      final hits =
+          living
+              .where(
+                (u) =>
+                    u.isAlive &&
+                    u.faction == CombatFaction.enemy &&
+                    u.lane == shot.lane &&
+                    u.positionMm >= from &&
+                    u.positionMm <= to,
+              )
+              .toList()
+            ..sort((a, b) {
+              final byPos = a.positionMm.compareTo(b.positionMm);
+              return byPos != 0 ? byPos : a.id.compareTo(b.id);
+            });
+      if (hits.isNotEmpty) {
+        events.add((
+          targetId: hits.first.id,
+          attackerId: -shot.id,
+          damage: shot.damage,
+        ));
+        _projectiles.remove(shot);
+      } else if (to >= worldLengthMm) {
+        _projectiles.remove(shot);
+      } else {
+        shot.positionMm = to;
+      }
+    }
     for (final unit in living) {
       if (unit.windupRemaining > 0) {
         // Telegraphed attack: lands when the wind-up ends, on whoever is in

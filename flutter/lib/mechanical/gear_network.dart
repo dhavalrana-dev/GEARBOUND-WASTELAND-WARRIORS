@@ -2,7 +2,7 @@ enum Direction { north, east, south, west }
 
 enum GearKind { core, transmission, booster, output }
 
-enum GearOutputKind { none, spawnInfantry }
+enum GearOutputKind { none, spawnInfantry, fireProjectile }
 
 enum NetworkState { unpowered, powered, jammed, conflicted }
 
@@ -19,8 +19,14 @@ class GearNode {
     this.tier = 1,
     this.outputKind = GearOutputKind.none,
     this.targetLane = 1,
+    this.projectileDamage = 0,
+    this.projectileSpeedMmPerTick = 0,
   }) : localPorts = Set<Direction>.of(localPorts) {
     if (tier < 1) throw ArgumentError.value(tier, 'tier');
+    if (outputKind == GearOutputKind.fireProjectile &&
+        (projectileDamage < 1 || projectileSpeedMmPerTick < 1)) {
+      throw ArgumentError('Projectile outputs need positive damage and speed.');
+    }
     if (targetLane < 0 || targetLane > 2) {
       throw ArgumentError.value(targetLane, 'targetLane');
     }
@@ -38,6 +44,10 @@ class GearNode {
   final int tier;
   final GearOutputKind outputKind;
   final int targetLane;
+
+  /// Turret outputs only: damage and speed of each fired projectile.
+  final int projectileDamage;
+  final int projectileSpeedMmPerTick;
 
   bool hasPort(Direction worldDirection) {
     final local = (worldDirection.index - rotationQuarterTurns + 4) % 4;
@@ -132,6 +142,8 @@ class GearBoard {
       tier: anchor.tier + 1,
       outputKind: anchor.outputKind,
       targetLane: anchor.targetLane,
+      projectileDamage: anchor.projectileDamage,
+      projectileSpeedMmPerTick: anchor.projectileSpeedMmPerTick,
     );
     _cells[_key(merged.x, merged.y)] = merged;
     return merged;

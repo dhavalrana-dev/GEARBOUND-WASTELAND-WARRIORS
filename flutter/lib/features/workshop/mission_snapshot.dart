@@ -105,6 +105,8 @@ class MissionSnapshot {
     'tier': n.tier,
     'output': n.outputKind.name,
     'lane': n.targetLane,
+    'projectileDamage': n.projectileDamage,
+    'projectileSpeed': n.projectileSpeedMmPerTick,
   };
 
   static GearNode nodeFromJson(Map<String, Object?> j) => GearNode(
@@ -122,5 +124,7 @@ class MissionSnapshot {
     tier: j['tier'] as int,
     outputKind: GearOutputKind.values.byName(j['output'] as String),
     targetLane: j['lane'] as int,
+    projectileDamage: j['projectileDamage'] as int? ?? 0,
+    projectileSpeedMmPerTick: j['projectileSpeed'] as int? ?? 0,
   );
 }

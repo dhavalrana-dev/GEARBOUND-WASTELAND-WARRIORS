@@ -419,10 +419,10 @@ class WorkshopController {
         y: y,
         localPorts: {for (final p in hand!.ports) Direction.values.byName(p)},
         baseIntervalTicks: hand!.baseIntervalTicks,
-        outputKind: hand!.category == 'infantry'
-            ? GearOutputKind.spawnInfantry
-            : GearOutputKind.none,
+        outputKind: _outputKindOf(hand!),
         targetLane: rules.laneForRow(y),
+        projectileDamage: hand!.projectileDamage,
+        projectileSpeedMmPerTick: hand!.projectileSpeedMmPerTick,
       );
     } else {
       candidate = null;
@@ -487,6 +487,8 @@ class WorkshopController {
     targetLane: n.outputKind == GearOutputKind.none
         ? n.targetLane
         : rules.laneForRow(y),
+    projectileDamage: n.projectileDamage,
+    projectileSpeedMmPerTick: n.projectileSpeedMmPerTick,
   );
 
   void _rollOffers() {
@@ -541,9 +543,16 @@ class WorkshopController {
         ? 0
         : rules.intervalFor(gear.baseIntervalTicks, tier),
     tier: tier,
-    outputKind: gear.category == 'infantry'
-        ? GearOutputKind.spawnInfantry
-        : GearOutputKind.none,
+    outputKind: _outputKindOf(gear),
     targetLane: rules.laneForRow(y),
+    projectileDamage: gear.projectileDamage,
+    projectileSpeedMmPerTick: gear.projectileSpeedMmPerTick,
   );
+
+  static GearOutputKind _outputKindOf(GearDefinition gear) =>
+      switch (gear.category) {
+        'infantry' => GearOutputKind.spawnInfantry,
+        'turret' => GearOutputKind.fireProjectile,
+        _ => GearOutputKind.none,
+      };
 }

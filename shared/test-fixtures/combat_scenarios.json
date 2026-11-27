@@ -271,6 +271,55 @@
         }
       ],
       "heroCommands": []
+    },
+    {
+      "id": "turret-side-lanes",
+      "waveId": "wave.2",
+      "worldLengthMm": 10000,
+      "maxTicks": 3600,
+      "gears": [
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "turret-a",
+          "kind": "turret",
+          "x": 2,
+          "y": 1,
+          "intervalTicks": 45,
+          "targetLane": 0,
+          "projectileDamage": 8,
+          "projectileSpeedMmPerTick": 300
+        },
+        {
+          "id": "turret-b",
+          "kind": "turret",
+          "x": 2,
+          "y": 3,
+          "intervalTicks": 45,
+          "targetLane": 2,
+          "projectileDamage": 8,
+          "projectileSpeedMmPerTick": 300
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 1
+        },
+        {
+          "id": "ratchet",
+          "kind": "booster",
+          "x": 3,
+          "y": 2
+        }
+      ],
+      "heroCommands": []
     }
   ]
 }

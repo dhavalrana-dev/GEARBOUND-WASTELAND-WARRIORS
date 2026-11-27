@@ -6,7 +6,7 @@ namespace Gearbound.Core
 {
     public enum Direction { North, East, South, West }
     public enum GearKind { Core, Transmission, Booster, Output }
-    public enum GearOutputKind { None, SpawnInfantry }
+    public enum GearOutputKind { None, SpawnInfantry, FireProjectile }
     public enum NetworkState { Unpowered, Powered, Jammed, Conflicted }
 
     [Serializable]
@@ -23,9 +23,17 @@ namespace Gearbound.Core
         public int RotationQuarterTurns;
         public int BaseIntervalTicks;
         public HashSet<Direction> LocalPorts;
+        /// <summary>Turret outputs only: damage and speed of each fired projectile.</summary>
+        public int ProjectileDamage;
+        public int ProjectileSpeedMmPerTick;
 
-        public GearNode(string id, GearKind kind, int x, int y, IEnumerable<Direction> ports, int baseIntervalTicks = 0, int rotationQuarterTurns = 0, string definitionId = null, int tier = 1, GearOutputKind outputKind = GearOutputKind.None, int targetLane = 1)
+        public GearNode(string id, GearKind kind, int x, int y, IEnumerable<Direction> ports, int baseIntervalTicks = 0, int rotationQuarterTurns = 0, string definitionId = null, int tier = 1, GearOutputKind outputKind = GearOutputKind.None, int targetLane = 1,
+            int projectileDamage = 0, int projectileSpeedMmPerTick = 0)
         {
+            if (outputKind == GearOutputKind.FireProjectile && (projectileDamage < 1 || projectileSpeedMmPerTick < 1))
+                throw new ArgumentOutOfRangeException(nameof(projectileDamage), "Projectile outputs need positive damage and speed.");
+            ProjectileDamage = projectileDamage;
+            ProjectileSpeedMmPerTick = projectileSpeedMmPerTick;
             Id = id ?? throw new ArgumentNullException(nameof(id));
             DefinitionId = definitionId ?? id;
             Kind = kind;
@@ -99,7 +107,8 @@ namespace Gearbound.Core
             { error = "The merged gear ID is already installed."; return false; }
 
             var replacement = new GearNode(newId, anchor.Kind, anchor.X, anchor.Y, anchor.LocalPorts,
-                nextTierBaseIntervalTicks, anchor.RotationQuarterTurns, anchor.DefinitionId, anchor.Tier + 1, anchor.OutputKind, anchor.TargetLane);
+                nextTierBaseIntervalTicks, anchor.RotationQuarterTurns, anchor.DefinitionId, anchor.Tier + 1, anchor.OutputKind, anchor.TargetLane,
+                anchor.ProjectileDamage, anchor.ProjectileSpeedMmPerTick);
             cells.Remove((first.X, first.Y));
             cells.Remove((second.X, second.Y));
             cells.Add((replacement.X, replacement.Y), replacement);

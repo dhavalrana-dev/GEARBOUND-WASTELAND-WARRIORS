@@ -97,6 +97,15 @@ def main() -> int:
         require_int(where, gear, "tier", 1)
         require_int(where, gear, "cost")
         require_int(where, gear, "baseIntervalTicks")
+        if gear.get("category") == "turret":
+            proj = gear.get("projectile")
+            if not isinstance(proj, dict):
+                fail(where, "turret gears need a projectile {damage, speedMmPerTick}")
+            else:
+                require_int(where + ".projectile", proj, "damage", 1)
+                require_int(where + ".projectile", proj, "speedMmPerTick", 1)
+        elif "projectile" in gear:
+            fail(where, "only turret gears may define a projectile")
         is_output = gear.get("category") in {"infantry", "turret"}
         if is_output and gear.get("baseIntervalTicks", 0) < 1:
             fail(where, "output gears need a positive baseIntervalTicks")

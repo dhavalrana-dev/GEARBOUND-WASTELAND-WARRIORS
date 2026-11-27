@@ -74,10 +74,14 @@ CombatScenarioResult _run(
         y: g['y'] as int,
         localPorts: Direction.values.toSet(),
         baseIntervalTicks: g['intervalTicks'] as int? ?? 0,
-        outputKind: kind == 'infantry'
-            ? GearOutputKind.spawnInfantry
-            : GearOutputKind.none,
+        outputKind: switch (kind) {
+          'infantry' => GearOutputKind.spawnInfantry,
+          'turret' => GearOutputKind.fireProjectile,
+          _ => GearOutputKind.none,
+        },
         targetLane: g['targetLane'] as int? ?? 1,
+        projectileDamage: g['projectileDamage'] as int? ?? 0,
+        projectileSpeedMmPerTick: g['projectileSpeedMmPerTick'] as int? ?? 0,
       ),
     );
     if (!placed) throw StateError('Could not place ${g['id']}.');
@@ -130,6 +134,10 @@ CombatScenarioResult _run(
         ..write(';');
     }
     if (autoSpecial) line.write('sp:${session.heroSp}');
+    // Projectiles join the hash only when present (older hashes unchanged).
+    for (final p in session.combat.projectiles) {
+      line.write('P${p.id}:${p.lane}:${p.positionMm};');
+    }
     for (final unit in line.toString().codeUnits) {
       hash = ((hash ^ unit) * _fnvPrime) & _mask32;
     }

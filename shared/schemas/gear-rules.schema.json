@@ -104,6 +104,10 @@
         "queuedSpawnsPerOutput": {
           "type": "integer",
           "minimum": 0
+        },
+        "maxActiveProjectiles": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "additionalProperties": false

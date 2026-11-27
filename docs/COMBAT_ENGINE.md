@@ -1,6 +1,6 @@
 # Combat engine (implemented rules)
 
-Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSimulation.cs` + `BattleSession.cs` and `flutter/lib/combat/`. Proven by the cross-engine combat traces in `shared/test-fixtures/combat_traces.json` (6 scenarios).
+Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSimulation.cs` + `BattleSession.cs` and `flutter/lib/combat/`. Proven by the cross-engine combat traces in `shared/test-fixtures/combat_traces.json` (7 scenarios).
 
 ## Space and time
 - **Space:** lanes 0–2 and integer millimeters. Friendlies start at 0 (the fortress line) and enemies at the world length, approaching from the right.
@@ -33,8 +33,15 @@ Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSim
 - **Unit cap:** gear outputs spawn soldiers up to **4 friendlies per lane**. A blocked output holds one pending spawn.
 - **Waves:** multi-wave missions pause between waves (see `FLUTTER_ARCHITECTURE.md`). The mission is lost when the fortress reaches 0, and won when every scheduled enemy of the final wave is defeated.
 
+## Projectiles (turrets)
+- **Firing:** a powered turret gear (`FireProjectile` output) fires one projectile per output cycle from the fortress line (x = 0) in its lane, with `damage` and `speedMmPerTick` from the gear's `projectile` block in `starter_gears.json` (Spark Turret: 8 damage, 300 mm/tick).
+- **Cap:** at most `output.maxActiveProjectiles` (24) are alive. A capped turret holds its shot with status `UnitCapacityReached`, like a capped infantry output.
+- **Resolution:** at the start of the attack phase, in projectile ID order, each shot covers `[from, min(world, from + speed)]`. It hits the nearest living enemy in its lane inside that span (lowest position, then ID) through the normal damage formula, with attacker ID `-projectileId`, and disappears. A shot that reaches the end of the field without a hit is removed.
+- **Other lanes and friendlies** are never hit. Projectiles do not charge hero SP.
+- **Hash:** traces append `P{id}:{lane}:{pos};` per live projectile.
+
 ## Not implemented yet
 - Critical hits and other random combat rolls (they must use the shared `SeededRandom`, in a documented order, with new trace scenarios).
-- Projectiles, status effects, knockback and stun.
+- Status effects, knockback and stun. Arcing or splash projectiles (mortars).
 - Hero recovery.
 - Ranged enemy behavior beyond attack range.

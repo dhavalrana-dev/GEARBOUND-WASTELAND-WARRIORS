@@ -5,6 +5,6 @@
     { "id": "drive.coupler", "name": "Drive Coupler", "category": "transmission", "tier": 1, "rarity": "common", "ports": ["north", "east", "south", "west"], "baseIntervalTicks": 0, "cost": 2 },
     { "id": "boost.ratchet", "name": "Ratchet Booster", "category": "booster", "tier": 1, "rarity": "uncommon", "ports": ["north", "east", "south", "west"], "baseIntervalTicks": 0, "cost": 4 },
     { "id": "unit.rivetguard", "name": "Rivetguard Press", "category": "infantry", "tier": 1, "rarity": "common", "ports": ["north", "east", "south", "west"], "baseIntervalTicks": 90, "cost": 5 },
-    { "id": "turret.spark", "name": "Spark Turret", "category": "turret", "tier": 1, "rarity": "rare", "ports": ["north", "east", "south", "west"], "baseIntervalTicks": 45, "cost": 6 }
+    { "id": "turret.spark", "name": "Spark Turret", "category": "turret", "tier": 1, "rarity": "rare", "ports": ["north", "east", "south", "west"], "baseIntervalTicks": 45, "cost": 6, "projectile": { "damage": 8, "speedMmPerTick": 300 } }
   ]
 }

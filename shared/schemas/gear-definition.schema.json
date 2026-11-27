@@ -74,6 +74,25 @@
           "cost": {
             "type": "integer",
             "minimum": 0
+          },
+          "projectile": {
+            "type": "object",
+            "required": [
+              "damage",
+              "speedMmPerTick"
+            ],
+            "properties": {
+              "damage": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "speedMmPerTick": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false,
+            "description": "Turret output: each cycle fires one projectile down the gear's lane from the fortress line."
           }
         },
         "additionalProperties": false
