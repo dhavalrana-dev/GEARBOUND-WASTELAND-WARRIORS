@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "board": { "width": 5, "height": 5, "connectivity": "orthogonal-reciprocal-ports", "maxCores": 1 },
+  "simulation": { "ticksPerSecond": 30, "randomAlgorithm": "xorshift32-v1" },
+  "network": { "boosterBonusPercentEach": 10, "boosterBonusPercentCap": 30, "minimumOutputIntervalTicks": 1, "oddParityLoop": "jam-component", "multipleCores": "disable-component" },
+  "output": { "friendlyUnitCapPerLane": 4, "queuedSpawnsPerOutput": 1 }
+}

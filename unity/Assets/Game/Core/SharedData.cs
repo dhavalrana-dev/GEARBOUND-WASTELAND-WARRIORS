@@ -23,13 +23,19 @@ namespace Gearbound.Core
             Ports = ports.ToArray(); BaseIntervalTicks = baseIntervalTicks; Cost = cost;
         }
 
-        public GearKind Kind => Category switch
+        public GearKind Kind
         {
-            "power-core" => GearKind.Core,
-            "transmission" => GearKind.Transmission,
-            "booster" => GearKind.Booster,
-            _ => GearKind.Output,
-        };
+            get
+            {
+                switch (Category)
+                {
+                    case "power-core": return GearKind.Core;
+                    case "transmission": return GearKind.Transmission;
+                    case "booster": return GearKind.Booster;
+                    default: return GearKind.Output;
+                }
+            }
+        }
 
         public GearOutputKind OutputKind => Category == "infantry" ? GearOutputKind.SpawnInfantry : GearOutputKind.None;
     }
@@ -178,14 +184,17 @@ namespace Gearbound.Core
             return new MissionDefinition { MissionId = SharedJson.Str(root, "missionId"), Waves = waves };
         }
 
-        private static Direction ParseDirection(string port) => port switch
+        private static Direction ParseDirection(string port)
         {
-            "north" => Direction.North,
-            "east" => Direction.East,
-            "south" => Direction.South,
-            "west" => Direction.West,
-            _ => throw new FormatException($"Unknown port '{port}'."),
-        };
+            switch (port)
+            {
+                case "north": return Direction.North;
+                case "east": return Direction.East;
+                case "south": return Direction.South;
+                case "west": return Direction.West;
+                default: throw new FormatException($"Unknown port '{port}'.");
+            }
+        }
 
         private static void RequireUniqueIds(IEnumerable<string> ids, string what)
         {

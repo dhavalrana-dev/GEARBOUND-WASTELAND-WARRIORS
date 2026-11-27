@@ -16,6 +16,13 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 3 (combat parity, widget tests, shared assets)
+- **Cross-engine combat parity (spec scenario 4): verified for 4 scenarios.** `tools/simulation/generate_combat_traces.ps1` compiles the Unity Core sources with Unity's bundled Mono and writes `combat_traces.json`. The Dart runner reproduces every per-tick FNV-1a trace hash, checkpoint and outcome exactly, covering 2 victories, 2 defeats, a boss wave, boosters, an unpowered gear and hero lane commands. Unity replays the same file in-editor.
+- Unity EditMode: **passed, 28/28**. Flutter analyze: no issues. Flutter tests: **passed, 44/44** (adds 3 widget tests, 3 shared-content tests and 1 combat-parity test).
+- The widget tests exercise the hub rewards card (Supply Log claim, star chest) and the workshop Vanguard toggle. That is test-harness rendering only; the UI is still not checked on a real device or emulator.
+- Validator, `reference_rules.py --check`, `sync_flutter_shared.py --check` and `generate_combat_traces.ps1 -Check`: all pass.
+- Unity Core no longer uses C# 8 switch expressions, so it compiles with both Unity's compiler and Mono `mcs`.
+
 ### 2026-11-27 session 2 (shared rules + gamification)
 - Unity Test Framework EditMode: **passed, 27/27** (`artifacts/unity-editmode.xml`, Unity 6000.3.27f1 batchmode, ~26 s warm). It includes 7 shared-rule tests that replay the Python-generated fixtures. The first cold run passed 20/20 in 78 s; the earlier 120 s timeout was a tool limit, not a hang.
 - One new Unity test initially failed in a useful way. On shared mission wave 1, a single press feeding lane 1 with an idle hero **loses**, because raiders in lanes 0 and 2 go unopposed. This is kept as an intended-pressure test, and covering lanes 0 and 2 wins.
@@ -44,6 +51,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter UI wiring now starts the first wave, shows current phase/enemy count, locks workshop edits during combat, and allows the hero to change lanes.
 - Flutter Android packaging remains blocked until the Android SDK/NDK license is accepted; no license was accepted in this session. iOS packaging requires a macOS host.
 - The campaign prototype is committed (`6ca78c0`); session 2 work is uncommitted until reviewed.
-- Shared JSON is loaded in Unity through a small dependency-free reader (`SharedJson.cs`), not a package, which keeps `Gearbound.Core` engine-independent. Flutter tests read `../shared` directly. Bundling shared JSON as Flutter runtime assets is still a todo, so the Flutter campaign still uses `encounters.dart` for its waves.
+- Shared JSON is loaded in Unity through a small dependency-free reader (`SharedJson.cs`), not a package, which keeps `Gearbound.Core` engine-independent.
+- Flutter now bundles runtime shared JSON under `flutter/assets/shared` (synced by `tools/build/sync_flutter_shared.py`; a test fails on drift). Route node `copperwash-01` loads its wave from `shared/missions/campaign_route.json` → `mission_001.json` `wave.1`, with a test showing the spawns are identical to the old script. The other 11 nodes still use `encounters.dart`.
 - Gamification is earn-only and offline: see `docs/GAMIFICATION_AND_EVENTS.md`.
 - Campaign and Scrapstorm state save locally through `shared_preferences`; balance playtests, widget-level interaction tests, and mobile-device validation are still outstanding.

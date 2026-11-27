@@ -25,12 +25,18 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Gear network, rotation parity, booster cap | Yes | Yes | network_cases (descriptive) |
 | Merge | Yes | Yes | — |
 | Output clocks and lane unit cap | Yes | Yes | — |
-| Lane combat and battle session | Yes | Yes | — |
+| Lane combat and battle session | Yes | Yes | combat_traces ✔ both |
 | Seeded random | Yes | Yes | random_vectors ✔ both |
 | Shop roll / reroll cost / sell value | Yes | Yes (no UI yet) | shop_cases ✔ both |
-| Wave director from shared JSON | Yes | Yes (rules only; campaign UI still uses `encounters.dart`) | mission_001_spawns ✔ both |
+| Wave director from shared JSON | Yes | Yes (runtime assets; route node 1 migrated) | mission_001_spawns ✔ both |
 | Campaign route, stars, contracts, weekly event | No | Yes | — |
 | Streak, star chests, Supply Log, boosters | No | Yes | progression_rewards.json ↔ Dart constants |
 | Presentation / input | No | Prototype | — |
 
-Identical combat results across engines (spec scenario 4) are **not yet verified**. A shared combat trace fixture is the next parity task.
+## Combat trace parity (spec scenario 4)
+
+`shared/test-fixtures/combat_scenarios.json` holds hand-written inputs: board, wave, world length and hero commands. `tools/simulation/generate_combat_traces.ps1` runs the Unity Core sources under Unity's bundled Mono and writes `combat_traces.json`.
+
+Each tick, both runners hash `tick|phase|fortress|` plus `id:lane:pos:hp:shield:state;` for every combatant in ID order, using 32-bit FNV-1a. A checkpoint hash every 30 ticks locates the first point of divergence.
+
+**Status:** all 4 scenarios match exactly in Dart and in the Unity editor (verified 2026-11-27). Combat currently uses no randomness. When critical hits or other random effects arrive, they must draw from `SeededRandom` in a documented order, and new scenarios must cover them.

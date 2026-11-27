@@ -128,6 +128,18 @@ def main() -> int:
             if not lanes or any(lane not in (0, 1, 2) for lane in lanes):
                 fail(where, "lanePattern must contain lanes 0-2")
 
+    route = load("missions/campaign_route.json")
+    if route is not None:
+        for node in route.get("nodes", []):
+            where = f"missions/campaign_route.json[{node.get('id')}]"
+            target = SHARED / node.get("mission", "")
+            if not target.is_file():
+                fail(where, f"mission file {node.get('mission')!r} does not exist")
+                continue
+            wave_ids = {w["id"] for w in json.loads(target.read_text(encoding="utf-8"))["waves"]}
+            if node.get("waveId") not in wave_ids:
+                fail(where, f"waveId {node.get('waveId')!r} not found in {node.get('mission')}")
+
     rewards = load("events/progression_rewards.json")
     if rewards is not None:
         where = "events/progression_rewards.json"

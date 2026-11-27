@@ -1,12 +1,18 @@
 import '../combat/battle_session.dart';
+import '../data/shared_content.dart';
 
 /// Hand-authored starter route scripts. Later nodes use a deterministic
 /// escalation fallback until their encounters receive their own content pass.
-WaveDefinition encounterForLevel(int levelIndex) {
+///
+/// When [content] is supplied, nodes listed in shared/missions/campaign_route.json
+/// use the shared mission data instead of the scripts below.
+WaveDefinition encounterForLevel(int levelIndex, {SharedContent? content}) {
   if (levelIndex < 0 || levelIndex >= 12) {
     throw RangeError.range(levelIndex, 0, 11, 'levelIndex');
   }
   final id = campaignEncounterIds[levelIndex];
+  final shared = content?.encounterFor(id);
+  if (shared != null) return shared;
   final spawns = switch (levelIndex) {
     0 => [
       _spawn(0, 0, 32, 0, 6, 60),
