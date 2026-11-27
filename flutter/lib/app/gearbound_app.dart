@@ -10,6 +10,7 @@ import '../mechanical/gear_network.dart';
 import '../progression/campaign_progress.dart';
 import '../progression/encounters.dart';
 import '../progression/campaign_store.dart';
+import '../progression/rewards.dart';
 
 const _ink = Color(0xFF1B2228);
 const _panel = Color(0xFF28333A);
@@ -96,6 +97,12 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 18),
               sliver: SliverToBoxAdapter(
                 child: _EventCard(progress: progress, onClaim: _save),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
+              sliver: SliverToBoxAdapter(
+                child: _RewardsCard(progress: progress, onClaim: _save),
               ),
             ),
             SliverPadding(
@@ -578,6 +585,8 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
   late final BattleSession _session;
   late GearNetworkResult _network;
   bool _resultRecorded = false;
+  bool _useVanguard = false;
+  int _openingSoldiers = 0;
 
   @override
   void initState() {
@@ -604,6 +613,11 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
           campaignLevels[widget.levelIndex].id,
           stars,
         );
+        unawaited(widget.onProgressSaved(widget.progress));
+      }
+      if (_session.phase == BattlePhase.defeat && !_resultRecorded) {
+        _resultRecorded = true;
+        widget.progress.recordDefeat();
         unawaited(widget.onProgressSaved(widget.progress));
       }
       if (mounted) setState(() {});
@@ -671,9 +685,44 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
           .where((node) => node.state == NetworkState.powered)
           .length,
     );
+    if (_session.phase != BattlePhase.preparation) return;
+    final vanguard =
+        _useVanguard && widget.progress.consumeBooster(vanguardBoosterId);
+    final lanes = openingSoldierLanes(
+      streakLevel: widget.progress.winStreak,
+      vanguard: vanguard,
+    );
+    for (var i = 0; i < lanes.length; i++) {
+      // Same stats as a Rivetguard Press soldier; IDs 90000+ are reserved for
+      // opening reinforcements so they never collide with outputs or enemies.
+      _session.combat.add(
+        Combatant(
+          id: 90000 + i,
+          faction: CombatFaction.friendly,
+          lane: lanes[i],
+          positionMm: 0,
+          health: 30,
+          armor: 1,
+          damage: 5,
+          attackRangeMm: 250,
+          movementMmPerTick: 40,
+          attackIntervalTicks: 24,
+        ),
+      );
+    }
+    _openingSoldiers = lanes.length;
     unawaited(widget.onProgressSaved(widget.progress));
     if (_game.startWave()) setState(() {});
   }
+
+  Widget _loadout() => _LoadoutBar(
+    streakLevel: widget.progress.winStreak,
+    vanguardOwned: widget.progress.boosterCount(vanguardBoosterId),
+    useVanguard: _useVanguard,
+    deployedSoldiers: _openingSoldiers,
+    isPreparation: _session.phase == BattlePhase.preparation,
+    onToggleVanguard: (value) => setState(() => _useVanguard = value),
+  );
 
   Future<void> _returnToRoute() async {
     await widget.onProgressSaved(widget.progress);
@@ -722,7 +771,9 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
           phase: _session.phase,
           onRotate: _rotateOutput,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
+        _loadout(),
+        const SizedBox(height: 8),
         _Actions(
           onMovePress: _movePress,
           onLaneDown: () => _moveHero(-1),
@@ -774,7 +825,9 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
                 phase: _session.phase,
                 onRotate: _rotateOutput,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
+              _loadout(),
+              const SizedBox(height: 8),
               _Actions(
                 onMovePress: _movePress,
                 onLaneDown: () => _moveHero(-1),
@@ -982,3 +1035,200 @@ String _phaseLabel(BattlePhase phase) => switch (phase) {
   BattlePhase.victory => 'CLEAR',
   BattlePhase.defeat => 'DEFEAT',
 };
+
+class _RewardsCard extends StatelessWidget {
+  const _RewardsCard({required this.progress, required this.onClaim});
+  final CampaignProgress progress;
+  final VoidCallback onClaim;
+
+  @override
+  Widget build(BuildContext context) {
+    final canLogin = progress.canClaimLogin();
+    final day = progress.loginStep % loginTrackDays.length + 1;
+    final nextChest = starChests
+        .where((chest) => !progress.claimedStarChests.contains(chest.stars))
+        .firstOrNull;
+    final chestReady =
+        nextChest != null && progress.canClaimStarChest(nextChest.stars);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _panel,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.speed, color: _amber, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${winStreakName.toUpperCase()} · LEVEL ${progress.winStreak}/$winStreakMaxLevel',
+                  style: const TextStyle(
+                    color: _cream,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+              for (var i = 0; i < winStreakMaxLevel; i++)
+                Padding(
+                  padding: const EdgeInsets.only(left: 3),
+                  child: Icon(
+                    Icons.bolt,
+                    size: 16,
+                    color: i < progress.winStreak ? _amber : Colors.white12,
+                  ),
+                ),
+            ],
+          ),
+          const Text(
+            'Each win in a row adds a free soldier at wave start. A defeat resets the streak.',
+            style: TextStyle(color: Colors.white54, fontSize: 10),
+          ),
+          const Divider(color: Colors.white12, height: 18),
+          _RewardRow(
+            icon: Icons.calendar_today,
+            title: '$loginTrackName · Day $day',
+            detail: describeReward(progress.nextLoginReward),
+            actionLabel: canLogin ? 'CLAIM' : 'TOMORROW',
+            onAction: canLogin
+                ? () {
+                    if (progress.claimLogin()) onClaim();
+                  }
+                : null,
+          ),
+          const SizedBox(height: 6),
+          _RewardRow(
+            icon: Icons.inventory_2,
+            title: nextChest == null
+                ? 'All star chests opened'
+                : 'Star chest · ${progress.totalStars}/${nextChest.stars}★',
+            detail: nextChest == null ? '' : describeReward(nextChest.reward),
+            actionLabel: chestReady ? 'OPEN' : 'LOCKED',
+            onAction: chestReady
+                ? () {
+                    if (progress.claimStarChest(nextChest.stars)) onClaim();
+                  }
+                : null,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Boosters: ${progress.boosterCount(vanguardBoosterId)}× Vanguard Drop · earned only, never sold',
+            style: const TextStyle(color: Colors.white60, fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RewardRow extends StatelessWidget {
+  const _RewardRow({
+    required this.icon,
+    required this.title,
+    required this.detail,
+    required this.actionLabel,
+    required this.onAction,
+  });
+  final IconData icon;
+  final String title;
+  final String detail;
+  final String actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, color: _cream, size: 18),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: _cream,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+            if (detail.isNotEmpty)
+              Text(
+                detail,
+                style: const TextStyle(color: Colors.white60, fontSize: 10),
+              ),
+          ],
+        ),
+      ),
+      OutlinedButton(
+        onPressed: onAction,
+        style: OutlinedButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          minimumSize: const Size(72, 36),
+          foregroundColor: _cream,
+          side: BorderSide(color: onAction != null ? _amber : Colors.white24),
+        ),
+        child: Text(
+          actionLabel,
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+        ),
+      ),
+    ],
+  );
+}
+
+class _LoadoutBar extends StatelessWidget {
+  const _LoadoutBar({
+    required this.streakLevel,
+    required this.vanguardOwned,
+    required this.useVanguard,
+    required this.deployedSoldiers,
+    required this.isPreparation,
+    required this.onToggleVanguard,
+  });
+  final int streakLevel;
+  final int vanguardOwned;
+  final bool useVanguard;
+  final int deployedSoldiers;
+  final bool isPreparation;
+  final ValueChanged<bool> onToggleVanguard;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    decoration: BoxDecoration(
+      color: _panel,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.speed, color: _amber, size: 18),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            isPreparation
+                ? 'Streak $streakLevel: +$streakLevel soldier${streakLevel == 1 ? '' : 's'} at start'
+                : '$deployedSoldiers opening soldier${deployedSoldiers == 1 ? '' : 's'} deployed',
+            style: const TextStyle(color: _cream, fontSize: 11),
+          ),
+        ),
+        if (isPreparation) ...[
+          Text(
+            'Vanguard ×$vanguardOwned',
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
+          Switch(
+            value: useVanguard && vanguardOwned > 0,
+            onChanged: vanguardOwned > 0 ? onToggleVanguard : null,
+            activeThumbColor: _amber,
+          ),
+        ],
+      ],
+    ),
+  );
+}

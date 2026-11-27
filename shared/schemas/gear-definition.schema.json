@@ -3,22 +3,78 @@
   "$id": "https://gearbound.invalid/schemas/gear-definition.schema.json",
   "title": "Gearbound gear definition",
   "type": "object",
-  "required": ["schemaVersion", "gears"],
+  "required": [
+    "schemaVersion",
+    "gears"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "gears": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "category", "tier", "ports", "baseIntervalTicks", "cost"],
+        "required": [
+          "id",
+          "name",
+          "category",
+          "tier",
+          "rarity",
+          "ports",
+          "baseIntervalTicks",
+          "cost"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$" },
-          "name": { "type": "string", "minLength": 1 },
-          "category": { "enum": ["power-core", "transmission", "booster", "infantry", "turret"] },
-          "tier": { "type": "integer", "minimum": 1, "maximum": 3 },
-          "ports": { "type": "array", "uniqueItems": true, "items": { "enum": ["north", "east", "south", "west"] } },
-          "baseIntervalTicks": { "type": "integer", "minimum": 0 },
-          "cost": { "type": "integer", "minimum": 0 }
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "enum": [
+              "power-core",
+              "transmission",
+              "booster",
+              "infantry",
+              "turret"
+            ]
+          },
+          "tier": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "rarity": {
+            "enum": [
+              "common",
+              "uncommon",
+              "rare"
+            ]
+          },
+          "ports": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "north",
+                "east",
+                "south",
+                "west"
+              ]
+            }
+          },
+          "baseIntervalTicks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cost": {
+            "type": "integer",
+            "minimum": 0
+          }
         },
         "additionalProperties": false
       }

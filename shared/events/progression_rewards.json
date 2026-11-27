@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "boosters": [
+    { "id": "booster.vanguard", "name": "Vanguard Drop", "description": "One Rivetguard soldier waits in every lane when the wave starts.", "maxStack": 9 }
+  ],
+  "winStreak": {
+    "name": "Overclock Streak",
+    "maxLevel": 3,
+    "resetOnDefeat": true,
+    "streakSoldierLaneOrder": [1, 0, 2]
+  },
+  "starChests": [
+    { "stars": 6, "scrap": 10, "boosters": { "booster.vanguard": 1 } },
+    { "stars": 12, "scrap": 15, "boosters": { "booster.vanguard": 1 } },
+    { "stars": 18, "scrap": 20, "boosters": { "booster.vanguard": 2 } },
+    { "stars": 24, "scrap": 25, "boosters": { "booster.vanguard": 2 } },
+    { "stars": 30, "scrap": 30, "boosters": { "booster.vanguard": 3 } },
+    { "stars": 36, "scrap": 40, "boosters": { "booster.vanguard": 3 } }
+  ],
+  "loginTrack": {
+    "name": "Supply Log",
+    "missedDaysReset": false,
+    "days": [
+      { "scrap": 3, "boosters": {} },
+      { "scrap": 0, "boosters": { "booster.vanguard": 1 } },
+      { "scrap": 5, "boosters": {} },
+      { "scrap": 5, "boosters": {} },
+      { "scrap": 0, "boosters": { "booster.vanguard": 1 } },
+      { "scrap": 8, "boosters": {} },
+      { "scrap": 4, "boosters": { "booster.vanguard": 2 } }
+    ]
+  },
+  "dailyContracts": [
+    { "id": "daily-win", "title": "Clear a route", "target": 1, "scrapReward": 5 },
+    { "id": "daily-power", "title": "Power gears in one setup", "target": 4, "scrapReward": 4 },
+    { "id": "daily-command", "title": "Shift Rivet between lanes", "target": 3, "scrapReward": 4 }
+  ],
+  "weeklyEventTiers": [
+    { "points": 3, "scrap": 5 },
+    { "points": 6, "scrap": 8 },
+    { "points": 10, "scrap": 12 }
+  ]
+}

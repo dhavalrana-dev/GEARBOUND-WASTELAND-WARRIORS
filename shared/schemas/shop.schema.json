@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gearbound.invalid/schemas/shop.schema.json",
+  "title": "Gearbound preparation-phase gear shop",
+  "type": "object",
+  "required": ["schemaVersion", "offerCount", "maxCopiesPerOffer", "rarityWeights", "excludedCategories", "guaranteedCategory", "reroll", "sellRefundPercent", "startingScrap"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "offerCount": { "type": "integer", "minimum": 1, "maximum": 6 },
+    "maxCopiesPerOffer": { "type": "integer", "minimum": 1 },
+    "rarityWeights": {
+      "type": "object",
+      "required": ["common", "uncommon", "rare"],
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "excludedCategories": { "type": "array", "items": { "type": "string" } },
+    "guaranteedCategory": { "type": "string" },
+    "reroll": {
+      "type": "object",
+      "required": ["baseCost", "costStep", "costCap"],
+      "properties": {
+        "baseCost": { "type": "integer", "minimum": 0 },
+        "costStep": { "type": "integer", "minimum": 0 },
+        "costCap": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "sellRefundPercent": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "startingScrap": { "type": "integer", "minimum": 0 }
+  },
+  "additionalProperties": false
+}

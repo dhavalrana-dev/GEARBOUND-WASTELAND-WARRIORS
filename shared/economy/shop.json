@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "offerCount": 3,
+  "maxCopiesPerOffer": 2,
+  "rarityWeights": { "common": 70, "uncommon": 25, "rare": 5 },
+  "excludedCategories": ["power-core"],
+  "guaranteedCategory": "transmission",
+  "reroll": { "baseCost": 1, "costStep": 1, "costCap": 5 },
+  "sellRefundPercent": 50,
+  "startingScrap": 12
+}

@@ -19,3 +19,11 @@ Statuses: `todo`, `in progress`, `blocked`, `done`. A task is done only after it
 | GB-013 | P1 | Add campaign route, unlocks, and star ratings | GB-011 | Cleared nodes unlock in order; best score survives app restart | Progression model tests and route UI | in progress |
 | GB-014 | P1 | Add daily contracts and weekly event track | GB-013 | Tasks reset by day; weekly best scores and reward claims cannot be farmed | Event/task boundary tests | in progress |
 | GB-015 | P1 | Author and balance the first five route encounters | GB-013 | Distinct enemy scripts, star thresholds, and optional objectives | Encounter data and playtest notes | in progress |
+| GB-016 | P0 | Shared seeded RNG with test vectors | GB-003 | C# and Dart reproduce Python reference vectors | random_vectors.json; Unity + Dart tests | done |
+| GB-017 | P0 | Seeded gear shop (weights, copies, locks, guarantee, reroll cost) | GB-016 | Both engines match shop_cases.json | GearShop.cs, shared_rules.dart, tests | done (rules); Flutter shop UI todo |
+| GB-018 | P0 | Data-driven wave director and enemy archetypes | GB-003 | Both engines expand mission_001 identically | enemies.json, mission_001_spawns.json, tests | done (rules); campaign UI migration todo |
+| GB-019 | P1 | Shared data validator and fixture freshness check | GB-003 | Validator and `--check` run clean | tools/data-validation, tools/simulation | done |
+| GB-020 | P1 | Earn-only gamification: streak, star chests, Supply Log, boosters | GB-013 | Rules tested; JSON↔Dart parity test; offline, no paid randomness | rewards.dart, rewards_test.dart, hub/workshop UI | in progress (UI not device-verified) |
+| GB-021 | P1 | Bundle shared JSON as Flutter assets and drive campaign waves from it | GB-018 | Flutter campaign loads shared missions at runtime | asset sync tool + tests | todo |
+| GB-022 | P1 | Cross-engine combat trace fixture (spec scenario 4) | GB-016 | Same seed/config gives identical combat event trace in both engines | combat trace fixture | todo |
+| GB-023 | P2 | Achievements and rotating weekly event rule sets | GB-020 | Data-driven, offline, cosmetic/earn-only rewards | progression_rewards.json extension | todo |

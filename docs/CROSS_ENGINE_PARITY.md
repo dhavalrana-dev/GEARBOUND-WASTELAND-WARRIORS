@@ -1,7 +1,36 @@
 # Cross-engine parity contract
 
-Shared JSON files under `shared/` are the source of truth for board dimensions, tick rate, booster caps, gear IDs, and authored wave schedules. Both implementations must load the same `schemaVersion`, process integer ticks at 30 Hz, and use the same stable identifiers.
+Shared JSON under `shared/` is the source of truth. Both engines load the same `schemaVersion`, run integer ticks at 30 Hz, and use the same stable identifiers.
 
-Initial fixtures cover: connected output, disconnect after transmission removal, tier merge, capped booster output, and consistent even-loop parity. A 5×5 orthogonal grid is bipartite, so odd loops cannot be authored until a non-grid link is introduced; if that changes, the jam rule remains in force.
+## Fixture pipeline
 
-Unity currently has the first implementation. The Dart/Flame implementation is not yet scaffolded because the local Flutter and Dart version commands did not return; verify the installed SDK before adding dependencies. Do not claim parity until both runners emit comparable states for the same fixture inputs.
+`tools/simulation/reference_rules.py` is an independent Python implementation of the shared random algorithm, shop roll and wave expansion. It writes:
+
+- `shared/test-fixtures/random_vectors.json`: `xorshift32-v1` sequences (seeds 1, 42, 0, 2463534242, 4294967295) and `NextInt` mapping.
+- `shared/test-fixtures/shop_cases.json`: seeded shop rolls (locks, unlock filters, connectivity guarantee) and reroll costs.
+- `shared/test-fixtures/mission_001_spawns.json`: the expanded spawn schedule for `waves/mission_001.json`.
+
+Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures match the current data. C# (`SharedRulesTests`) and Dart (`test/data/shared_rules_test.dart`) each replay the fixtures.
+
+## Shared algorithms
+
+- **Random (`xorshift32-v1`)**: shifts 13/17/5 on a uint32 state. Seed 0 is replaced by `0x9E3779B9`. `NextInt(n) = (NextUint() * n) >> 32`, one draw per call, no rejection loop (bias below 2^-31 per call for small n, accepted). The Dart version needs 64-bit ints, so web is unsupported.
+- **Shop roll**: the pool is non-excluded, unlocked gears with positive rarity weight, ordered by ordinal ID. Each unlocked slot draws once among pool entries under the per-offer copy cap. Then, if the board and offers both lack the guaranteed category, the last unlocked slot becomes that category's cheapest gear. The guarantee uses no RNG.
+- **Wave expansion**: spawn k of a group fires at `firstSpawnTick + k·intervalTicks` in lane `lanePattern[k mod len]`. Order is by tick, lane, group index, then k.
+
+## Feature parity matrix
+
+| Feature | Unity (C#) | Flutter (Dart) | Shared fixture |
+|---|---|---|---|
+| Gear network, rotation parity, booster cap | Yes | Yes | network_cases (descriptive) |
+| Merge | Yes | Yes | — |
+| Output clocks and lane unit cap | Yes | Yes | — |
+| Lane combat and battle session | Yes | Yes | — |
+| Seeded random | Yes | Yes | random_vectors ✔ both |
+| Shop roll / reroll cost / sell value | Yes | Yes (no UI yet) | shop_cases ✔ both |
+| Wave director from shared JSON | Yes | Yes (rules only; campaign UI still uses `encounters.dart`) | mission_001_spawns ✔ both |
+| Campaign route, stars, contracts, weekly event | No | Yes | — |
+| Streak, star chests, Supply Log, boosters | No | Yes | progression_rewards.json ↔ Dart constants |
+| Presentation / input | No | Prototype | — |
+
+Identical combat results across engines (spec scenario 4) are **not yet verified**. A shared combat trace fixture is the next parity task.
