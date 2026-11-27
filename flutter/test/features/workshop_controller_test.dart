@@ -5,6 +5,7 @@ import 'package:gearbound/combat/battle_session.dart';
 import 'package:gearbound/combat/combat_simulation.dart';
 import 'package:gearbound/data/shared_rules.dart';
 import 'package:gearbound/economy/economy_rules.dart';
+import 'package:gearbound/economy/wallet.dart';
 import 'package:gearbound/features/workshop/workshop_controller.dart';
 import 'package:gearbound/mechanical/gear_network.dart';
 
@@ -170,8 +171,8 @@ void main() {
     expect(c.sellSelected(), WorkshopAction.locked);
   });
 
-  test('the starter board alone holds the first route node with hero help', () {
-    // Not a balance guarantee: documents that the opening loadout is viable.
+  test('starter press plus two side presses wins route node 1 wave 1', () {
+    // Not a balance guarantee; see mission_balance_test.dart for the measured guards.
     final c = make();
     c.board.place(
       GearNode(
@@ -212,6 +213,196 @@ void main() {
     }
     expect(session.phase, BattlePhase.victory);
     expect(c.wallet.balance(Currency.alloy), 0);
+  });
+
+  group('drag, move, undo and preview', () {
+    test('dragging a gear to an empty cell moves it and re-lanes it', () {
+      final w = make();
+      final press = w.board.at(1, 2)!;
+      expect(w.drop((x: 1, y: 2), (x: 1, y: 1)), WorkshopAction.ok);
+      final moved = w.board.at(1, 1)!;
+      expect(moved.id, press.id);
+      expect(moved.targetLane, rules.laneForRow(1));
+      expect(w.board.at(1, 2), isNull);
+      expect(w.battleScrap, shop.startingScrap); // moving is free
+    });
+
+    test('dragging onto an identical gear merges; onto another is refused', () {
+      final w = withOffer('unit.rivetguard');
+      w.buy(w.offers.indexOf('unit.rivetguard'));
+      w.tapCell(2, 2);
+      expect(w.drop((x: 2, y: 2), (x: 1, y: 2)), WorkshopAction.ok);
+      expect(w.board.at(1, 2)!.tier, 2);
+      expect(w.board.at(2, 2), isNull);
+      expect(w.drop((x: 1, y: 2), (x: 0, y: 2)), WorkshopAction.occupied);
+      expect(w.board.at(1, 2)!.tier, 2);
+    });
+
+    test('board drags are refused while a purchase is in hand', () {
+      final w = withOffer('drive.coupler');
+      w.buy(w.offers.indexOf('drive.coupler'));
+      expect(w.drop((x: 1, y: 2), (x: 3, y: 3)), WorkshopAction.handFull);
+      expect(w.board.at(1, 2), isNotNull);
+    });
+
+    test('undo reverts place, move and merge in reverse order', () {
+      final w = withOffer('unit.rivetguard');
+      w.buy(w.offers.indexOf('unit.rivetguard'));
+      w.tapCell(2, 2); // place
+      w.drop((x: 2, y: 2), (x: 2, y: 3)); // move
+      w.drop((x: 2, y: 3), (x: 3, y: 3)); // move again
+      expect(w.undo(), WorkshopAction.ok);
+      expect(w.board.at(2, 3)?.definitionId, 'unit.rivetguard');
+      expect(w.undo(), WorkshopAction.ok);
+      expect(w.board.at(2, 2)?.definitionId, 'unit.rivetguard');
+      expect(w.undo(), WorkshopAction.ok); // un-place: gear returns to hand
+      expect(w.board.at(2, 2), isNull);
+      expect(w.hand?.id, 'unit.rivetguard');
+      expect(w.undo(), WorkshopAction.nothingToUndo);
+      expect(w.cancelHand(), WorkshopAction.ok);
+      expect(w.battleScrap, shop.startingScrap);
+    });
+
+    test('undoing a merge restores both tier-1 gears', () {
+      final w = withOffer('unit.rivetguard');
+      w.buy(w.offers.indexOf('unit.rivetguard'));
+      w.tapCell(1, 3);
+      w.drop((x: 1, y: 3), (x: 1, y: 2));
+      expect(w.board.at(1, 2)!.tier, 2);
+      w.undo();
+      expect(w.board.at(1, 2)!.tier, 1);
+      expect(w.board.at(1, 3)!.tier, 1);
+    });
+
+    test('undoing a sale charges the refund back through the ledger', () {
+      final w = make();
+      w.tapCell(1, 2);
+      w.sellSelected();
+      final refund = 5 * shop.sellRefundPercent ~/ 100;
+      expect(w.battleScrap, shop.startingScrap + refund);
+      expect(w.undo(), WorkshopAction.ok);
+      expect(w.board.at(1, 2)?.definitionId, 'unit.rivetguard');
+      expect(w.battleScrap, shop.startingScrap);
+      expect(
+        w.wallet.ledger.where((e) => e.source == 'undo_sell').single.amount,
+        -refund,
+      );
+    });
+
+    test('cannot undo a sale after spending its refund (no free gears)', () {
+      final w = make();
+      w.tapCell(1, 2);
+      w.sellSelected();
+      final refund = 5 * shop.sellRefundPercent ~/ 100;
+      // Spend everything except one scrap, so the refund cannot be returned.
+      w.wallet.apply(
+        TxnRequest(
+          idempotencyKey: 'test-spend',
+          type: 'spend',
+          source: 'test',
+          deltas: [TxnDelta(Currency.battleScrap, -(w.battleScrap - 1))],
+        ),
+      );
+      expect(w.battleScrap, lessThan(refund));
+      expect(w.undo(), WorkshopAction.insufficientScrap);
+      expect(w.board.at(1, 2), isNull);
+      expect(w.canUndo, isTrue); // still available once scrap is back
+    });
+
+    test('rerolls and buys are not undoable', () {
+      final w = make();
+      w.reroll();
+      expect(w.undo(), WorkshopAction.nothingToUndo);
+      expect(w.battleScrap, shop.startingScrap - 1);
+    });
+
+    test('undo is refused while another purchase is in hand', () {
+      final w = withOffer('drive.coupler');
+      w.buy(w.offers.indexOf('drive.coupler'));
+      w.tapCell(2, 2);
+      final other = w.offers.indexWhere(
+        (id) => id != null && w.definitionFor(id).cost <= w.battleScrap,
+      );
+      if (other == -1) return; // seed-dependent; covered elsewhere
+      w.buy(other);
+      expect(w.undo(), WorkshopAction.handFull);
+      expect(w.board.at(2, 2), isNotNull);
+    });
+
+    test('lock clears the undo stack', () {
+      final w = make();
+      w.drop((x: 1, y: 2), (x: 1, y: 1));
+      expect(w.canUndo, isTrue);
+      w.lock();
+      expect(w.canUndo, isFalse);
+      expect(w.undo(), WorkshopAction.locked);
+    });
+
+    test(
+      'preview reports power, lane and interval without changing the board',
+      () {
+        final w = withOffer('unit.rivetguard');
+        w.buy(w.offers.indexOf('unit.rivetguard'));
+        final before = w.board.nodes.length;
+        final near = w.previewAt(0, 1);
+        expect(near.valid, isTrue);
+        expect(near.state, NetworkState.powered);
+        expect(near.lane, rules.laneForRow(1));
+        expect(near.intervalTicks, 90);
+        final far = w.previewAt(4, 4);
+        expect(far.state, NetworkState.unpowered);
+        expect(w.previewAt(0, 2).valid, isFalse); // core cell
+        expect(w.previewAt(1, 2).valid, isTrue); // identical press: merge
+        expect(w.board.nodes.length, before);
+      },
+    );
+
+    test('preview for a dragged gear excludes it from its old cell', () {
+      final w = make();
+      final p = w.previewAt(1, 1, from: (x: 1, y: 2));
+      expect(p.valid, isTrue);
+      expect(p.state, NetworkState.unpowered); // (1,1) has no powered neighbour
+      expect(w.previewAt(0, 1, from: (x: 1, y: 2)).state, NetworkState.powered);
+    });
+  });
+
+  group('intermission', () {
+    test('reopens the shop with the wave reward, fresh offers and full price reset', () {
+      final w = make(seed: 5);
+      w.reroll();
+      w.reroll();
+      final scrapBefore = w.battleScrap;
+      w.lock();
+      expect(
+        w.beginIntermission(clearedWave: 1, rewardScrap: 4),
+        WorkshopAction.ok,
+      );
+      expect(w.locked, isFalse);
+      expect(w.battleScrap, scrapBefore + 4);
+      expect(w.rerollPrice, 1);
+      expect(w.offers.whereType<String>(), isNotEmpty);
+      expect(w.canUndo, isFalse);
+    });
+
+    test('a wave reward is paid only once even if intermission repeats', () {
+      final w = make();
+      w.lock();
+      w.beginIntermission(clearedWave: 1, rewardScrap: 4);
+      w.lock();
+      w.beginIntermission(clearedWave: 1, rewardScrap: 4);
+      expect(w.battleScrap, shop.startingScrap + 4);
+    });
+
+    test('the board survives the intermission unchanged', () {
+      final w = make();
+      final before = [for (final n in w.board.nodes) '${n.id}@${n.x},${n.y}']
+        ..sort();
+      w.lock();
+      w.beginIntermission(clearedWave: 1, rewardScrap: 3);
+      final after = [for (final n in w.board.nodes) '${n.id}@${n.x},${n.y}']
+        ..sort();
+      expect(after, before);
+    });
   });
 }
 

@@ -92,6 +92,14 @@ class CombatSimulation {
     return true;
   }
 
+  /// Removes matching combatants from the field (they are not killed, so no
+  /// death is recorded). Returns how many were withdrawn. IDs stay reserved.
+  int withdraw(bool Function(Combatant unit) test) {
+    final before = _combatants.length;
+    _combatants.removeWhere(test);
+    return before - _combatants.length;
+  }
+
   bool moveLane(int combatantId, int lane) {
     if (lane < 0 || lane > 2) return false;
     for (final combatant in _combatants) {

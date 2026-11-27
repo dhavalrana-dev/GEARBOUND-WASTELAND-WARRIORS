@@ -23,7 +23,7 @@ class SharedContent {
   final List<GearDefinition> gears;
   final List<EnemyDefinition> enemies;
   final ShopConfig shop;
-  final Map<String, (List<AuthoredWave>, String)> _routeWaves;
+  final Map<String, List<AuthoredWave>> _routeWaves;
 
   static Future<SharedContent> load(AssetBundle bundle) async {
     Future<String> read(String rel) => bundle.loadString('$assetRoot/$rel');
@@ -34,17 +34,23 @@ class SharedContent {
       throw const FormatException('Unsupported campaign route schema.');
     }
     final missions = <String, List<AuthoredWave>>{};
-    final routeWaves = <String, (List<AuthoredWave>, String)>{};
+    final routeWaves = <String, List<AuthoredWave>>{};
     for (final node in (route['nodes'] as List).cast<Map<String, Object?>>()) {
       final mission = node['mission'] as String;
       final waves = missions[mission] ??= loadMissionWaves(await read(mission));
-      final waveId = node['waveId'] as String;
-      if (!waves.any((w) => w.id == waveId)) {
-        throw FormatException(
-          'Route node ${node['id']} names unknown $waveId.',
-        );
+      final waveIds = (node['waveIds'] as List).cast<String>();
+      if (waveIds.isEmpty) {
+        throw FormatException('Route node ${node['id']} has no waves.');
       }
-      routeWaves[node['id'] as String] = (waves, waveId);
+      routeWaves[node['id'] as String] = [
+        for (final id in waveIds)
+          waves.firstWhere(
+            (w) => w.id == id,
+            orElse: () => throw FormatException(
+              'Route node ${node['id']} names unknown $id.',
+            ),
+          ),
+      ];
     }
     return SharedContent._(
       routeWaves,
@@ -59,18 +65,25 @@ class SharedContent {
 
   bool hasEncounter(String nodeId) => _routeWaves.containsKey(nodeId);
 
-  /// The shared-data encounter for a route node, or null if it has not been
-  /// migrated yet.
-  WaveDefinition? encounterFor(String nodeId) {
-    final entry = _routeWaves[nodeId];
-    if (entry == null) return null;
-    final (waves, waveId) = entry;
-    final wave = waves.firstWhere((w) => w.id == waveId);
-    final built = buildWave(wave, enemies);
-    return WaveDefinition(
-      id: 'wave-$nodeId',
-      spawns: built.spawns,
-      rewardScrap: built.rewardScrap,
-    );
+  /// Every wave of a route node's shared mission, in order, or null if the
+  /// node has not been migrated yet.
+  List<WaveDefinition>? encounterWavesFor(String nodeId) {
+    final waves = _routeWaves[nodeId];
+    if (waves == null) return null;
+    return [
+      for (var i = 0; i < waves.length; i++)
+        () {
+          final built = buildWave(waves[i], enemies);
+          return WaveDefinition(
+            id: i == 0 ? 'wave-$nodeId' : 'wave-$nodeId-${i + 1}',
+            spawns: built.spawns,
+            rewardScrap: built.rewardScrap,
+          );
+        }(),
+    ];
   }
+
+  /// The first wave of a route node's shared mission, or null.
+  WaveDefinition? encounterFor(String nodeId) =>
+      encounterWavesFor(nodeId)?.first;
 }

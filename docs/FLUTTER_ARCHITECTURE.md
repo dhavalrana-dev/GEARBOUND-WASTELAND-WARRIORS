@@ -29,7 +29,11 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 1. `WorkshopController` places the starter gears from `gear_rules.json` `workshop.starterGears` and grants `shop.startingScrap` battle scrap through a mission-scoped wallet that is never saved. It then rolls seeded offers from the categories in `workshop.shopCategories`.
 2. **Buy** spends battle scrap and puts the gear in hand. **Cancel** refunds it in full. **Tapping an empty cell** places the gear, and the board row sets its lane (`workshop.outputLaneByRow`).
 3. **Tapping a gear** selects it. Tapping an identical gear of the same tier merges the two into the top-left cell, with the interval set by `merge.intervalPercentByTier`. **Sell** refunds `sellRefundPercent` of every tier-1 copy merged into the gear.
-4. **Start wave** locks the controller, refunding any gear still in hand. After that, board taps are ignored.
+4. **Drag-and-drop** (`WorkshopBoardView` with `DragCallbacks`): drag the gear in hand onto a cell to place it, or drag a placed gear to move it (free; its lane follows the new row) or onto an identical gear to merge. The target cell is tinted from `WorkshopController.previewAt`, which runs the network on a copy of the board. The core can't be dragged or dropped onto.
+5. **Undo** reverts place, move, merge and sell, last in first out, from board snapshots. Undoing a sale charges the refund back through the ledger and is refused if that scrap has been spent. Buys (use Cancel) and rerolls are deliberately not undoable.
+6. **Start wave** locks the controller, refunding any gear still in hand and clearing undo. After that, board taps and drags are ignored.
+7. **Intermission** (multi-wave missions): when a non-final wave is cleared, `BattleSession` enters `intermission`. Gear soldiers withdraw; the hero returns to the fortress line; fortress damage stays. The screen calls `WorkshopController.beginIntermission`, which pays the wave reward once per wave number through the ledger, resets the reroll price, rolls fresh offers and unlocks editing. **Start wave** then begins the next wave. The Vanguard booster and streak soldiers apply only to wave 1.
+8. **Seeds**: the workshop seeds its shop RNG with `mixSeed32(seed)` (murmur3 fmix32) to avoid xorshift32's low-entropy first outputs for small seeds.
 
 ## Layout
 - **Portrait:** the battlefield and board get 11/20 of the height; status, shop, loadout and actions scroll in the remaining 9/20.
@@ -37,7 +41,7 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 - Widget tests check for no overflow on phone landscape (2400×1080), a small portrait phone (720×1520) and tablet landscape (2732×2048).
 
 ## Not yet built
-- Drag-and-drop placement (tap-to-place only), a gear details sheet, and undo after placement.
+- A gear details sheet, and rotation (not needed until gears with partial ports exist).
 - Multi-wave missions with inter-wave preparation (GB-025).
 - Production art, animation and audio.
 - Turret, mortar and other output behaviors; the shop sells only gears whose behavior is implemented.

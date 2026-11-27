@@ -16,3 +16,5 @@
 | R-12 | Rig anatomy errors (mirrored far limbs, joint gaps) | Medium | ART_DIRECTION §10–12 rules; extreme-pose QA at ART-03 | Open |
 | R-13 | Android build blocked: no user-profile SDK, NDK version mismatch, licenses not accepted | High | TOOLCHAIN_REPORT.md option A (separate SDK, user accepts licenses) | Open, needs the owner |
 | R-14 | Two engines double the art integration cost | High | One shared manifest and metadata; one visual slice before parity work | Open |
+| R-15 | xorshift32 first outputs are low-entropy for small seeds, biasing seeded content | Medium | Derive seeds with `mixSeed32`; any new seeded system must use it | Mitigated in the workshop; Unity pending (GB-049) |
+| R-16 | Combat difficulty is bursty (lanes hold or collapse), making star tuning coarse | Medium | Probe-based tuning per node; consider combat smoothing such as knockback or armor variety | Open |

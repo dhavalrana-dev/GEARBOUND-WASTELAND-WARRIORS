@@ -67,6 +67,37 @@ enum WorkshopAction {
   maxTier,
   cannotSellCore,
   nothingSelected,
+  nothingToUndo,
+}
+
+/// What would happen if a gear were placed or moved to a cell.
+class PlacementPreview {
+  const PlacementPreview({
+    required this.valid,
+    required this.state,
+    required this.intervalTicks,
+    required this.lane,
+  });
+
+  /// False when the cell is occupied by a gear that cannot merge.
+  final bool valid;
+  final NetworkState? state;
+
+  /// Effective output interval after boosters; 0 for non-output gears.
+  final int intervalTicks;
+  final int? lane;
+}
+
+/// One undoable board edit. Buys and rerolls are deliberately not undoable:
+/// Cancel already refunds an unplaced buy, and undoing a reroll would let a
+/// player preview offers for free.
+class _UndoEntry {
+  _UndoEntry(this.board, this.hand, this.scrapGained);
+  final List<GearNode> board;
+  final GearDefinition? hand;
+
+  /// Battle scrap the edit returned (selling); undo charges it back.
+  final int scrapGained;
 }
 
 /// Preparation-phase state for one mission attempt: battle scrap (a
@@ -83,7 +114,7 @@ class WorkshopController {
     required this.shop,
     required this.rules,
     required int seed,
-  }) : _rng = SeededRandom(seed),
+  }) : _rng = SeededRandom(mixSeed32(seed)),
        seed = seed,
        wallet = Wallet(rules: defaultAssetRules(), profileId: 'mission') {
     for (final starter in rules.starterGears) {
@@ -119,6 +150,9 @@ class WorkshopController {
   ({int x, int y})? selected;
   int _nextGearNumber = 1;
   int _nextTxn = 1;
+  final List<_UndoEntry> _undo = [];
+
+  bool get canUndo => !locked && _undo.isNotEmpty;
 
   int get battleScrap => wallet.balance(Currency.battleScrap);
   int get rerollPrice => rerollCost(shop, rerollsTaken);
@@ -189,6 +223,7 @@ class WorkshopController {
     final node = board.at(x, y);
     if (gear != null) {
       if (node != null) return WorkshopAction.occupied;
+      _pushUndo();
       board.place(_node(gear, x, y, 1));
       hand = null;
       return WorkshopAction.ok;
@@ -209,6 +244,7 @@ class WorkshopController {
     }
     if (node.tier >= rules.maxTier) return WorkshopAction.maxTier;
     final definition = _definition(node.definitionId);
+    _pushUndo();
     final merged = board.merge(
       current.x,
       current.y,
@@ -232,6 +268,7 @@ class WorkshopController {
     if (cell == null || node == null) return WorkshopAction.nothingSelected;
     if (node.kind == GearKind.core) return WorkshopAction.cannotSellCore;
     final refund = selectedSellValue;
+    _pushUndo(scrapGained: refund);
     board.removeAt(cell.x, cell.y);
     if (refund > 0) _grant(refund, 'sell', node.id);
     selected = null;
@@ -242,8 +279,175 @@ class WorkshopController {
   void lock() {
     if (hand != null) cancelHand();
     selected = null;
+    _undo.clear();
     locked = true;
   }
+
+  /// Reopens the workshop between waves: pays the cleared wave's reward in
+  /// battle scrap (once per wave number, through the ledger), resets the
+  /// reroll price and rolls fresh offers. The board is kept as built.
+  WorkshopAction beginIntermission({
+    required int clearedWave,
+    required int rewardScrap,
+  }) {
+    if (!locked) return WorkshopAction.ok;
+    if (rewardScrap > 0) {
+      wallet.apply(
+        TxnRequest(
+          idempotencyKey: 'wave_reward:$clearedWave',
+          type: 'grant',
+          source: 'wave_reward',
+          referenceId: 'wave $clearedWave',
+          deltas: [TxnDelta(Currency.battleScrap, rewardScrap)],
+        ),
+      );
+    }
+    locked = false;
+    rerollsTaken = 0;
+    _rollOffers();
+    return WorkshopAction.ok;
+  }
+
+  /// Drops a dragged gear from [from] onto [to]: moves it to an empty cell,
+  /// merges it into an identical gear, or is refused. Moving is free; the
+  /// gear's lane follows its new row.
+  WorkshopAction drop(({int x, int y}) from, ({int x, int y}) to) {
+    if (locked) return WorkshopAction.locked;
+    if (hand != null) return WorkshopAction.handFull;
+    final node = board.at(from.x, from.y);
+    if (node == null) return WorkshopAction.nothingSelected;
+    if (to.x < 0 || to.y < 0 || to.x >= board.width || to.y >= board.height) {
+      return WorkshopAction.occupied;
+    }
+    if (from == to) return WorkshopAction.ok;
+    final target = board.at(to.x, to.y);
+    if (target != null) {
+      if (target.kind == GearKind.core) return WorkshopAction.occupied;
+      selected = from;
+      return tapCell(to.x, to.y);
+    }
+    _pushUndo();
+    board.removeAt(from.x, from.y);
+    board.place(_moved(node, to.x, to.y));
+    selected = to;
+    return WorkshopAction.ok;
+  }
+
+  /// Reverts the most recent place, move, merge or sell.
+  WorkshopAction undo() {
+    if (locked) return WorkshopAction.locked;
+    if (_undo.isEmpty) return WorkshopAction.nothingToUndo;
+    final entry = _undo.last;
+    if (entry.hand != null && hand != null) return WorkshopAction.handFull;
+    if (entry.scrapGained > battleScrap) {
+      return WorkshopAction.insufficientScrap;
+    }
+    if (entry.scrapGained > 0 &&
+        !_spend(entry.scrapGained, 'undo_sell', 'undo')) {
+      return WorkshopAction.insufficientScrap;
+    }
+    _undo.removeLast();
+    for (final node in board.nodes.toList()) {
+      board.removeAt(node.x, node.y);
+    }
+    for (final node in entry.board) {
+      board.place(_copy(node));
+    }
+    hand = entry.hand ?? hand;
+    selected = null;
+    return WorkshopAction.ok;
+  }
+
+  /// Network outcome of putting the hand gear, or the gear at [from], on
+  /// ([x], [y]), computed on a copy of the board.
+  PlacementPreview previewAt(int x, int y, {({int x, int y})? from}) {
+    final trial = GearBoard(width: board.width, height: board.height);
+    for (final node in board.nodes) {
+      if (from != null && node.x == from.x && node.y == from.y) continue;
+      trial.place(_copy(node));
+    }
+    final GearNode? candidate;
+    final moving = from == null ? null : board.at(from.x, from.y);
+    if (moving != null) {
+      candidate = _moved(moving, x, y);
+    } else if (hand != null) {
+      candidate = GearNode(
+        id: '__preview__',
+        definitionId: hand!.id,
+        kind: _kindOf(hand!),
+        x: x,
+        y: y,
+        localPorts: {for (final p in hand!.ports) Direction.values.byName(p)},
+        baseIntervalTicks: hand!.baseIntervalTicks,
+        outputKind: hand!.category == 'infantry'
+            ? GearOutputKind.spawnInfantry
+            : GearOutputKind.none,
+        targetLane: rules.laneForRow(y),
+      );
+    } else {
+      candidate = null;
+    }
+    if (candidate == null) {
+      return const PlacementPreview(
+        valid: false,
+        state: null,
+        intervalTicks: 0,
+        lane: null,
+      );
+    }
+    final occupant = trial.at(x, y);
+    if (occupant != null) {
+      final mergeable =
+          occupant.definitionId == candidate.definitionId &&
+          occupant.tier == candidate.tier &&
+          occupant.tier < rules.maxTier;
+      return PlacementPreview(
+        valid: mergeable,
+        state: null,
+        intervalTicks: 0,
+        lane: null,
+      );
+    }
+    trial.place(candidate);
+    final result = GearNetwork.rebuild(trial).nodes[candidate.id];
+    return PlacementPreview(
+      valid: true,
+      state: result?.state,
+      intervalTicks: result?.effectiveIntervalTicks ?? 0,
+      lane: candidate.outputKind == GearOutputKind.none
+          ? null
+          : candidate.targetLane,
+    );
+  }
+
+  static GearKind _kindOf(GearDefinition gear) => switch (gear.category) {
+    'power-core' => GearKind.core,
+    'transmission' => GearKind.transmission,
+    'booster' => GearKind.booster,
+    _ => GearKind.output,
+  };
+
+  void _pushUndo({int scrapGained = 0}) => _undo.add(
+    _UndoEntry([for (final n in board.nodes) _copy(n)], hand, scrapGained),
+  );
+
+  GearNode _copy(GearNode n) => _moved(n, n.x, n.y);
+
+  GearNode _moved(GearNode n, int x, int y) => GearNode(
+    id: n.id,
+    definitionId: n.definitionId,
+    kind: n.kind,
+    x: x,
+    y: y,
+    localPorts: n.localPorts,
+    baseIntervalTicks: n.baseIntervalTicks,
+    rotationQuarterTurns: n.rotationQuarterTurns,
+    tier: n.tier,
+    outputKind: n.outputKind,
+    targetLane: n.outputKind == GearOutputKind.none
+        ? n.targetLane
+        : rules.laneForRow(y),
+  );
 
   void _rollOffers() {
     final boardHasTransmission = board.nodes.any(
@@ -289,12 +493,7 @@ class WorkshopController {
   GearNode _node(GearDefinition gear, int x, int y, int tier) => GearNode(
     id: '${gear.id}#${_nextGearNumber++}',
     definitionId: gear.id,
-    kind: switch (gear.category) {
-      'power-core' => GearKind.core,
-      'transmission' => GearKind.transmission,
-      'booster' => GearKind.booster,
-      _ => GearKind.output,
-    },
+    kind: _kindOf(gear),
     x: x,
     y: y,
     localPorts: {for (final port in gear.ports) Direction.values.byName(port)},

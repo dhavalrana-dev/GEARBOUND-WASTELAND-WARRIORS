@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace Gearbound.Core
 {
-    public enum BattlePhase { Preparation, Combat, Victory, Defeat }
+    /// <summary>Intermission sits between waves: combat pauses, fortress damage carries over, the hero returns to the fortress line (keeping health and lane), and gear-produced soldiers withdraw.</summary>
+    public enum BattlePhase { Preparation, Combat, Intermission, Victory, Defeat }
 
     public sealed class WaveSpawnEvent
     {
@@ -50,8 +51,9 @@ namespace Gearbound.Core
 
     public sealed class BattleSession
     {
-        private readonly WaveDefinition wave;
+        private readonly IReadOnlyList<WaveDefinition> waves;
         private int nextSpawnIndex;
+        private int waveStartTick;
         private int nextEnemyId = 1000;
         public GearBoard Board { get; }
         public GearNetworkResult Network { get; private set; }
@@ -60,14 +62,23 @@ namespace Gearbound.Core
         public BattlePhase Phase { get; private set; } = BattlePhase.Preparation;
         public int ElapsedTicks { get; private set; }
         public int HeroId { get; }
+        /// <summary>Total wave rewards earned so far this mission.</summary>
         public int ScrapReward { get; private set; }
+        public int LastWaveReward { get; private set; }
+        public int WaveIndex { get; private set; }
+        public IReadOnlyList<WaveDefinition> Waves => waves;
+        public WaveDefinition CurrentWave => waves[WaveIndex];
+        public bool IsFinalWave => WaveIndex == waves.Count - 1;
 
         public BattleSession(GearBoard board, GearNetworkResult network, WaveDefinition wave, int heroId = 1,
-            CombatSimulation combat = null, GearOutputSystem outputs = null)
+            CombatSimulation combat = null, GearOutputSystem outputs = null, IEnumerable<WaveDefinition> laterWaves = null)
         {
             Board = board ?? throw new ArgumentNullException(nameof(board));
             Network = network ?? throw new ArgumentNullException(nameof(network));
-            this.wave = wave ?? throw new ArgumentNullException(nameof(wave));
+            if (wave == null) throw new ArgumentNullException(nameof(wave));
+            var all = new List<WaveDefinition> { wave };
+            if (laterWaves != null) all.AddRange(laterWaves.Select(w => w ?? throw new ArgumentNullException(nameof(laterWaves))));
+            waves = all;
             HeroId = heroId;
             Combat = combat ?? new CombatSimulation();
             Outputs = outputs ?? new GearOutputSystem();
@@ -79,9 +90,16 @@ namespace Gearbound.Core
 
         public bool MoveHeroToLane(int lane) => Combat.MoveLane(HeroId, lane);
 
+        /// <summary>Starts the first wave from preparation, or the next wave from an intermission.</summary>
         public bool Start()
         {
-            if (Phase != BattlePhase.Preparation) return false;
+            if (Phase == BattlePhase.Intermission)
+            {
+                WaveIndex++;
+                nextSpawnIndex = 0;
+                waveStartTick = ElapsedTicks;
+            }
+            else if (Phase != BattlePhase.Preparation) return false;
             Phase = BattlePhase.Combat;
             return true;
         }
@@ -89,7 +107,8 @@ namespace Gearbound.Core
         public void Tick()
         {
             if (Phase != BattlePhase.Combat) return;
-            while (nextSpawnIndex < wave.Spawns.Count && wave.Spawns[nextSpawnIndex].Tick <= ElapsedTicks)
+            var wave = CurrentWave;
+            while (nextSpawnIndex < wave.Spawns.Count && wave.Spawns[nextSpawnIndex].Tick <= ElapsedTicks - waveStartTick)
             {
                 var spawn = wave.Spawns[nextSpawnIndex++];
                 Combat.Add(new Combatant(nextEnemyId++, CombatFaction.Enemy, spawn.Lane, Combat.WorldLengthMm,
@@ -103,8 +122,17 @@ namespace Gearbound.Core
             if (Combat.IsDefeated) Phase = BattlePhase.Defeat;
             else if (nextSpawnIndex >= wave.Spawns.Count && !Combat.Combatants.Any(unit => unit.IsAlive && unit.Faction == CombatFaction.Enemy))
             {
-                Phase = BattlePhase.Victory;
-                ScrapReward = wave.RewardScrap;
+                LastWaveReward = wave.RewardScrap;
+                ScrapReward += wave.RewardScrap;
+                if (IsFinalWave) Phase = BattlePhase.Victory;
+                else
+                {
+                    Phase = BattlePhase.Intermission;
+                    Combat.Withdraw(unit => unit.Faction == CombatFaction.Friendly && unit.Id != HeroId);
+                    // The hero returns to the fortress line, keeping health and lane.
+                    var hero = Combat.Combatants.FirstOrDefault(unit => unit.Id == HeroId);
+                    if (hero != null) hero.PositionMm = 0;
+                }
             }
         }
     }

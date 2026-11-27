@@ -35,6 +35,8 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Ad placement policy | Yes | Yes | ad_policy_cases ✔ both |
 | Save migration v1/v2 → v3 | n/a (no Unity save yet) | Yes | save_migration_cases (Dart) |
 | Workshop shop/placement/merge controller (merge curve, lane by row) | No | Yes | — (GB-036) |
+| Multi-wave BattleSession (intermission, soldier withdrawal, hero reset, reward totals) | Yes | Yes | Mirrored unit tests (no shared trace yet) |
+| Workshop seed derivation `mixSeed32` (fmix32) | No | Yes | Dart vectors only (GB-049) |
 | Presentation / input | No | Prototype | — |
 
 ## Combat trace parity (spec scenario 4)
