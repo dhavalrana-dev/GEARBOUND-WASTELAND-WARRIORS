@@ -9,6 +9,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **GB-055 hero special on `feature/hero-special`.** Rivet gains SP from landed hits (10 per hit, max 100). With a full bar, **Wrench Quake** deals 25 damage, armor applying, to enemies within 1,200 mm in his lane. It's a validated command in both engines, applied after spawns and before the combat step. Tuning lives in `shared/heroes/heroes.json`, and tests in both engines keep the code equal to the file.
 - **GB-052 mission lifecycle on `feature/mission-lifecycle`.** Adds a gameplay pause menu (Resume; Abandon with confirmation), auto-pause when the app is hidden during combat (it never auto-resumes), system Back routed to the pause menu once a mission has started, and a 0.25 s per-frame catch-up cap.
 - **GB-025 multi-wave missions on `feature/workshop-drag-undo`** (same branch as GB-039, uncommitted). `BattleSession` supports waves with an intermission in both engines. Route node `copperwash-01` is now the 3-wave shared mission `copperwash_01`; wave 1 is identical to the old encounter. Each intermission pays the wave reward in battle scrap, rolls fresh offers and reopens the workshop.
 - **GB-039 on `feature/workshop-drag-undo`.** The workshop has drag-and-drop with a ghost and a live target preview (green powered, amber unpowered, red invalid), moving placed gears, and undo for place, move, merge and sell. Undoing a sale charges the refund back through the ledger. Buys and rerolls are not undoable. The selected gear shows its status: power, lane and spawn interval.
@@ -22,6 +23,13 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 10 (hero special)
+- Flutter analyze: no issues. Flutter tests: **153/153**. Unity EditMode: **39/39** (4 new hero-special tests).
+- **Cross-engine parity:** new combat scenario `boss-wave-hero-special` (the hero uses the special whenever ready; SP is part of that trace's hash) matches tick by tick in Dart and in the C# generator. **The 4 existing trace hashes are unchanged.** The special clears the boss wave at tick 385 versus 416 without it.
+- Validator (now checks `heroes.json`), reference fixtures, asset sync and combat traces: clean.
+- **Bug found:** the first SP bar used a text accessibility value ("0 of 100"). Flutter requires progress-bar semantics values to be numeric, so it would throw whenever accessibility semantics are active. The widget tests caught it; the bar now reports a percentage.
+- **Not verified:** device feel and special balance in real play.
+
 ### 2026-11-27 session 9 (mission lifecycle)
 - Flutter analyze: no issues. Flutter tests: **147/147**. `mission_lifecycle_test.dart` adds 9 tests: pause and resume, background during combat versus preparation, the stall cap (a 10 s stall becomes at most 8 ticks), Back before and during a mission, abandon with confirmation, rotation mid-combat, and victory recorded once.
 - Validator, reference fixtures, asset sync and combat traces: clean. Unity EditMode: **not re-run** (no C# or shared data changed; last result 35/35).

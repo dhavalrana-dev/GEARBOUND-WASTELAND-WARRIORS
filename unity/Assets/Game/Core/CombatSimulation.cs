@@ -100,10 +100,33 @@ namespace Gearbound.Core
             return true;
         }
 
+        private readonly List<(int attackerId, int targetId)> lastHits = new List<(int attackerId, int targetId)>();
+
+        /// <summary>Unit hits resolved during the most recent Tick, in resolution order (fortress hits excluded). Bookkeeping only.</summary>
+        public IReadOnlyList<(int attackerId, int targetId)> LastHits => lastHits;
+
+        /// <summary>
+        /// Deals damage (armor, reduction and shields apply as for a normal hit) to every living combatant of
+        /// <paramref name="faction"/> in <paramref name="lane"/> within <paramref name="radiusMm"/> of
+        /// <paramref name="centerMm"/>, in entity ID order. Returns how many were hit.
+        /// </summary>
+        public int AreaDamage(CombatFaction faction, int lane, int centerMm, int radiusMm, int damage)
+        {
+            var targets = combatants.Where(u => u.IsAlive && u.Faction == faction && u.Lane == lane && Math.Abs(u.PositionMm - centerMm) <= radiusMm)
+                .OrderBy(u => u.Id).ToArray();
+            foreach (var target in targets)
+            {
+                ApplyDamage(target, damage);
+                if (target.Health <= 0) target.State = CombatState.Dead;
+            }
+            return targets.Length;
+        }
+
         public void Tick()
         {
             if (IsDefeated) return;
             TickIndex++;
+            lastHits.Clear();
             var living = combatants.Where(unit => unit.IsAlive).OrderBy(unit => unit.Id).ToArray();
 
             // Phase 1: advance cooldowns and movement in stable entity order.
@@ -162,6 +185,7 @@ namespace Gearbound.Core
                 {
                     var target = combatants.First(unit => unit.Id == hit.TargetId);
                     ApplyDamage(target, hit.Damage);
+                    lastHits.Add((hit.AttackerId, hit.TargetId));
                 }
             }
             foreach (var unit in combatants.Where(unit => unit.Health <= 0)) unit.State = CombatState.Dead;

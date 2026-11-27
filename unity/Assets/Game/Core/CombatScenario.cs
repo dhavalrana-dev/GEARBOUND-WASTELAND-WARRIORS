@@ -62,18 +62,22 @@ namespace Gearbound.Core
                 combat: new CombatSimulation(worldLengthMm: SharedJson.Int(s, "worldLengthMm")));
             session.Start();
             var maxTicks = SharedJson.Int(s, "maxTicks");
+            // Optional: the hero uses the special as soon as it is ready (checked before each tick).
+            var autoSpecial = SharedJson.Bool(s, "heroUsesSpecialWhenReady");
             var hash = FnvOffset;
             var checkpoints = new List<uint>();
             var line = new StringBuilder();
             while (session.Phase == BattlePhase.Combat && session.ElapsedTicks < maxTicks)
             {
                 foreach (var command in commands) if (command.tick == session.ElapsedTicks) session.MoveHeroToLane(command.lane);
+                if (autoSpecial) session.UseHeroSpecial();
                 session.Tick();
                 line.Clear();
                 line.Append(session.ElapsedTicks).Append('|').Append(session.Phase.ToString().ToLowerInvariant()).Append('|').Append(session.Combat.FortressHealth).Append('|');
                 foreach (var u in session.Combat.Combatants)
                     line.Append(u.Id).Append(':').Append(u.Lane).Append(':').Append(u.PositionMm).Append(':').Append(u.Health).Append(':')
                         .Append(u.Shield).Append(':').Append(u.State.ToString().ToLowerInvariant()).Append(';');
+                if (autoSpecial) line.Append("sp:").Append(session.HeroSp);
                 for (var i = 0; i < line.Length; i++) { hash ^= line[i]; hash *= FnvPrime; }
                 if (session.ElapsedTicks % every == 0) checkpoints.Add(hash);
             }

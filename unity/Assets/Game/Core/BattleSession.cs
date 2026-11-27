@@ -49,6 +49,25 @@ namespace Gearbound.Core
         }
     }
 
+    /// <summary>A hero's special ability, from shared/heroes/heroes.json.</summary>
+    public sealed class HeroSpecial
+    {
+        public string Id { get; }
+        public int SpMax { get; }
+        public int SpPerHit { get; }
+        public int Damage { get; }
+        public int RadiusMm { get; }
+
+        public HeroSpecial(string id, int spMax, int spPerHit, int damage, int radiusMm)
+        {
+            if (spMax < 1 || spPerHit < 1 || damage < 1 || radiusMm < 0) throw new ArgumentOutOfRangeException("Hero special values are outside their allowed range.");
+            Id = id; SpMax = spMax; SpPerHit = spPerHit; Damage = damage; RadiusMm = radiusMm;
+        }
+
+        /// <summary>Rivet's Wrench Quake; a test keeps this equal to heroes.json.</summary>
+        public static readonly HeroSpecial Rivet = new HeroSpecial("special.wrench_quake", 100, 10, 25, 1200);
+    }
+
     public sealed class BattleSession
     {
         private readonly IReadOnlyList<WaveDefinition> waves;
@@ -62,6 +81,25 @@ namespace Gearbound.Core
         public BattlePhase Phase { get; private set; } = BattlePhase.Preparation;
         public int ElapsedTicks { get; private set; }
         public int HeroId { get; }
+        public HeroSpecial Special { get; }
+
+        /// <summary>Special points: gained when the hero's attacks land, spent in full by UseHeroSpecial. Carries across waves.</summary>
+        public int HeroSp { get; private set; }
+        private bool specialQueued;
+
+        public bool SpecialReady => Phase == BattlePhase.Combat && !specialQueued && HeroSp >= Special.SpMax
+            && Combat.Combatants.Any(u => u.Id == HeroId && u.IsAlive);
+
+        /// <summary>
+        /// Validated hero command: accepted only in combat with a full SP bar and a living hero. Applies at the start of
+        /// the next Tick, after spawns and before combat, so both engines resolve it identically.
+        /// </summary>
+        public bool UseHeroSpecial()
+        {
+            if (!SpecialReady) return false;
+            specialQueued = true;
+            return true;
+        }
         /// <summary>Total wave rewards earned so far this mission.</summary>
         public int ScrapReward { get; private set; }
         public int LastWaveReward { get; private set; }
@@ -71,8 +109,10 @@ namespace Gearbound.Core
         public bool IsFinalWave => WaveIndex == waves.Count - 1;
 
         public BattleSession(GearBoard board, GearNetworkResult network, WaveDefinition wave, int heroId = 1,
-            CombatSimulation combat = null, GearOutputSystem outputs = null, IEnumerable<WaveDefinition> laterWaves = null)
+            CombatSimulation combat = null, GearOutputSystem outputs = null, IEnumerable<WaveDefinition> laterWaves = null,
+            HeroSpecial special = null)
         {
+            Special = special ?? HeroSpecial.Rivet;
             Board = board ?? throw new ArgumentNullException(nameof(board));
             Network = network ?? throw new ArgumentNullException(nameof(network));
             if (wave == null) throw new ArgumentNullException(nameof(wave));
@@ -115,7 +155,20 @@ namespace Gearbound.Core
                     spawn.Health, spawn.Armor, spawn.Damage, spawn.AttackRangeMm, spawn.MovementMmPerTick, spawn.AttackIntervalTicks));
             }
 
+            if (specialQueued)
+            {
+                specialQueued = false;
+                var hero = Combat.Combatants.FirstOrDefault(u => u.Id == HeroId && u.IsAlive);
+                if (hero != null)
+                {
+                    Combat.AreaDamage(CombatFaction.Enemy, hero.Lane, hero.PositionMm, Special.RadiusMm, Special.Damage);
+                    HeroSp = 0;
+                }
+            }
+
             Combat.Tick();
+            foreach (var hit in Combat.LastHits)
+                if (hit.attackerId == HeroId) HeroSp = Math.Min(Special.SpMax, HeroSp + Special.SpPerHit);
             Outputs.Tick(Board, Network, Combat);
             ElapsedTicks++;
 
