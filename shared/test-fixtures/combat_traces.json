@@ -14,6 +14,8 @@
     { "id": "boss-wave-hero-special", "phase": "victory", "elapsedTicks": 385, "fortressHealth": 100, "friendlyUnitsProduced": 12, "friendlyAlive": 12, "enemiesAlive": 0, "traceHash": 3000532322,
       "checkpoints": [2564706520, 3835819702, 21552595, 1534305994, 2803206499, 4146536210, 3698473320, 1195574417, 4078453465, 3636917125, 1440553354, 4243653886] },
     { "id": "boss-cleave-crowded-lane", "phase": "defeat", "elapsedTicks": 422, "fortressHealth": 0, "friendlyUnitsProduced": 3, "friendlyAlive": 4, "enemiesAlive": 2, "traceHash": 1568370982,
-      "checkpoints": [1277336860, 2864905790, 2285293226, 3218059933, 1376627640, 3376286736, 1807932881, 1998537316, 4205879093, 1253448865, 2702857661, 3669973543, 4218424974, 1465567232] }
+      "checkpoints": [1277336860, 2864905790, 2285293226, 3218059933, 1376627640, 3376286736, 1807932881, 1998537316, 4205879093, 1253448865, 2702857661, 3669973543, 4218424974, 1465567232] },
+    { "id": "turret-side-lanes", "phase": "victory", "elapsedTicks": 288, "fortressHealth": 78, "friendlyUnitsProduced": 3, "friendlyAlive": 4, "enemiesAlive": 0, "traceHash": 993997455,
+      "checkpoints": [3091044517, 650769436, 860167370, 498531732, 117521421, 666112704, 1877718016, 3285482375, 1311958313] }
   ]
 }

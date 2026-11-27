@@ -55,7 +55,7 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 - A gear details sheet, and rotation (not needed until gears with partial ports exist).
 - Multi-wave missions with inter-wave preparation (GB-025).
 - Production art, animation and audio.
-- Turret, mortar and other output behaviors; the shop sells only gears whose behavior is implemented.
+- Mortar and other output behaviors beyond infantry and turrets; the shop sells only gears whose behavior is implemented (`workshop.shopCategories`).
 - Real ad or purchase SDKs.
 
 Android compilation is still blocked on the NDK license; see `DEVELOPMENT_STATUS.md`.

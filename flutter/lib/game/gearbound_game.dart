@@ -491,6 +491,23 @@ class WorkshopBoardView extends PositionComponent
     }
     final battleWidth = panelRect.width - 32;
     final radius = math.max(6.0, math.min(12.0, laneSpacing * 0.16));
+    // Turret projectiles: short bright streaks travelling toward the enemy.
+    for (final shot in session.combat.projectiles) {
+      final px =
+          panelRect.left +
+          16 +
+          battleWidth *
+              (shot.positionMm / session.combat.worldLengthMm).clamp(0.0, 1.0);
+      final py = laneTop + shot.lane * laneSpacing - radius;
+      canvas.drawLine(
+        ui.Offset(px - radius * 1.4, py),
+        ui.Offset(px, py),
+        ui.Paint()
+          ..color = const ui.Color(0xFFF4BF4F)
+          ..strokeWidth = math.max(2.0, radius * 0.35)
+          ..strokeCap = ui.StrokeCap.round,
+      );
+    }
     for (final unit in session.combat.combatants.where(
       (unit) => unit.isAlive,
     )) {

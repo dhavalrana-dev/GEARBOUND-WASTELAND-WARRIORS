@@ -49,10 +49,13 @@ namespace Gearbound.Core
                 var g = SharedJson.Obj(item, "gear");
                 var kind = SharedJson.Str(g, "kind");
                 var gearKind = kind == "core" ? GearKind.Core : kind == "transmission" ? GearKind.Transmission : kind == "booster" ? GearKind.Booster : GearKind.Output;
+                var outputKind = kind == "infantry" ? GearOutputKind.SpawnInfantry : kind == "turret" ? GearOutputKind.FireProjectile : GearOutputKind.None;
+                var projectileDamage = g.ContainsKey("projectileDamage") ? SharedJson.Int(g, "projectileDamage") : 0;
+                var projectileSpeed = g.ContainsKey("projectileSpeedMmPerTick") ? SharedJson.Int(g, "projectileSpeedMmPerTick") : 0;
                 var interval = g.ContainsKey("intervalTicks") ? SharedJson.Int(g, "intervalTicks") : 0;
                 var lane = g.ContainsKey("targetLane") ? SharedJson.Int(g, "targetLane") : 1;
                 var node = new GearNode(SharedJson.Str(g, "id"), gearKind, SharedJson.Int(g, "x"), SharedJson.Int(g, "y"), AllPorts, interval,
-                    outputKind: kind == "infantry" ? GearOutputKind.SpawnInfantry : GearOutputKind.None, targetLane: lane);
+                    outputKind: outputKind, targetLane: lane, projectileDamage: projectileDamage, projectileSpeedMmPerTick: projectileSpeed);
                 if (!board.TryPlace(node, out var error)) throw new InvalidOperationException(error);
             }
             var commands = SharedJson.Arr(s, "heroCommands").Select(c => SharedJson.Obj(c, "command"))
@@ -78,6 +81,8 @@ namespace Gearbound.Core
                     line.Append(u.Id).Append(':').Append(u.Lane).Append(':').Append(u.PositionMm).Append(':').Append(u.Health).Append(':')
                         .Append(u.Shield).Append(':').Append(u.State.ToString().ToLowerInvariant()).Append(';');
                 if (autoSpecial) line.Append("sp:").Append(session.HeroSp);
+                // Projectiles join the hash only when present, so older scenarios keep their hashes.
+                foreach (var p in session.Combat.Projectiles) line.Append('P').Append(p.Id).Append(':').Append(p.Lane).Append(':').Append(p.PositionMm).Append(';');
                 for (var i = 0; i < line.Length; i++) { hash ^= line[i]; hash *= FnvPrime; }
                 if (session.ElapsedTicks % every == 0) checkpoints.Add(hash);
             }

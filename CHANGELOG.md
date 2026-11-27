@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Turret projectiles (GB-037): the Spark Turret is now sold in the workshop shop. Powered turrets fire lane projectiles that hit the nearest enemy in their lane, with a cap of 24 live shots, in Dart and C#. Added the seventh trace scenario `turret-side-lanes`; existing hashes are unchanged.
 - Boss telegraphs: optional enemy attack wind-up and cleave in Dart and C#, with a lane warning zone. Scrapmaw's attack can now be dodged by leaving its lane. Boss combat traces were regenerated intentionally, and Dart matches them; added a sixth scenario. `COMBAT_ENGINE.md` now matches the code.
 - Mission checkpoints: a mission survives the app being killed. It resumes at the rebuild phase, or restarts the interrupted wave with the same locked board, from a Resume/Abandon card on the route. Rewards can't be paid twice after a resume.
 - Hero special ability: Rivet charges SP from landed hits and can trigger Wrench Quake, a lane area attack, as a validated command in Dart and C#. Added a new cross-engine trace scenario (existing hashes unchanged), the SP bar and special button UI, and `shared/heroes/heroes.json`.

@@ -29,6 +29,13 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 13 (turret projectiles, GB-037)
+- Flutter analyze: no issues. Flutter tests: **175/175**. Unity EditMode: **50/50** (6 new `ProjectileTests`).
+- Both engines get rule tests: a hit on the nearest enemy in the lane with armor, other lanes ignored, removal at the field end, the cap refusing shots, powered and unpowered turrets, a capped turret holding, and the Spark Turret loading its projectile and keeping it through merges. Flutter also checks that the workshop shop offers and places a turret and that checkpoints keep projectile fields.
+- **Cross-engine parity:** new scenario `turret-side-lanes` (victory at tick 288, fortress 78) matches tick by tick in Dart and the C# generator. **The 6 existing hashes are unchanged.**
+- **Opening balance re-measured** with turrets in the shop (500 seeds): a second press is offered in 416 openings and reachable within rerolls in 499 (guards: 400 and 495). A turret is offered in 33 openings.
+- **Not verified:** turret strength feel on a device, and projectile rendering beyond the widget smoke tests.
+
 ### 2026-11-27 session 12 (boss telegraphs)
 - Flutter analyze: no issues. Flutter tests: **169/169**. Unity EditMode: **44/44**. Both engines get rule tests: timing, dodge, cleave, a winding-up attacker holding position, validation, and Scrapmaw loading its new fields. Flutter adds a telegraph render test.
 - **Intentional trace change, re-proven:**

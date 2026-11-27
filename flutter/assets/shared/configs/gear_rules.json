@@ -3,7 +3,7 @@
   "board": {"width": 5, "height": 5, "connectivity": "orthogonal-reciprocal-ports", "maxCores": 1},
   "simulation": {"ticksPerSecond": 30, "randomAlgorithm": "xorshift32-v1"},
   "network": {"boosterBonusPercentEach": 10, "boosterBonusPercentCap": 30, "minimumOutputIntervalTicks": 1, "oddParityLoop": "jam-component", "multipleCores": "disable-component"},
-  "output": {"friendlyUnitCapPerLane": 4, "queuedSpawnsPerOutput": 1},
+  "output": {"friendlyUnitCapPerLane": 4, "queuedSpawnsPerOutput": 1, "maxActiveProjectiles": 24},
   "merge": {"maxTier": 3, "intervalPercentByTier": [100, 70, 50]},
-  "workshop": {"outputLaneByRow": [0, 0, 1, 2, 2], "starterGears": [{"definitionId": "core.wayfarer", "x": 0, "y": 2}, {"definitionId": "unit.rivetguard", "x": 1, "y": 2}], "shopCategories": ["transmission", "booster", "infantry"]}
+  "workshop": {"outputLaneByRow": [0, 0, 1, 2, 2], "starterGears": [{"definitionId": "core.wayfarer", "x": 0, "y": 2}, {"definitionId": "unit.rivetguard", "x": 1, "y": 2}], "shopCategories": ["transmission", "booster", "infantry", "turret"]}
 }

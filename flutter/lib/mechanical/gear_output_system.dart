@@ -34,7 +34,7 @@ class GearOutputSystem {
       ..sort((a, b) => a.y != b.y ? a.y.compareTo(b.y) : a.x.compareTo(b.x));
     for (final gear in ordered) {
       if (gear.kind != GearKind.output ||
-          gear.outputKind != GearOutputKind.spawnInfantry) {
+          gear.outputKind == GearOutputKind.none) {
         continue;
       }
       activeGearIds.add(gear.id);
@@ -54,6 +54,26 @@ class GearOutputSystem {
       if (!clock.pendingSpawn &&
           clock.progressTicks < power.effectiveIntervalTicks) {
         clock.status = GearOutputStatus.progressing;
+        continue;
+      }
+
+      if (gear.outputKind == GearOutputKind.fireProjectile) {
+        // Turret: one projectile per cycle from the fortress line; holds while
+        // the projectile cap is reached.
+        if (!combat.fireProjectile(
+          lane: gear.targetLane,
+          startMm: 0,
+          speedMmPerTick: gear.projectileSpeedMmPerTick,
+          damage: gear.projectileDamage,
+        )) {
+          clock.pendingSpawn = true;
+          clock.progressTicks = power.effectiveIntervalTicks;
+          clock.status = GearOutputStatus.unitCapacityReached;
+          continue;
+        }
+        clock.pendingSpawn = false;
+        clock.progressTicks = 0;
+        clock.status = GearOutputStatus.produced;
         continue;
       }
 

@@ -62,6 +62,21 @@ namespace Gearbound.Core
         }
     }
 
+    /// <summary>A friendly projectile travelling down a lane from the fortress line.</summary>
+    public sealed class Projectile
+    {
+        public int Id { get; }
+        public int Lane { get; }
+        public int PositionMm { get; internal set; }
+        public int SpeedMmPerTick { get; }
+        public int Damage { get; }
+
+        internal Projectile(int id, int lane, int positionMm, int speedMmPerTick, int damage)
+        {
+            Id = id; Lane = lane; PositionMm = positionMm; SpeedMmPerTick = speedMmPerTick; Damage = damage;
+        }
+    }
+
     internal sealed class CombatDamageEvent
     {
         public int TargetId;
@@ -113,6 +128,25 @@ namespace Gearbound.Core
         }
 
         private readonly List<(int attackerId, int targetId)> lastHits = new List<(int attackerId, int targetId)>();
+        private readonly List<Projectile> projectiles = new List<Projectile>();
+        private int nextProjectileId = 1;
+
+        /// <summary>Hard cap on live projectiles; firing beyond it is refused.</summary>
+        public int MaxActiveProjectiles { get; set; } = 24;
+        public IReadOnlyList<Projectile> Projectiles => projectiles;
+
+        /// <summary>
+        /// Launches a friendly projectile. Each tick (in projectile ID order) it advances by its speed and hits the
+        /// nearest living enemy in its lane between its old and new position; it is removed on a hit or at the end of
+        /// the field. Projectile hits use attacker ID -projectileId, so they sort before unit hits and never collide with unit IDs.
+        /// </summary>
+        public bool FireProjectile(int lane, int startMm, int speedMmPerTick, int damage)
+        {
+            if (lane < 0 || lane > 2 || speedMmPerTick < 1 || damage < 1) throw new ArgumentOutOfRangeException("Invalid projectile.");
+            if (projectiles.Count >= MaxActiveProjectiles) return false;
+            projectiles.Add(new Projectile(nextProjectileId++, lane, startMm, speedMmPerTick, damage));
+            return true;
+        }
 
         /// <summary>Unit hits resolved during the most recent Tick, in resolution order (fortress hits excluded). Bookkeeping only.</summary>
         public IReadOnlyList<(int attackerId, int targetId)> LastHits => lastHits;
@@ -165,6 +199,21 @@ namespace Gearbound.Core
 
             // Phase 2: select targets and schedule hits after all movement is complete.
             var events = new List<CombatDamageEvent>();
+            foreach (var shot in projectiles.OrderBy(p => p.Id).ToArray())
+            {
+                var from = shot.PositionMm;
+                var to = Math.Min(WorldLengthMm, from + shot.SpeedMmPerTick);
+                var hit = living.Where(u => u.IsAlive && u.Faction == CombatFaction.Enemy && u.Lane == shot.Lane
+                        && u.PositionMm >= from && u.PositionMm <= to)
+                    .OrderBy(u => u.PositionMm).ThenBy(u => u.Id).FirstOrDefault();
+                if (hit != null)
+                {
+                    events.Add(new CombatDamageEvent { TargetId = hit.Id, AttackerId = -shot.Id, Damage = shot.Damage });
+                    projectiles.Remove(shot);
+                }
+                else if (to >= WorldLengthMm) projectiles.Remove(shot);
+                else shot.PositionMm = to;
+            }
             foreach (var unit in living)
             {
                 if (unit.WindupRemaining > 0)

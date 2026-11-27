@@ -34,7 +34,7 @@ namespace Gearbound.Core
             var activeGearIds = new HashSet<string>();
             foreach (var gear in board.Nodes.OrderBy(node => node.Y).ThenBy(node => node.X))
             {
-                if (gear.Kind != GearKind.Output || gear.OutputKind != GearOutputKind.SpawnInfantry) continue;
+                if (gear.Kind != GearKind.Output || gear.OutputKind == GearOutputKind.None) continue;
                 activeGearIds.Add(gear.Id);
                 if (!clocks.TryGetValue(gear.Id, out var clock))
                 {
@@ -52,6 +52,22 @@ namespace Gearbound.Core
                 if (!clock.PendingSpawn && clock.ProgressTicks < state.EffectiveIntervalTicks)
                 {
                     clock.Status = GearOutputStatus.Progressing;
+                    continue;
+                }
+
+                if (gear.OutputKind == GearOutputKind.FireProjectile)
+                {
+                    // Turret: one projectile per cycle from the fortress line; holds while the projectile cap is reached.
+                    if (!combat.FireProjectile(gear.TargetLane, 0, gear.ProjectileSpeedMmPerTick, gear.ProjectileDamage))
+                    {
+                        clock.PendingSpawn = true;
+                        clock.ProgressTicks = state.EffectiveIntervalTicks;
+                        clock.Status = GearOutputStatus.UnitCapacityReached;
+                        continue;
+                    }
+                    clock.PendingSpawn = false;
+                    clock.ProgressTicks = 0;
+                    clock.Status = GearOutputStatus.Produced;
                     continue;
                 }
 

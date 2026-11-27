@@ -17,11 +17,15 @@ class GearDefinition {
     required this.ports,
     required this.baseIntervalTicks,
     required this.cost,
+    this.projectileDamage = 0,
+    this.projectileSpeedMmPerTick = 0,
   });
 
   final String id;
   final String name;
   final String category;
+  final int projectileDamage;
+  final int projectileSpeedMmPerTick;
   final int tier;
   final String rarity;
   final List<String> ports;
@@ -152,6 +156,12 @@ List<GearDefinition> loadGears(String json) {
         ports: (g['ports'] as List<Object?>).cast<String>(),
         baseIntervalTicks: g['baseIntervalTicks'] as int,
         cost: g['cost'] as int,
+        projectileDamage:
+            (g['projectile'] as Map<String, Object?>?)?['damage'] as int? ?? 0,
+        projectileSpeedMmPerTick:
+            (g['projectile'] as Map<String, Object?>?)?['speedMmPerTick']
+                as int? ??
+            0,
       ),
   ];
   _requireUnique(gears.map((g) => g.id), 'gear');

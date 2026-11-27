@@ -14,6 +14,15 @@ namespace Gearbound.Core
         public IReadOnlyList<Direction> Ports { get; }
         public int BaseIntervalTicks { get; }
         public int Cost { get; }
+        public int ProjectileDamage { get; private set; }
+        public int ProjectileSpeedMmPerTick { get; private set; }
+
+        public GearDefinition WithProjectile(int damage, int speedMmPerTick)
+        {
+            ProjectileDamage = damage;
+            ProjectileSpeedMmPerTick = speedMmPerTick;
+            return this;
+        }
 
         public GearDefinition(string id, string name, string category, int tier, string rarity, IEnumerable<Direction> ports, int baseIntervalTicks, int cost)
         {
@@ -37,7 +46,8 @@ namespace Gearbound.Core
             }
         }
 
-        public GearOutputKind OutputKind => Category == "infantry" ? GearOutputKind.SpawnInfantry : GearOutputKind.None;
+        public GearOutputKind OutputKind => Category == "infantry" ? GearOutputKind.SpawnInfantry
+            : Category == "turret" ? GearOutputKind.FireProjectile : GearOutputKind.None;
     }
 
     public sealed class EnemyDefinition
@@ -123,8 +133,11 @@ namespace Gearbound.Core
             {
                 var gear = SharedJson.Obj(item, "gear");
                 var ports = SharedJson.Arr(gear, "ports").Select(port => ParseDirection((string)port));
-                list.Add(new GearDefinition(SharedJson.Str(gear, "id"), SharedJson.Str(gear, "name"), SharedJson.Str(gear, "category"),
-                    SharedJson.Int(gear, "tier"), SharedJson.Str(gear, "rarity"), ports, SharedJson.Int(gear, "baseIntervalTicks"), SharedJson.Int(gear, "cost")));
+                var definition = new GearDefinition(SharedJson.Str(gear, "id"), SharedJson.Str(gear, "name"), SharedJson.Str(gear, "category"),
+                    SharedJson.Int(gear, "tier"), SharedJson.Str(gear, "rarity"), ports, SharedJson.Int(gear, "baseIntervalTicks"), SharedJson.Int(gear, "cost"));
+                if (gear.TryGetValue("projectile", out var proj) && proj is Dictionary<string, object> p)
+                    definition.WithProjectile(SharedJson.Int(p, "damage"), SharedJson.Int(p, "speedMmPerTick"));
+                list.Add(definition);
             }
             RequireUniqueIds(list.Select(g => g.Id), "gear");
             return list;
