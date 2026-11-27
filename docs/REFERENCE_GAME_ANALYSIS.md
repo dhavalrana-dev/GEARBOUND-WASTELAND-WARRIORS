@@ -63,3 +63,57 @@ No dynamic difficulty is planned at present.
 ### The Last Friend
 
 The copy in `Reference APK/The.Last.Friend*` is an unauthorized redistribution of a commercial Steam game: it includes a "STEAMUNLOCKED" link and a run instruction file. **It was not opened, run or analyzed**, and nothing from it may be used. Use a legitimately purchased Steam copy, the official website and press kit, or public trailers for visual reference. The recommendation is to delete this copy.
+
+## Gameplay and UI/UX visual study (2026-11-27)
+
+**Sources:**
+- **Gear Fight!:** the public Google Play listing (description, 8 store screenshots, top reviews).
+- **The Last Friend:** the official Steam page (description, tags, official screenshots).
+- **Candy Crush Saga:** six UI texture atlases from the owner's extracted package, converted to temporary previews *outside* the repository.
+
+**What was not done:** no game was installed or run (the Android build path is blocked, GB-038), no image was copied into Gearbound, and the pirated The Last Friend copy was not used. Gameplay observations come from screenshots and store text. **They still need confirmation from hands-on play** before exact rules are designed.
+
+### Gear Fight!: gameplay (observed from store media)
+
+| Observation | Gearbound status and decision |
+|---|---|
+| Portrait layout: a ~5×4 board of **touching gears** at the top, the shop of **3 offers** (nut currency, prices 12–40) with **reroll (5)** and a large green **FIGHT** button beneath | Matches our loop. Our 5×5 board, 3 offers, reroll and Start Wave are already in place. Consider a single prominent fight button with the reroll beside it. |
+| Gear kinds: **number gears** (1, 2, 4, 8, apparently power or merge values), a **1.5× multiplier** gear, **unit gears showing a character portrait and spawn rate ("0.45/s")** | **Adopt:** show each output gear's rate on the gear itself; we already compute it for the status line. Numeric tier badges are clearer than our "T2". |
+| **Ice blocks occupy cells** as obstacles | Locked or blocked cells are in the spec (§7, future boards). Useful for later nodes and Engineering Trials. |
+| During battle the **board stays visible above a single horizontal lane**: a crowd of units on the left fights a boss with a health bar and portrait on the right | Our portrait layout already keeps the board and battlefield together. Our 3 lanes plus a hero add depth Gear Fight doesn't have. |
+| Meta: an **8-card deck** (troops, skills, gears) with in-mission cost, level, power and rarity, a **total power** score, a **collection of 63** with Upgrade and Add | **Gap:** the spec's "select equipment loadout" step. The shop should draw from a player-chosen loadout (new task GB-054). Avoid making "total power" the main gate, to keep the strategy-first promise. |
+| Store text: 500+ levels, 50+ gears, archers, brutes, elites, boss mode; tags Merge, Offline | Scope reference only; our MVP targets are in the roadmap. |
+| **Top reviews:** "an ad every wave or every other wave with 12 waves per level", unskippable ads up to a minute; steep enemy scaling forcing level repeats ("grinding"). The developer replied that it is rebalancing ad frequency. | **Strong validation of our policy:** interstitials only after a *completed mission*, never between waves, with a 3-mission grace period and spacing rules (`ad_policy.json`). Difficulty must come from composition, not stat inflation (roadmap Phase 07.5). |
+
+**Visual style:** saturated cartoon "chibi" heads on brightly colored gear rings, with thick outlines and flat colors. Readable at phone size, but generic. **Gearbound deliberately differs:** angular comic anatomy and industrial materials (ART_DIRECTION §2).
+
+### The Last Friend: gameplay and presentation (official screenshots)
+
+| Observation | Gearbound status and decision |
+|---|---|
+| **Landscape, elevated side view.** An upgradable **RV fortress** sits at the left edge with its health ("RV 490/500") in the top-left HUD | Same composition as our fortress-left layout. Put the fortress health bar in the top-left status strip (ART_DIRECTION §6). |
+| **Defenses are placed on blue deployment pads** in front of the RV: turrets plus shield barricades | Our gear board plays this role. A visible link from each gear to its battlefield output would bridge the two halves (spec §4); consider a small lane marker on output gears. |
+| The **hero brawls mid-field.** Bottom-center hero portrait with **HP and SP (special) bars** | Our hero has lane commands only. An **SP-driven special** fits Phase 03.2 hero abilities (new task GB-055). |
+| HUD: a **"My Team" portrait strip** (dog companions as abilities), a currency counter, and an **objective panel** ("Defend the raft", "Reach the end of the elevator") | Mission **objectives beyond "survive"** are a cheap variety lever for route nodes (GB-051). An objective panel belongs in the HUD spec. |
+| Combat on **one deep ground band**: characters at different depths, enemies leaping in from the right, varied biomes (industrial, jungle) | We use 3 discrete lanes for gear-to-lane readability. Keep that, but render them as one continuous ground band with depth sorting (ART_DIRECTION §5). |
+| **Art:** angular, flat cel-shaded figures without heavy outlines; a teal, pink and orange palette; clean shapes | The reference quality bar for ART-01. Our palette and outline rules stay original. |
+
+### Candy Crush Saga: UI system (texture atlases)
+
+- **Buttons:**
+  - Glossy circular buttons with **one white glyph**, color-coded by function: red for close, back and info; blue for sound, settings and skip; green to confirm; yellow for help.
+  - Large pastel rounded-square panels, ribbon banners and cloud headers.
+- **A consistent status iconography:** stars, hearts (lives), a **flaming skull for "super hard" levels**, flames for streaks, keys and keyholes for unlocks.
+- **Packing:** atlases are packed **per screen or feature** (main menu, in-level HUD, LiveOps, onboarding), so each screen loads only its own art.
+- **Characters** are cut into parts for skeletal animation (Spine), the same separated-part approach as our art direction.
+
+**Adopt for Gearbound (with our own industrial style):**
+1. **One button family**, color-coded by function and always paired with an icon and label (not color alone; accessibility).
+2. **A fixed status icon set:** hard or boss node, streak, locked, reward.
+3. **Per-feature atlases:** board, HUD, map, events, shop. These map onto the `atlasGroup` field in `shared/art/asset_manifest.json`.
+
+### New backlog items from this study
+- **GB-054 (P1):** loadout and deck selection before a mission. The shop draws from the chosen loadout, and unlocks expand options without raising raw power.
+- **GB-055 (P1):** a hero special ability charged by an SP bar (Phase 03.2), entering the simulation as a validated command.
+- **GB-056 (P2):** spawn-rate and tier numbers on output gears, plus a lane marker linking each output gear to its lane.
+- **GB-057 (P2):** mission objective types beyond survival (protect, escort, reach), shown in an objective panel.
