@@ -9,6 +9,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **Production art direction v2 and the 19-phase roadmap applied on `docs/production-art-and-roadmap`** (stacked on PR #4). Added the 316-record vertical-slice asset manifest, all `planned`; no art exists and no art gate has started. Started roadmap P0 #1: the Android toolchain is diagnosed in `docs/TOOLCHAIN_REPORT.md`, and the fix is blocked on you.
 - **GB-030/GB-031 on `feature/workshop-shop-ui`.** The workshop now has a real gear shop: buy, tap-to-place, merge, sell and reroll with mission-scoped battle scrap through the ledger. `gearbound_app.dart` is split into `features/campaign`, `features/workshop` and `design_system`. The demo-only MOVE PRESS and rotate controls are removed.
 - **Extension spec, Phase A (audit) and Phase B (economy foundation) done on `feature/progression-economy-foundation`.** See `docs/REPOSITORY_AUDIT.md`. This work added the ledger-backed wallet (Dart + C#), save v3 with v1/v2 migration, a two-slot store with corruption recovery, a clock-rollback guard, the ad policy engine (Dart + C#) and the mock-provider rewarded controller (Dart). The `AGENTS.md` monetization policy was revised.
 - Phase 0 foundation completed for shared rules: `xorshift32-v1` RNG, seeded gear shop, data-driven wave director and enemy archetypes in both engines, all checked against independent fixtures.
@@ -18,6 +19,11 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 6 (art direction, roadmap, toolchain)
+- `flutter doctor -v`: **Android toolchain not usable: "Unable to locate Android SDK".** The only SDK is Unity's bundled one, which has no `licenses/` folder and NDK 27.2 instead of the 28.2.13676358 that Flutter 3.47.7 requests (confirmed in the Flutter Gradle plugin source). No build was attempted and no license was accepted. See `TOOLCHAIN_REPORT.md`.
+- Shared data validator: passes with the new asset manifest. It was also run against a scratch copy holding an "approved" asset with no evidence and an unknown owner: it **failed as intended** with 4 errors.
+- Flutter analyze: no issues. Flutter tests: **106/106**. Reference fixtures, asset sync and combat traces: clean. Unity EditMode: **not re-run**, because no C# and no Unity-read data changed (last result 30/30, session 5).
+
 ### 2026-11-27 session 5 (workshop shop UI)
 - Flutter analyze: no issues. Flutter tests: **106/106**. That adds 12 controller tests and 6 shop UI tests: the buy/place/sell/lock flow, fallback without shared content, tap-to-cell mapping, and overflow checks at three screen sizes. The 88 earlier tests pass unchanged after the module split.
 - **The overflow tests found real layout bugs.** The workshop overflowed by 284 px in phone landscape and by 88 px on a small portrait phone. It is fixed with scrollable control areas.

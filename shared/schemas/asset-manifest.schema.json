@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gearbound.invalid/schemas/asset-manifest.schema.json",
+  "title": "Gearbound production asset manifest",
+  "type": "object",
+  "required": ["schemaVersion", "assets"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "description": { "type": "string" },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["assetId", "category", "logicalOwnerId", "sourcePath", "runtimePaths", "sourceWidth", "sourceHeight", "runtimeWidth", "runtimeHeight", "pivotX", "pivotY", "trimOffset", "originalCanvasSize", "atlasGroup", "colorSpace", "animationReference", "drawOrder", "license", "provenance", "revision", "status", "reviewer", "acceptanceEvidence", "priority", "notes"],
+        "properties": {
+          "assetId": { "type": "string", "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$" },
+          "category": { "type": "string" },
+          "logicalOwnerId": { "type": "string" },
+          "sourcePath": { "type": "string", "pattern": "^assets-source/" },
+          "runtimePaths": { "type": "array", "items": { "type": "string" } },
+          "sourceWidth": { "type": ["integer", "null"], "minimum": 1 },
+          "sourceHeight": { "type": ["integer", "null"], "minimum": 1 },
+          "runtimeWidth": { "type": ["integer", "null"], "minimum": 1 },
+          "runtimeHeight": { "type": ["integer", "null"], "minimum": 1 },
+          "pivotX": { "type": ["number", "null"] },
+          "pivotY": { "type": ["number", "null"] },
+          "trimOffset": { "type": ["array", "null"], "items": { "type": "integer" } },
+          "originalCanvasSize": { "type": ["array", "null"], "items": { "type": "integer" } },
+          "atlasGroup": { "type": ["string", "null"] },
+          "colorSpace": { "enum": ["sRGB"] },
+          "animationReference": { "type": ["string", "null"] },
+          "drawOrder": { "type": ["integer", "null"] },
+          "license": { "type": "string" },
+          "provenance": { "type": "string" },
+          "revision": { "type": "integer", "minimum": 0 },
+          "status": { "enum": ["planned", "concept", "approved_concept", "source_ready", "rigged", "animated", "runtime_integrated", "qa_passed", "approved"] },
+          "reviewer": { "type": ["string", "null"] },
+          "acceptanceEvidence": { "type": "array", "items": { "type": "string" } },
+          "priority": { "enum": ["P0", "P1", "P2"] },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -165,6 +165,7 @@ def main() -> int:
                 fail(where, f"waveId {node.get('waveId')!r} not found in {node.get('mission')}")
 
     currencies = load("economy/currencies.json")
+    currencies_ids = [c.get("id") for c in currencies["currencies"]] if currencies else []
     if currencies is not None:
         ids = set()
         for currency in currencies["currencies"]:
@@ -200,6 +201,37 @@ def main() -> int:
                 require_int(f"monetization/ad_policy.json[{pid}]", placement, key)
             if "alloy" in json.dumps(placement.get("reward", {})):
                 fail("monetization/ad_policy.json", f"{pid}: ad rewards may not grant premium currency")
+
+    manifest = load("art/asset_manifest.json")
+    if manifest is not None:
+        where = "art/asset_manifest.json"
+        statuses = ["planned", "concept", "approved_concept", "source_ready", "rigged", "animated",
+                    "runtime_integrated", "qa_passed", "approved"]
+        known_owners = ({g["id"] for g in gears} | enemy_ids | set(currencies_ids)
+                        | {"hero.rivet", "fortress.wayfarer", "region.copperwash", "project", "board", "ui", "vfx",
+                           "route", "rewards", "audio", "store", "booster.vanguard",
+                           "event.scrapstorm", "event.gear_frenzy", "event.engineering_trials"})
+        seen_assets = set()
+        for asset in manifest["assets"]:
+            aid = asset.get("assetId")
+            if not isinstance(aid, str) or not re.match(r"^[a-z0-9]+(_[a-z0-9]+)*$", aid) or aid in seen_assets:
+                fail(where, f"invalid or duplicate assetId {aid!r}")
+            seen_assets.add(aid)
+            owner = asset.get("logicalOwnerId", "")
+            if owner not in known_owners and not owner.startswith("gearbound."):
+                fail(where, f"{aid}: logicalOwnerId {owner!r} is not a known data ID or provisional owner")
+            status = asset.get("status")
+            if status not in statuses:
+                fail(where, f"{aid}: unknown status {status!r}")
+            elif statuses.index(status) >= statuses.index("approved_concept"):
+                if not asset.get("reviewer") or not asset.get("acceptanceEvidence"):
+                    fail(where, f"{aid}: status {status} needs a reviewer and acceptance evidence")
+                if asset.get("license") in ("", "pending") or asset.get("provenance") in ("", "none"):
+                    fail(where, f"{aid}: status {status} needs a license and provenance")
+            if status in ("runtime_integrated", "qa_passed", "approved") and not asset.get("runtimePaths"):
+                fail(where, f"{aid}: status {status} needs runtime paths")
+            if not str(asset.get("sourcePath", "")).startswith("assets-source/"):
+                fail(where, f"{aid}: sourcePath must live under assets-source/")
 
     rewards = load("events/progression_rewards.json")
     if rewards is not None:
