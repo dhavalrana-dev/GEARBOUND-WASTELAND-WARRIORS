@@ -75,7 +75,7 @@ The goal is a finished game, not an oversized unfinished prototype.
 | 00 | Repository and simulation foundation | Implemented; device verification pending |
 | 01 | Toolchain and build readiness | **Blocked** (Android NDK license, user action) |
 | 02 | Complete mechanical workshop | **Implemented in Flutter** (shop, drag, move, undo, previews); device test and Unity port (GB-036) pending |
-| 03 | Combat and multi-wave mission flow | In progress: multi-wave and intermission done (node 1); hero abilities, combat depth and lifecycle pending |
+| 03 | Combat and multi-wave mission flow | In progress: multi-wave, intermission and lifecycle (pause, background, Back, rotation) done; process-death restore (GB-053), hero abilities and combat depth pending |
 | 04 | Visual preproduction | Planned (asset manifest created, all `planned`) |
 | 05 | Production vertical slice | Planned |
 | 06 | Unity and Flutter playable parity | Partial (simulation, economy and ad-policy parity only) |

@@ -93,6 +93,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       ..onDropCell = _onDrop
       ..onDragCancelled = (() => _dragFrom = null)
       ..previewCell = _previewCell;
+    _lifecycle = AppLifecycleListener(onHide: _onAppHidden);
     _game.onSessionChanged = () {
       if (_session.phase == BattlePhase.intermission &&
           _intermissionsHandled <= _session.waveIndex) {
@@ -312,8 +313,72 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  /// True once the first wave has started and until the mission ends.
+  bool get _missionActive =>
+      _session.phase == BattlePhase.combat ||
+      _session.phase == BattlePhase.intermission;
+
+  bool _pauseMenuOpen = false;
+  bool _confirmAbandon = false;
+
+  /// One game canvas for the whole mission: the key lets Flutter move it
+  /// between the portrait and landscape layouts instead of rebuilding it.
+  final _gameKey = GlobalKey();
+  late final AppLifecycleListener _lifecycle;
+
+  void _onAppHidden() {
+    _game.onAppBackgrounded();
+    if (_game.simulationPaused && mounted) {
+      setState(() => _pauseMenuOpen = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  void _openPauseMenu() {
+    if (!_missionActive) return;
+    _game.setSimulationPaused(true);
+    setState(() {
+      _pauseMenuOpen = true;
+      _confirmAbandon = false;
+    });
+  }
+
+  void _resume() {
+    _game.setSimulationPaused(false);
+    setState(() {
+      _pauseMenuOpen = false;
+      _confirmAbandon = false;
+    });
+  }
+
+  Future<void> _abandon() async {
+    if (!_resultRecorded) {
+      _resultRecorded = true;
+      widget.progress.recordAbandon();
+    }
+    await widget.onProgressSaved(widget.progress);
+    if (mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // System Back during a started mission opens the pause menu instead of
+    // silently leaving (which would dodge a defeat and keep the streak).
+    return PopScope(
+      canPop: !_missionActive,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _openPauseMenu();
+      },
+      child: _buildScaffold(),
+    );
+  }
+
+  Widget _buildScaffold() {
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -338,8 +403,20 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     final enemies = _session.combat.combatants
         .where((unit) => unit.isAlive && unit.faction == CombatFaction.enemy)
         .length;
+    if (_pauseMenuOpen || _game.simulationPaused) {
+      return [
+        _PausePanel(
+          confirmingAbandon: _confirmAbandon,
+          onResume: _resume,
+          onAbandon: () => setState(() => _confirmAbandon = true),
+          onConfirmAbandon: _abandon,
+          onCancelAbandon: () => setState(() => _confirmAbandon = false),
+        ),
+      ];
+    }
     return [
       _StatusCard(
+        onMenu: _missionActive ? _openPauseMenu : null,
         waveNumber: _session.waveIndex + 1,
         waveCount: _session.waves.length,
         poweredGears: powered,
@@ -378,7 +455,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         flex: 11,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
-          child: GearboundGameWidget(game: _game),
+          child: GearboundGameWidget(key: _gameKey, game: _game),
         ),
       ),
       const SizedBox(height: 10),
@@ -400,7 +477,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       Expanded(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
-          child: GearboundGameWidget(game: _game),
+          child: GearboundGameWidget(key: _gameKey, game: _game),
         ),
       ),
       const SizedBox(width: 12),
@@ -488,7 +565,9 @@ class _StatusCard extends StatelessWidget {
     required this.poweredGears,
     required this.enemiesRemaining,
     required this.phase,
+    this.onMenu,
   });
+  final VoidCallback? onMenu;
   final int waveNumber;
   final int waveCount;
   final int poweredGears;
@@ -515,6 +594,12 @@ class _StatusCard extends StatelessWidget {
             ),
           ),
         ),
+        if (onMenu != null)
+          IconButton(
+            onPressed: onMenu,
+            tooltip: 'Pause',
+            icon: const Icon(Icons.pause_circle, color: GbColors.amber),
+          ),
       ],
     ),
   );
@@ -801,4 +886,98 @@ class _ShopPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PausePanel extends StatelessWidget {
+  const _PausePanel({
+    required this.confirmingAbandon,
+    required this.onResume,
+    required this.onAbandon,
+    required this.onConfirmAbandon,
+    required this.onCancelAbandon,
+  });
+
+  final bool confirmingAbandon;
+  final VoidCallback onResume;
+  final VoidCallback onAbandon;
+  final VoidCallback onConfirmAbandon;
+  final VoidCallback onCancelAbandon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: GbColors.panel,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: GbColors.amber),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: confirmingAbandon
+          ? [
+              const Text(
+                'Abandon this mission?',
+                style: TextStyle(
+                  color: GbColors.cream,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Your Overclock Streak resets. Stars, scrap and boosters you already own are kept.',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton(
+                onPressed: onConfirmAbandon,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(46),
+                  foregroundColor: const Color(0xFFE47A66),
+                ),
+                child: const Text('ABANDON MISSION'),
+              ),
+              const SizedBox(height: 6),
+              FilledButton(
+                onPressed: onCancelAbandon,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(46),
+                  backgroundColor: GbColors.amber,
+                  foregroundColor: GbColors.ink,
+                ),
+                child: const Text('KEEP PLAYING'),
+              ),
+            ]
+          : [
+              const Text(
+                'PAUSED',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: GbColors.cream,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 10),
+              FilledButton.icon(
+                onPressed: onResume,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('RESUME'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(46),
+                  backgroundColor: GbColors.amber,
+                  foregroundColor: GbColors.ink,
+                ),
+              ),
+              const SizedBox(height: 6),
+              OutlinedButton(
+                onPressed: onAbandon,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(46),
+                  foregroundColor: GbColors.cream,
+                ),
+                child: const Text('ABANDON MISSION…'),
+              ),
+            ],
+    ),
+  );
 }

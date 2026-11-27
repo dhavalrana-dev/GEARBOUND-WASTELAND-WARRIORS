@@ -12,7 +12,7 @@ Tuning lives in [`shared/events/progression_rewards.json`](../shared/events/prog
 | Star rating | 3★ at ≥75 fortress health, 2★ at ≥40, 1★ for any clear. Best result is kept. | Stars never gate unlocks. | Implemented (Flutter) |
 | Daily contracts | Three small goals (clear a route, power 4 gears in one setup, shift Rivet 3 times). Reset at local midnight. | Each pays once per day; the setup goal measures one setup, not accumulated sessions. | Implemented (Flutter) |
 | Scrapstorm weekly event | Weekly score = sum of each node's best stars this week; three fixed reward tiers. | Only the weekly best per node counts; tiers claim once; resets Monday. | Implemented (Flutter) |
-| Overclock Streak | Each consecutive victory adds one free soldier at wave start (lanes 1, 0, 2), up to 3. | A defeat resets the streak. Leaving mid-battle does not count as a loss. | Implemented (Flutter) |
+| Overclock Streak | Each consecutive victory adds one free soldier at wave start (lanes 1, 0, 2), up to 3. | A defeat resets the streak, and so does abandoning a mission after its first wave started (pause menu or system Back), so quitting cannot protect a streak. Leaving before wave 1 costs nothing. | Implemented (Flutter) |
 | Star chests | Every 6 total stars opens a chest with fixed, visible contents (scrap + Vanguard Drops). | Contents are never random; each chest opens once. | Implemented (Flutter) |
 | Supply Log | 7-day login track; one claim per local day, then loops. | Missed days pause the track; they never reset it. | Implemented (Flutter) |
 | Vanguard Drop booster | Optional pre-wave booster: one Rivetguard soldier in each lane. | Earned only, never sold; stack cap 9; consumed when the wave starts. | Implemented (Flutter) |
