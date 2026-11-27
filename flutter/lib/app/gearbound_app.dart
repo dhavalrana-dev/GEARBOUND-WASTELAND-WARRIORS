@@ -777,7 +777,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _Header(),
+        _Header(scrap: widget.progress.scrap),
         const SizedBox(height: 10),
         Expanded(
           child: ClipRRect(
@@ -838,7 +838,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _Header(compact: true),
+              _Header(compact: true, scrap: widget.progress.scrap),
               const Spacer(),
               _StatusCard(
                 poweredGears: powered,
@@ -885,8 +885,9 @@ class GearboundGameWidget extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({this.compact = false});
+  const _Header({required this.scrap, this.compact = false});
   final bool compact;
+  final int scrap;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -925,7 +926,7 @@ class _Header extends StatelessWidget {
       const SizedBox(width: 8),
       const Icon(Icons.recycling, color: _amber, size: 18),
       const SizedBox(width: 4),
-      const Text('24', style: TextStyle(fontWeight: FontWeight.bold)),
+      Text('$scrap', style: const TextStyle(fontWeight: FontWeight.bold)),
     ],
   );
 }

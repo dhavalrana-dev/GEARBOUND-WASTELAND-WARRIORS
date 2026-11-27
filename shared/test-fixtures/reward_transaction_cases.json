@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "description": "Hand-authored ledger cases. Each step applies one request to the running wallet; status and balances after the step must match in every engine.",
+  "boosterMaxStack": { "booster.vanguard": 9 },
+  "cases": [
+    {
+      "id": "grant-then-duplicate",
+      "steps": [
+        { "request": { "key": "first_clear:copperwash-01", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "workshop_scrap", "amount": 6 } ] },
+          "expect": { "status": "applied", "balances": { "workshop_scrap": 6 } } },
+        { "request": { "key": "first_clear:copperwash-01", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "workshop_scrap", "amount": 6 } ] },
+          "expect": { "status": "duplicate", "balances": { "workshop_scrap": 6 } } }
+      ]
+    },
+    {
+      "id": "atomic-bundle-and-insufficient-spend",
+      "steps": [
+        { "request": { "key": "star_chest:6", "type": "grant", "source": "star_chest", "verification": "local", "deltas": [ { "asset": "workshop_scrap", "amount": 10 }, { "asset": "booster.vanguard", "amount": 1 } ] },
+          "expect": { "status": "applied", "balances": { "workshop_scrap": 10, "booster.vanguard": 1 } } },
+        { "request": { "key": "spend:1", "type": "spend", "source": "workshop", "verification": "local", "deltas": [ { "asset": "workshop_scrap", "amount": -4 }, { "asset": "booster.vanguard", "amount": -2 } ] },
+          "expect": { "status": "rejected", "reason": "insufficient", "balances": { "workshop_scrap": 10, "booster.vanguard": 1 } } },
+        { "request": { "key": "spend:1", "type": "spend", "source": "workshop", "verification": "local", "deltas": [ { "asset": "workshop_scrap", "amount": -4 }, { "asset": "booster.vanguard", "amount": -1 } ] },
+          "expect": { "status": "applied", "balances": { "workshop_scrap": 6, "booster.vanguard": 0 } } }
+      ]
+    },
+    {
+      "id": "premium-requires-verification",
+      "steps": [
+        { "request": { "key": "purchase:local-ui", "type": "purchase", "source": "ui", "verification": "local", "deltas": [ { "asset": "alloy", "amount": 100 } ] },
+          "expect": { "status": "rejected", "reason": "unverified_premium", "balances": { "alloy": 0 } } },
+        { "request": { "key": "purchase:GPA.1234", "type": "purchase", "source": "store", "verification": "verified", "deltas": [ { "asset": "alloy", "amount": 100 } ] },
+          "expect": { "status": "applied", "balances": { "alloy": 100 } } },
+        { "request": { "key": "alloy_spend:1", "type": "spend", "source": "depot", "verification": "local", "deltas": [ { "asset": "alloy", "amount": -40 } ] },
+          "expect": { "status": "applied", "balances": { "alloy": 60 } } }
+      ]
+    },
+    {
+      "id": "booster-stack-clamps-currency-overflow-rejects",
+      "steps": [
+        { "request": { "key": "login:7", "type": "grant", "source": "supply_log", "verification": "local", "deltas": [ { "asset": "booster.vanguard", "amount": 12 } ] },
+          "expect": { "status": "applied", "balances": { "booster.vanguard": 9 } } },
+        { "request": { "key": "cheat", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "battle_scrap", "amount": 100001 } ] },
+          "expect": { "status": "rejected", "reason": "overflow", "balances": { "battle_scrap": 0 } } }
+      ]
+    },
+    {
+      "id": "invalid-requests",
+      "steps": [
+        { "request": { "key": "unknown", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "gems", "amount": 5 } ] },
+          "expect": { "status": "rejected", "reason": "invalid", "balances": {} } },
+        { "request": { "key": "zero", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "xp", "amount": 0 } ] },
+          "expect": { "status": "rejected", "reason": "invalid", "balances": { "xp": 0 } } },
+        { "request": { "key": "", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "xp", "amount": 5 } ] },
+          "expect": { "status": "rejected", "reason": "invalid", "balances": { "xp": 0 } } },
+        { "request": { "key": "dup-asset", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "xp", "amount": 5 }, { "asset": "xp", "amount": 5 } ] },
+          "expect": { "status": "rejected", "reason": "invalid", "balances": { "xp": 0 } } },
+        { "request": { "key": "zero", "type": "grant", "source": "campaign", "verification": "local", "deltas": [ { "asset": "xp", "amount": 25 } ] },
+          "expect": { "status": "applied", "balances": { "xp": 25 } } }
+      ]
+    }
+  ]
+}

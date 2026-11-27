@@ -19,10 +19,11 @@ Tuning lives in [`shared/events/progression_rewards.json`](../shared/events/prog
 
 ## Principles
 
-- No paid random rewards, energy/lives timers, or forced ads (see `AGENTS.md`).
+- No paid random rewards or energy/lives timers. Monetization follows the revised policy in `AGENTS.md`: optional rewarded ads add to the normal reward and never replace it, interstitials appear only at transitions, and purchases have fixed contents.
+- Every reward is paid through the wallet ledger with an idempotency key (`docs/REWARD_TRANSACTION_SYSTEM.md`).
 - Missing a day must never cost progress already earned.
 - Boosters help but never replace the gear machine. At most 2 opening soldiers per lane, under the per-lane unit cap of 4.
-- Local device dates are used. Server-backed calendars, leaderboards and clock-abuse handling come before any "global" event is advertised.
+- Local device dates are used, with a monotonic guard against rolling the clock back. Forward jumps cannot be detected offline, so server time must come before any "global" event or valuable time-gated reward.
 
 ## Planned next (not implemented)
 

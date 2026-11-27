@@ -9,6 +9,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **Extension spec, Phase A (audit) and Phase B (economy foundation) done on `feature/progression-economy-foundation`.** See `docs/REPOSITORY_AUDIT.md`. This work added the ledger-backed wallet (Dart + C#), save v3 with v1/v2 migration, a two-slot store with corruption recovery, a clock-rollback guard, the ad policy engine (Dart + C#) and the mock-provider rewarded controller (Dart). The `AGENTS.md` monetization policy was revised.
 - Phase 0 foundation completed for shared rules: `xorshift32-v1` RNG, seeded gear shop, data-driven wave director and enemy archetypes in both engines, all checked against independent fixtures.
 - Phase 1: campaign route slice and replay layer. This session added Overclock Streak, star chests, the Supply Log and Vanguard Drop boosters (Flutter).
 - Phase 1 (earlier): campaign route slice and replay layer.
@@ -16,6 +17,12 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 4 (audit + economy foundation)
+- **Baseline at `931f875` before changes:** Unity 28/28. Flutter analyze clean. Flutter tests **1 failure**: assets differed from `shared/` only in line endings, caused by `core.autocrlf` with no `.gitattributes`. Fixed by adding `.gitattributes`; Flutter returned to 44/44.
+- **After this session's work:** Unity EditMode **30/30** (adds ledger and ad-policy parity). Flutter analyze clean. Flutter tests **88/88** (44 before this session, plus wallet, migration, store, clock-guard and ad-policy tests). Validator, reference fixtures, asset sync and combat traces all clean.
+- All 44 pre-existing Flutter tests still pass unchanged after `CampaignProgress` moved onto the ledger.
+- **Not done:** no real ad or purchase SDK and no consent flow. `ad_policy.json` `enabled` is false. Mock providers report `isLive == false`.
+
 ### 2026-11-27 session 3 (combat parity, widget tests, shared assets)
 - **Cross-engine combat parity (spec scenario 4): verified for 4 scenarios.** `tools/simulation/generate_combat_traces.ps1` compiles the Unity Core sources with Unity's bundled Mono and writes `combat_traces.json`. The Dart runner reproduces every per-tick FNV-1a trace hash, checkpoint and outcome exactly, covering 2 victories, 2 defeats, a boss wave, boosters, an unpowered gear and hero lane commands. Unity replays the same file in-editor.
 - Unity EditMode: **passed, 28/28**. Flutter analyze: no issues. Flutter tests: **passed, 44/44** (adds 3 widget tests, 3 shared-content tests and 1 combat-parity test).

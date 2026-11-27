@@ -28,4 +28,14 @@ Statuses: `todo`, `in progress`, `blocked`, `done`. A task is done only after it
 | GB-022 | P1 | Cross-engine combat trace fixture (spec scenario 4) | GB-016 | Same seed/config gives identical combat event trace in both engines | combat_scenarios.json, combat_traces.json, C#/Dart runners | done (4 scenarios) |
 | GB-024 | P1 | Migrate route nodes 2–12 to shared mission data | GB-021 | Each node's spawns defined in shared JSON; balance change reviewed | campaign_route.json, missions | todo |
 | GB-025 | P1 | Multi-wave missions with inter-wave preparation in Flutter | GB-021 | Spec loop steps 19–23 playable: wave, reward, rebuild, next wave | battle flow + tests | todo |
+| GB-026 | P0 | Repository audit (extension Phase A) | — | Findings cite files; baseline re-run | docs/REPOSITORY_AUDIT.md | done |
+| GB-027 | P0 | Wallet + idempotent ledger, separated currencies (Dart + C#) | GB-026 | reward_transaction_cases pass in both engines | wallet.dart, Wallet.cs, currencies.json | done |
+| GB-028 | P0 | Save v3, v1/v2 migration, two-slot store, corruption recovery, clock guard | GB-027 | save_migration_cases pass; corrupted primary recovers; newer saves never overwritten | campaign_store.dart, save_migration_test.dart | done |
+| GB-029 | P1 | Ad policy engine + mock rewarded controller | GB-027 | ad_policy_cases pass in both engines; grant-once under duplicate callbacks | ad_policy.dart, ad_provider.dart, AdPolicy.cs | done (no SDK) |
+| GB-030 | P0 | Gear shop + placement UI in Flutter workshop (battle scrap) | GB-017, GB-027 | Buy, place, merge, reroll and sell with battle_scrap through the ledger | workshop feature module + widget tests | todo |
+| GB-031 | P1 | Split gearbound_app.dart into feature modules | — | No behavior change; all tests pass | lib/features/* | todo |
+| GB-032 | P1 | Data-driven daily/weekly contract pools and achievements | GB-027 | Deterministic daily selection, unlock filtering, completion chest | shared/events/*, tests | todo |
+| GB-033 | P1 | Event engine: Scrapstorm v2, Gear Frenzy, Engineering Trials | GB-032 | Lifecycle states, claim windows, offline cache | event_catalog.json, tests | todo |
+| GB-034 | P1 | Real ad SDK + UMP consent behind policy (Phase F) | GB-029 | Google test ads in a debug build; consent gating verified on device | ads service | blocked (AdMob account, device build) |
+| GB-035 | P1 | IAP with server verification (Phases G–H) | GB-027 | Sandbox purchase verified server-side; restore works | purchase service + backend | blocked (store accounts, backend) |
 | GB-023 | P2 | Achievements and rotating weekly event rule sets | GB-020 | Data-driven, offline, cosmetic/earn-only rewards | progression_rewards.json extension | todo |

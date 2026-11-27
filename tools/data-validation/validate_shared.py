@@ -140,6 +140,43 @@ def main() -> int:
             if node.get("waveId") not in wave_ids:
                 fail(where, f"waveId {node.get('waveId')!r} not found in {node.get('mission')}")
 
+    currencies = load("economy/currencies.json")
+    if currencies is not None:
+        ids = set()
+        for currency in currencies["currencies"]:
+            cid = currency.get("id")
+            if not isinstance(cid, str) or not re.match(r"^[a-z][a-z0-9_]*$", cid) or cid in ids:
+                fail("economy/currencies.json", f"invalid or duplicate currency id {cid!r}")
+            ids.add(cid)
+            require_int(f"economy/currencies.json[{cid}]", currency, "max", 1)
+            if currency.get("scope") not in {"mission", "persistent", "event"}:
+                fail("economy/currencies.json", f"{cid}: unknown scope")
+        if not any(c.get("premium") for c in currencies["currencies"]):
+            fail("economy/currencies.json", "expected one premium currency")
+        if any(c.get("premium") and c.get("scope") != "persistent" for c in currencies["currencies"]):
+            fail("economy/currencies.json", "premium currency must be persistent")
+
+    ads = load("monetization/ad_policy.json")
+    if ads is not None:
+        inter = ads["interstitial"]
+        forbidden = {"combat", "gear_placement", "tutorial", "startup", "purchase"} & set(inter["allowedContexts"])
+        if forbidden:
+            fail("monetization/ad_policy.json", f"interstitials may not run in {sorted(forbidden)}")
+        for key in ("adFreeFirstMissions", "minMissionsBetween", "minSecondsBetween", "maxPerSession", "suppressSecondsAfterRewarded"):
+            require_int("monetization/ad_policy.json[interstitial]", inter, key)
+        if ads.get("rewardedInterstitial", {}).get("enabled"):
+            fail("monetization/ad_policy.json", "rewarded interstitials must stay disabled until policy review")
+        seen = set()
+        for placement in ads["rewardedPlacements"]:
+            pid = placement.get("id", "")
+            if pid in seen or not pid.startswith("rewarded."):
+                fail("monetization/ad_policy.json", f"invalid or duplicate placement {pid!r}")
+            seen.add(pid)
+            for key in ("dailyCap", "perMissionCap", "cooldownSeconds"):
+                require_int(f"monetization/ad_policy.json[{pid}]", placement, key)
+            if "alloy" in json.dumps(placement.get("reward", {})):
+                fail("monetization/ad_policy.json", f"{pid}: ad rewards may not grant premium currency")
+
     rewards = load("events/progression_rewards.json")
     if rewards is not None:
         where = "events/progression_rewards.json"

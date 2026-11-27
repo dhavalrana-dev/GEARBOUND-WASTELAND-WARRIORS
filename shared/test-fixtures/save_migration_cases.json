@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "description": "Legacy saves and what a v3 load must preserve. 'replayClaims' are claim attempts made right after migration; every one must be refused because it was already paid before the ledger existed.",
+  "cases": [
+    {
+      "id": "v1-scrap-only",
+      "save": { "scrap": 4, "bestStars": { "copperwash-01": 2 } },
+      "expect": { "migratedFrom": 1, "workshop_scrap": 4, "boosters": {}, "bestStars": { "copperwash-01": 2 }, "winStreak": 0, "loginStep": 0 },
+      "replayClaims": []
+    },
+    {
+      "id": "v2-full",
+      "save": {
+        "saveVersion": 2, "scrap": 37, "bestStars": { "copperwash-01": 3, "copperwash-02": 3 },
+        "dayKey": "2026-11-23", "contractProgress": { "daily-win": 1 }, "claimedContracts": ["daily-win"],
+        "weekKey": "2026-11-23", "eventPoints": 6, "claimedEventTiers": [3],
+        "weeklyBestStars": { "copperwash-01": 3, "copperwash-02": 3 },
+        "winStreak": 2, "boosters": { "booster.vanguard": 3 }, "claimedStarChests": [6],
+        "loginStep": 2, "lastLoginClaimDay": "2026-11-23"
+      },
+      "expect": { "migratedFrom": 2, "workshop_scrap": 37, "boosters": { "booster.vanguard": 3 }, "bestStars": { "copperwash-01": 3, "copperwash-02": 3 }, "winStreak": 2, "loginStep": 2 },
+      "replayClaims": ["starChest:6", "eventTier:3", "supplyLogSameDay"]
+    },
+    {
+      "id": "v2-hostile-values-sanitized",
+      "save": {
+        "saveVersion": 2, "scrap": -50, "bestStars": { "copperwash-01": 9, "copperwash-02": 0 },
+        "winStreak": 99, "boosters": { "booster.vanguard": 40, "booster.unknown": 5 }, "loginStep": -3
+      },
+      "expect": { "migratedFrom": 2, "workshop_scrap": 0, "boosters": { "booster.vanguard": 9 }, "bestStars": { "copperwash-01": 3 }, "winStreak": 3, "loginStep": 0 },
+      "replayClaims": []
+    }
+  ]
+}

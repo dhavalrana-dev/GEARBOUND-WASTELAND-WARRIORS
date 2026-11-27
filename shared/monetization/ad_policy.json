@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "interstitial": {
+    "allowedContexts": ["mission_complete_transition"],
+    "adFreeFirstMissions": 3,
+    "minMissionsBetween": 2,
+    "minSecondsBetween": 180,
+    "maxPerSession": 4,
+    "suppressSecondsAfterRewarded": 120,
+    "disabledByEntitlement": "gearbound.no_ads"
+  },
+  "rewardedInterstitial": { "enabled": false },
+  "rewardedPlacements": [
+    { "id": "rewarded.daily_supply", "reward": { "scrap": 10 }, "dailyCap": 3, "perMissionCap": 0, "cooldownSeconds": 0, "enabled": true },
+    { "id": "rewarded.victory_double", "reward": { "doubleMissionScrap": true }, "dailyCap": 0, "perMissionCap": 1, "cooldownSeconds": 0, "enabled": true },
+    { "id": "rewarded.prep_vanguard", "reward": { "boosters": { "booster.vanguard": 1 } }, "dailyCap": 3, "perMissionCap": 1, "cooldownSeconds": 0, "enabled": true },
+    { "id": "rewarded.shop_reroll", "reward": { "freeReroll": 1 }, "dailyCap": 0, "perMissionCap": 1, "cooldownSeconds": 0, "enabled": true },
+    { "id": "rewarded.emergency_continue", "reward": { "continueMission": true }, "dailyCap": 0, "perMissionCap": 1, "cooldownSeconds": 0, "enabled": true }
+  ]
+}

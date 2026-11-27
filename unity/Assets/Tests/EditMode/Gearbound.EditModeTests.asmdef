@@ -1,7 +1,14 @@
 {
   "name": "Gearbound.EditModeTests",
   "rootNamespace": "Gearbound.Tests",
-  "references": ["Gearbound.Core"],
-  "optionalUnityReferences": ["TestAssemblies"],
-  "includePlatforms": ["Editor"]
+  "references": [
+    "Gearbound.Core",
+    "Gearbound.Economy"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
 }
