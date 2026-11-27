@@ -10,8 +10,20 @@
       "worldLengthMm": 20000,
       "maxTicks": 3600,
       "gears": [
-        { "id": "core", "kind": "core", "x": 2, "y": 2 },
-        { "id": "press-a", "kind": "infantry", "x": 1, "y": 2, "intervalTicks": 90, "targetLane": 1 }
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 1
+        }
       ],
       "heroCommands": []
     },
@@ -21,9 +33,28 @@
       "worldLengthMm": 20000,
       "maxTicks": 3600,
       "gears": [
-        { "id": "core", "kind": "core", "x": 2, "y": 2 },
-        { "id": "press-a", "kind": "infantry", "x": 1, "y": 2, "intervalTicks": 90, "targetLane": 0 },
-        { "id": "press-b", "kind": "infantry", "x": 3, "y": 2, "intervalTicks": 90, "targetLane": 2 }
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 0
+        },
+        {
+          "id": "press-b",
+          "kind": "infantry",
+          "x": 3,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 2
+        }
       ],
       "heroCommands": []
     },
@@ -33,14 +64,59 @@
       "worldLengthMm": 10000,
       "maxTicks": 3600,
       "gears": [
-        { "id": "core", "kind": "core", "x": 0, "y": 2 },
-        { "id": "coupler", "kind": "transmission", "x": 1, "y": 2 },
-        { "id": "ratchet", "kind": "booster", "x": 1, "y": 1 },
-        { "id": "press-a", "kind": "infantry", "x": 2, "y": 2, "intervalTicks": 90, "targetLane": 0 },
-        { "id": "press-b", "kind": "infantry", "x": 1, "y": 3, "intervalTicks": 90, "targetLane": 2 },
-        { "id": "loose", "kind": "infantry", "x": 4, "y": 4, "intervalTicks": 60, "targetLane": 1 }
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 0,
+          "y": 2
+        },
+        {
+          "id": "coupler",
+          "kind": "transmission",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "id": "ratchet",
+          "kind": "booster",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 2,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 0
+        },
+        {
+          "id": "press-b",
+          "kind": "infantry",
+          "x": 1,
+          "y": 3,
+          "intervalTicks": 90,
+          "targetLane": 2
+        },
+        {
+          "id": "loose",
+          "kind": "infantry",
+          "x": 4,
+          "y": 4,
+          "intervalTicks": 60,
+          "targetLane": 1
+        }
       ],
-      "heroCommands": [ { "tick": 40, "lane": 0 }, { "tick": 140, "lane": 1 } ]
+      "heroCommands": [
+        {
+          "tick": 40,
+          "lane": 0
+        },
+        {
+          "tick": 140,
+          "lane": 1
+        }
+      ]
     },
     {
       "id": "boss-wave-hero-rotation",
@@ -48,13 +124,116 @@
       "worldLengthMm": 10000,
       "maxTicks": 3600,
       "gears": [
-        { "id": "core", "kind": "core", "x": 2, "y": 2 },
-        { "id": "press-a", "kind": "infantry", "x": 1, "y": 2, "intervalTicks": 90, "targetLane": 0 },
-        { "id": "press-b", "kind": "infantry", "x": 3, "y": 2, "intervalTicks": 90, "targetLane": 2 },
-        { "id": "press-c", "kind": "infantry", "x": 2, "y": 1, "intervalTicks": 90, "targetLane": 1 },
-        { "id": "ratchet", "kind": "booster", "x": 2, "y": 3 }
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 0
+        },
+        {
+          "id": "press-b",
+          "kind": "infantry",
+          "x": 3,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 2
+        },
+        {
+          "id": "press-c",
+          "kind": "infantry",
+          "x": 2,
+          "y": 1,
+          "intervalTicks": 90,
+          "targetLane": 1
+        },
+        {
+          "id": "ratchet",
+          "kind": "booster",
+          "x": 2,
+          "y": 3
+        }
       ],
-      "heroCommands": [ { "tick": 0, "lane": 0 }, { "tick": 120, "lane": 2 }, { "tick": 240, "lane": 1 } ]
+      "heroCommands": [
+        {
+          "tick": 0,
+          "lane": 0
+        },
+        {
+          "tick": 120,
+          "lane": 2
+        },
+        {
+          "tick": 240,
+          "lane": 1
+        }
+      ]
+    },
+    {
+      "id": "boss-wave-hero-special",
+      "waveId": "wave.3",
+      "worldLengthMm": 10000,
+      "maxTicks": 3600,
+      "gears": [
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 0
+        },
+        {
+          "id": "press-b",
+          "kind": "infantry",
+          "x": 3,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 2
+        },
+        {
+          "id": "press-c",
+          "kind": "infantry",
+          "x": 2,
+          "y": 1,
+          "intervalTicks": 90,
+          "targetLane": 1
+        },
+        {
+          "id": "ratchet",
+          "kind": "booster",
+          "x": 2,
+          "y": 3
+        }
+      ],
+      "heroCommands": [
+        {
+          "tick": 0,
+          "lane": 0
+        },
+        {
+          "tick": 120,
+          "lane": 2
+        },
+        {
+          "tick": 240,
+          "lane": 1
+        }
+      ],
+      "heroUsesSpecialWhenReady": true
     }
   ]
 }

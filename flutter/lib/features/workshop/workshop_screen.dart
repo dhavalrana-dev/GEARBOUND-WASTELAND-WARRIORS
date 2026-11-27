@@ -433,6 +433,12 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         onStartWave: _startWave,
         canStartWave: _canEdit,
         isCombat: _session.phase == BattlePhase.combat,
+        heroSp: _session.heroSp,
+        spMax: _session.special.spMax,
+        specialReady: _session.specialReady,
+        onSpecial: () {
+          if (_session.useHeroSpecial()) setState(() {});
+        },
       ),
       if (_session.phase == BattlePhase.victory ||
           _session.phase == BattlePhase.defeat) ...[
@@ -612,7 +618,15 @@ class _Actions extends StatelessWidget {
     required this.onStartWave,
     required this.canStartWave,
     required this.isCombat,
+    required this.heroSp,
+    required this.spMax,
+    required this.specialReady,
+    required this.onSpecial,
   });
+  final int heroSp;
+  final int spMax;
+  final bool specialReady;
+  final VoidCallback onSpecial;
   final VoidCallback onLaneDown;
   final VoidCallback onLaneUp;
   final VoidCallback onStartWave;
@@ -641,6 +655,46 @@ class _Actions extends StatelessWidget {
       ),
       if (isCombat) ...[
         const SizedBox(height: 6),
+        Row(
+          children: [
+            const Text(
+              'SP',
+              style: TextStyle(
+                color: GbColors.cream,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: spMax == 0 ? 0 : heroSp / spMax,
+                  minHeight: 8,
+                  color: specialReady
+                      ? GbColors.amber
+                      : const Color(0xFF6FB6C4),
+                  backgroundColor: Colors.black26,
+                  // Progress-bar semantics values must be numeric.
+                  semanticsLabel: 'Special charge percent',
+                  semanticsValue: '${spMax == 0 ? 0 : heroSp * 100 ~/ spMax}',
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.icon(
+              onPressed: specialReady ? onSpecial : null,
+              icon: const Icon(Icons.bolt),
+              label: const Text('WRENCH QUAKE'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(48, 44),
+                backgroundColor: GbColors.amber,
+                foregroundColor: GbColors.ink,
+              ),
+            ),
+          ],
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

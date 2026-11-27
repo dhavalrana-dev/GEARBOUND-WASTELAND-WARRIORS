@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "heroes": [
+    {
+      "id": "hero.rivet",
+      "name": "Rivet",
+      "health": 100,
+      "armor": 2,
+      "damage": 12,
+      "attackRangeMm": 900,
+      "movementMmPerTick": 35,
+      "attackIntervalTicks": 18,
+      "special": {
+        "id": "special.wrench_quake",
+        "name": "Wrench Quake",
+        "spMax": 100,
+        "spPerHit": 10,
+        "damage": 25,
+        "radiusMm": 1200
+      }
+    }
+  ]
+}

@@ -240,6 +240,24 @@ def main() -> int:
             if not str(asset.get("sourcePath", "")).startswith("assets-source/"):
                 fail(where, f"{aid}: sourcePath must live under assets-source/")
 
+    heroes = load("heroes/heroes.json")
+    if heroes is not None:
+        where = "heroes/heroes.json"
+        unique_ids(where, heroes.get("heroes", []))
+        for hero in heroes.get("heroes", []):
+            hw = f"{where}[{hero.get('id')}]"
+            for key, minimum in (("health", 1), ("armor", 0), ("damage", 1), ("attackRangeMm", 0),
+                                 ("movementMmPerTick", 0), ("attackIntervalTicks", 1)):
+                require_int(hw, hero, key, minimum)
+            special = hero.get("special")
+            if not isinstance(special, dict):
+                fail(hw, "special is required")
+                continue
+            for key, minimum in (("spMax", 1), ("spPerHit", 1), ("damage", 1), ("radiusMm", 0)):
+                require_int(f"{hw}.special", special, key, minimum)
+            if isinstance(special.get("spPerHit"), int) and isinstance(special.get("spMax"), int)                     and special["spPerHit"] > special["spMax"]:
+                fail(hw, "special.spPerHit cannot exceed spMax (the special would charge on one hit)")
+
     rewards = load("events/progression_rewards.json")
     if rewards is not None:
         where = "events/progression_rewards.json"

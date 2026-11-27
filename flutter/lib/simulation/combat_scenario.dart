@@ -94,6 +94,8 @@ CombatScenarioResult _run(
     combat: CombatSimulation(worldLengthMm: s['worldLengthMm'] as int),
   )..start();
   final maxTicks = s['maxTicks'] as int;
+  // Optional: the hero uses the special as soon as it is ready.
+  final autoSpecial = s['heroUsesSpecialWhenReady'] as bool? ?? false;
   var hash = _fnvOffset;
   final checkpoints = <int>[];
   while (session.phase == BattlePhase.combat &&
@@ -103,6 +105,7 @@ CombatScenarioResult _run(
         session.moveHeroToLane(command.lane);
       }
     }
+    if (autoSpecial) session.useHeroSpecial();
     session.tick();
     final line = StringBuffer()
       ..write(session.elapsedTicks)
@@ -126,6 +129,7 @@ CombatScenarioResult _run(
         ..write(u.state.name.toLowerCase())
         ..write(';');
     }
+    if (autoSpecial) line.write('sp:${session.heroSp}');
     for (final unit in line.toString().codeUnits) {
       hash = ((hash ^ unit) * _fnvPrime) & _mask32;
     }

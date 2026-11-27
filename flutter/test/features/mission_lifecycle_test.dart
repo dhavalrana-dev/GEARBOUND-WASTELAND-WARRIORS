@@ -257,4 +257,30 @@ void main() {
     expect(progress.scrap, scrap);
     expect(progress.starsFor('copperwash-01'), 3);
   });
+
+  testWidgets('Wrench Quake enables at full SP and fires through the session', (
+    tester,
+  ) async {
+    usePhone(tester);
+    final game = await open(tester);
+    await tester.tap(find.text('START WAVE'));
+    await tester.pump();
+    final s = game.session;
+    FilledButton quake() => tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('WRENCH QUAKE'),
+        matching: find.byWidgetPredicate((w) => w is FilledButton),
+      ),
+    );
+    expect(quake().onPressed, isNull);
+    s.heroSp = s.special.spMax;
+    game.onSessionChanged!();
+    await tester.pump();
+    expect(quake().onPressed, isNotNull);
+    await tester.tap(find.text('WRENCH QUAKE'));
+    await tester.pump();
+    expect(s.specialReady, isFalse); // queued
+    s.tick();
+    expect(s.heroSp, lessThan(s.special.spMax));
+  });
 }

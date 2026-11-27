@@ -111,9 +111,45 @@ class CombatSimulation {
     return false;
   }
 
+  /// Unit hits resolved during the most recent [tick], in resolution order.
+  /// Fortress hits are not included. Read-only bookkeeping: it never changes
+  /// combat outcomes.
+  List<({int attackerId, int targetId})> get lastHits =>
+      List.unmodifiable(_lastHits);
+  final List<({int attackerId, int targetId})> _lastHits = [];
+
+  /// Deals [damage] (armor, reduction and shields apply as for a normal hit)
+  /// to every living combatant of [faction] in [lane] within [radiusMm] of
+  /// [centerMm], in entity ID order. Returns how many were hit.
+  int areaDamage({
+    required CombatFaction faction,
+    required int lane,
+    required int centerMm,
+    required int radiusMm,
+    required int damage,
+  }) {
+    final targets =
+        _combatants
+            .where(
+              (u) =>
+                  u.isAlive &&
+                  u.faction == faction &&
+                  u.lane == lane &&
+                  (u.positionMm - centerMm).abs() <= radiusMm,
+            )
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+    for (final target in targets) {
+      _applyDamage(target, damage);
+      if (target.health <= 0) target.state = CombatState.dead;
+    }
+    return targets.length;
+  }
+
   void tick() {
     if (isDefeated) return;
     tickIndex++;
+    _lastHits.clear();
     final living = _combatants.where((unit) => unit.isAlive).toList()
       ..sort((a, b) => a.id.compareTo(b.id));
 
@@ -195,6 +231,7 @@ class CombatSimulation {
           (unit) => unit.id == event.targetId,
         );
         _applyDamage(target, event.damage);
+        _lastHits.add((attackerId: event.attackerId, targetId: event.targetId));
       }
     }
     for (final unit in _combatants.where((unit) => unit.health <= 0)) {

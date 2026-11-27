@@ -70,6 +70,32 @@ class WaveDefinition {
   }
 }
 
+/// A hero's special ability, from shared/heroes/heroes.json.
+class HeroSpecial {
+  const HeroSpecial({
+    required this.id,
+    required this.spMax,
+    required this.spPerHit,
+    required this.damage,
+    required this.radiusMm,
+  });
+
+  /// Rivet's Wrench Quake. The parity test keeps this equal to heroes.json.
+  static const rivet = HeroSpecial(
+    id: 'special.wrench_quake',
+    spMax: 100,
+    spPerHit: 10,
+    damage: 25,
+    radiusMm: 1200,
+  );
+
+  final String id;
+  final int spMax;
+  final int spPerHit;
+  final int damage;
+  final int radiusMm;
+}
+
 class BattleSession {
   BattleSession({
     required this.board,
@@ -77,6 +103,7 @@ class BattleSession {
     required this.wave,
     List<WaveDefinition> laterWaves = const [],
     int heroId = 1,
+    this.special = HeroSpecial.rivet,
     CombatSimulation? combat,
     GearOutputSystem? outputs,
   }) : waves = List.unmodifiable([wave, ...laterWaves]),
@@ -112,6 +139,28 @@ class BattleSession {
   final CombatSimulation combat;
   final GearOutputSystem outputs;
   final int heroId;
+  final HeroSpecial special;
+
+  /// Special points. Gained when the hero's attacks land; spent in full by
+  /// [useHeroSpecial]. Carries across waves.
+  int heroSp = 0;
+  bool _specialQueued = false;
+
+  bool get specialReady =>
+      phase == BattlePhase.combat &&
+      !_specialQueued &&
+      heroSp >= special.spMax &&
+      combat.combatants.any((u) => u.id == heroId && u.isAlive);
+
+  /// Validated hero command. Accepted only in combat with a full SP bar and a
+  /// living hero; the effect applies at the start of the next [tick], after
+  /// spawns and before combat, so it is deterministic in both engines.
+  bool useHeroSpecial() {
+    if (!specialReady) return false;
+    _specialQueued = true;
+    return true;
+  }
+
   BattlePhase phase = BattlePhase.preparation;
   int elapsedTicks = 0;
 
@@ -167,7 +216,29 @@ class BattleSession {
       );
     }
 
+    if (_specialQueued) {
+      _specialQueued = false;
+      for (final hero in combat.combatants) {
+        if (hero.id != heroId || !hero.isAlive) continue;
+        combat.areaDamage(
+          faction: CombatFaction.enemy,
+          lane: hero.lane,
+          centerMm: hero.positionMm,
+          radiusMm: special.radiusMm,
+          damage: special.damage,
+        );
+        heroSp = 0;
+      }
+    }
+
     combat.tick();
+    for (final hit in combat.lastHits) {
+      if (hit.attackerId == heroId) {
+        heroSp = heroSp + special.spPerHit > special.spMax
+            ? special.spMax
+            : heroSp + special.spPerHit;
+      }
+    }
     outputs.tick(board, network, combat);
     elapsedTicks++;
 
