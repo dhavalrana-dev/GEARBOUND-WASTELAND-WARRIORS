@@ -1,0 +1,160 @@
+import 'package:flame/game.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:gearbound/combat/battle_session.dart';
+import 'package:gearbound/data/shared_content.dart';
+import 'package:gearbound/features/workshop/workshop_screen.dart';
+import 'package:gearbound/game/gearbound_game.dart';
+import 'package:gearbound/mechanical/gear_network.dart';
+import 'package:gearbound/progression/campaign_progress.dart';
+import 'package:gearbound/progression/encounters.dart';
+
+void main() {
+  void useTallPhone(WidgetTester tester) {
+    tester.view.physicalSize = const Size(1080, 3200);
+    tester.view.devicePixelRatio = 2.5;
+    addTearDown(tester.view.reset);
+  }
+
+  Future<GearboundGame> pumpWorkshop(
+    WidgetTester tester,
+    SharedContent content,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: WorkshopScreen(
+          levelIndex: 0,
+          progress: CampaignProgress(),
+          onProgressSaved: (_) async {},
+          content: content,
+          shopSeed: 3,
+        ),
+      ),
+    );
+    await tester.pump();
+    return tester
+        .widget<GameWidget<GearboundGame>>(
+          find.byType(GameWidget<GearboundGame>),
+        )
+        .game!;
+  }
+
+  testWidgets('buy an offer, place it, then the wave locks the shop', (
+    tester,
+  ) async {
+    useTallPhone(tester);
+    final content = (await tester.runAsync(
+      () => SharedContent.load(rootBundle),
+    ))!;
+    final game = await pumpWorkshop(tester, content);
+    final board = game.session.board;
+
+    expect(find.text('12 battle scrap'), findsOneWidget);
+    expect(find.text('MOVE PRESS'), findsNothing);
+    expect(board.at(0, 2)?.kind, GearKind.core);
+
+    // Seed 3 with no transmission on the board guarantees a coupler offer.
+    final couplerSlot = [0, 1, 2].firstWhere(
+      (slot) => find
+          .descendant(
+            of: find.byKey(ValueKey('offer-$slot')),
+            matching: find.text('Drive Coupler'),
+          )
+          .evaluate()
+          .isNotEmpty,
+      orElse: () => -1,
+    );
+    expect(couplerSlot, isNot(-1));
+    await tester.tap(find.byKey(ValueKey('offer-$couplerSlot')));
+    await tester.pump();
+    expect(find.text('10 battle scrap'), findsOneWidget);
+    expect(find.textContaining('Placing Drive Coupler'), findsOneWidget);
+    expect(find.text('CANCEL (+2)'), findsOneWidget);
+
+    game.onCellTap!(2, 2);
+    await tester.pump();
+    expect(board.at(2, 2)?.definitionId, 'drive.coupler');
+    expect(
+      game.session.network.nodes[board.at(2, 2)!.id]?.state,
+      NetworkState.powered,
+    );
+
+    // Select the starter press and sell it.
+    game.onCellTap!(1, 2);
+    await tester.pump();
+    expect(find.text('SELL (+2)'), findsOneWidget);
+    await tester.tap(find.text('SELL (+2)'));
+    await tester.pump();
+    expect(board.at(1, 2), isNull);
+    expect(find.text('12 battle scrap'), findsOneWidget);
+
+    await tester.tap(find.text('START WAVE'));
+    await tester.pump();
+    expect(game.session.phase, BattlePhase.combat);
+    expect(find.textContaining('battle scrap'), findsNothing);
+    game.onCellTap!(3, 3);
+    expect(board.at(3, 3), isNull);
+  });
+
+  for (final (name, size) in [
+    ('phone landscape', const Size(2400, 1080)),
+    ('small phone portrait', const Size(720, 1520)),
+    ('tablet landscape', const Size(2732, 2048)),
+  ]) {
+    testWidgets('shop layout does not overflow on $name', (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = size.width > 2000 && size.height > 2000
+          ? 2.0
+          : 2.5;
+      addTearDown(tester.view.reset);
+      final content = (await tester.runAsync(
+        () => SharedContent.load(rootBundle),
+      ))!;
+      await pumpWorkshop(tester, content);
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('battle scrap'), findsOneWidget);
+    });
+  }
+
+  testWidgets('falls back to the demo board when shared content is missing', (
+    tester,
+  ) async {
+    useTallPhone(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: WorkshopScreen(
+          levelIndex: 0,
+          progress: CampaignProgress(),
+          onProgressSaved: (_) async {},
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.textContaining('battle scrap'), findsNothing);
+    expect(find.text('START WAVE'), findsOneWidget);
+  });
+
+  test('board taps map to the drawn cells in portrait and landscape', () {
+    final session = BattleSession(
+      board: GearBoard(),
+      network: GearNetwork.rebuild(GearBoard()),
+      wave: encounterForLevel(0),
+    );
+    final view = WorkshopBoardView(session);
+    for (final size in [Vector2(400, 800), Vector2(900, 420)]) {
+      view.resizeTo(size);
+      // Find the cell size by probing: the top-left cell must map to (0, 0)
+      // and a point far outside must map to nothing.
+      final hits = <({int x, int y})>{};
+      for (var px = 0.0; px < size.x; px += 4) {
+        for (var py = 0.0; py < size.y; py += 4) {
+          final cell = view.cellAt(Vector2(px, py));
+          if (cell != null) hits.add(cell);
+        }
+      }
+      expect(hits, hasLength(25), reason: '$size');
+      expect(view.cellAt(Vector2(-10, -10)), isNull);
+    }
+  });
+}

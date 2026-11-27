@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- Replaced `ART_DIRECTION.md` with the v2 production style bible, reconciled with the game data IDs. Replaced `PHASE_ROADMAP.md` with the 19-phase v2 roadmap, mapping v1 and A–J, with the current baseline.
+- Added the vertical-slice asset manifest (`shared/art/asset_manifest.json`, 316 planned records) with a schema, validator rules and `PRODUCTION_ASSET_INVENTORY.md`.
+- Added `TOOLCHAIN_REPORT.md` with the Android diagnosis, and backlog tasks GB-038 to GB-048.
+- Workshop gear shop: buy, tap-to-place, merge, sell, reroll and cancel with mission-scoped battle scrap through the ledger. The board row sets the output lane, and the merge interval curve lives in `gear_rules.json`. Merged gears show a tier badge.
+- Split `gearbound_app.dart` (1,255 lines) into `features/campaign`, `features/workshop` and `design_system/tokens.dart`. Removed the demo-only MOVE PRESS and rotate controls.
+- Fixed workshop overflow in phone landscape and on small portrait phones; the controls now scroll.
 - Repository audit (`docs/REPOSITORY_AUDIT.md`). Fixed a line-ending bug that failed the asset-sync test after a branch switch by adding `.gitattributes`.
 - Economy foundation: idempotent wallet ledger with separated currencies (Dart + C#), save v3 with v1/v2 migration, a two-slot store with corruption recovery and serialized writes, and a clock-rollback guard.
 - Ad placement policy engine (Dart + C#) and a mock-provider rewarded-ad controller that grants exactly once. Ads stay disabled; no SDK is integrated.

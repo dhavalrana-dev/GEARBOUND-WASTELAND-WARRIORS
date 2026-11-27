@@ -11,3 +11,8 @@
 | R-07 | Local save is editable, so premium state could be forged | High | Ledger rejects unverified premium grants; server-side verification before IAP | Open until Phase H |
 | R-08 | Ad or store policy violations (placement, consent, children's rules) | High | Policy engine + fixtures; UMP; audience decision; store review | Open |
 | R-09 | Line-ending drift breaking byte-for-byte checks | Medium | `.gitattributes` LF pinning | Mitigated |
+| R-10 | Inconsistent AI-generated artwork | High | Approve masters first (ART-01/02); manifest records with reviewer and evidence enforced by the validator | Open |
+| R-11 | Prototype canvas graphics persist into release | High | Production vertical slice is gate G3; manifest shows real art status | Open |
+| R-12 | Rig anatomy errors (mirrored far limbs, joint gaps) | Medium | ART_DIRECTION §10–12 rules; extreme-pose QA at ART-03 | Open |
+| R-13 | Android build blocked: no user-profile SDK, NDK version mismatch, licenses not accepted | High | TOOLCHAIN_REPORT.md option A (separate SDK, user accepts licenses) | Open, needs the owner |
+| R-14 | Two engines double the art integration cost | High | One shared manifest and metadata; one visual slice before parity work | Open |

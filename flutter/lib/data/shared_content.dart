@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../combat/battle_session.dart';
+import '../features/workshop/workshop_controller.dart';
 import 'shared_rules.dart';
 
 /// Runtime view of the shared JSON bundled under assets/shared (synced from
@@ -10,6 +11,7 @@ import 'shared_rules.dart';
 class SharedContent {
   SharedContent._(
     this._routeWaves, {
+    required this.workshopRules,
     required this.gears,
     required this.enemies,
     required this.shop,
@@ -17,6 +19,7 @@ class SharedContent {
 
   static const assetRoot = 'assets/shared';
 
+  final WorkshopRules workshopRules;
   final List<GearDefinition> gears;
   final List<EnemyDefinition> enemies;
   final ShopConfig shop;
@@ -45,6 +48,9 @@ class SharedContent {
     }
     return SharedContent._(
       routeWaves,
+      workshopRules: WorkshopRules.fromJson(
+        await read('configs/gear_rules.json'),
+      ),
       gears: loadGears(await read('gears/starter_gears.json')),
       enemies: loadEnemies(await read('enemies/enemies.json')),
       shop: loadShop(await read('economy/shop.json')),

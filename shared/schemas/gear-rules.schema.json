@@ -3,13 +3,183 @@
   "$id": "https://gearbound.invalid/schemas/gear-rules.schema.json",
   "title": "Gearbound gear rules",
   "type": "object",
-  "required": ["schemaVersion", "board", "simulation", "network", "output"],
+  "required": [
+    "schemaVersion",
+    "board",
+    "simulation",
+    "network",
+    "output",
+    "merge",
+    "workshop"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "board": { "type": "object", "required": ["width", "height", "connectivity", "maxCores"], "properties": { "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 }, "connectivity": { "const": "orthogonal-reciprocal-ports" }, "maxCores": { "type": "integer", "minimum": 1 } }, "additionalProperties": false },
-    "simulation": { "type": "object", "required": ["ticksPerSecond", "randomAlgorithm"], "properties": { "ticksPerSecond": { "const": 30 }, "randomAlgorithm": { "const": "xorshift32-v1" } }, "additionalProperties": false },
-    "network": { "type": "object", "required": ["boosterBonusPercentEach", "boosterBonusPercentCap", "minimumOutputIntervalTicks", "oddParityLoop", "multipleCores"], "properties": { "boosterBonusPercentEach": { "type": "integer", "minimum": 0 }, "boosterBonusPercentCap": { "type": "integer", "minimum": 0 }, "minimumOutputIntervalTicks": { "type": "integer", "minimum": 1 }, "oddParityLoop": { "const": "jam-component" }, "multipleCores": { "const": "disable-component" } }, "additionalProperties": false },
-    "output": { "type": "object", "required": ["friendlyUnitCapPerLane", "queuedSpawnsPerOutput"], "properties": { "friendlyUnitCapPerLane": { "type": "integer", "minimum": 1 }, "queuedSpawnsPerOutput": { "type": "integer", "minimum": 0 } }, "additionalProperties": false }
+    "schemaVersion": {
+      "const": 1
+    },
+    "board": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "connectivity",
+        "maxCores"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "connectivity": {
+          "const": "orthogonal-reciprocal-ports"
+        },
+        "maxCores": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "simulation": {
+      "type": "object",
+      "required": [
+        "ticksPerSecond",
+        "randomAlgorithm"
+      ],
+      "properties": {
+        "ticksPerSecond": {
+          "const": 30
+        },
+        "randomAlgorithm": {
+          "const": "xorshift32-v1"
+        }
+      },
+      "additionalProperties": false
+    },
+    "network": {
+      "type": "object",
+      "required": [
+        "boosterBonusPercentEach",
+        "boosterBonusPercentCap",
+        "minimumOutputIntervalTicks",
+        "oddParityLoop",
+        "multipleCores"
+      ],
+      "properties": {
+        "boosterBonusPercentEach": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "boosterBonusPercentCap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimumOutputIntervalTicks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "oddParityLoop": {
+          "const": "jam-component"
+        },
+        "multipleCores": {
+          "const": "disable-component"
+        }
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "friendlyUnitCapPerLane",
+        "queuedSpawnsPerOutput"
+      ],
+      "properties": {
+        "friendlyUnitCapPerLane": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "queuedSpawnsPerOutput": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "merge": {
+      "type": "object",
+      "required": [
+        "maxTier",
+        "intervalPercentByTier"
+      ],
+      "properties": {
+        "maxTier": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "intervalPercentByTier": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "workshop": {
+      "type": "object",
+      "required": [
+        "outputLaneByRow",
+        "starterGears",
+        "shopCategories"
+      ],
+      "properties": {
+        "outputLaneByRow": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          }
+        },
+        "starterGears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "definitionId",
+              "x",
+              "y"
+            ],
+            "properties": {
+              "definitionId": {
+                "type": "string"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "shopCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

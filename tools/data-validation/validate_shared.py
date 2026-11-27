@@ -73,6 +73,15 @@ def main() -> int:
     if net["boosterBonusPercentCap"] < net["boosterBonusPercentEach"]:
         fail("configs/gear_rules.json", "booster cap is lower than a single booster")
 
+    merge = rules.get("merge", {})
+    pct = merge.get("intervalPercentByTier", [])
+    if len(pct) != merge.get("maxTier") or not pct or pct[0] != 100 or any(not isinstance(v, int) or v < 1 for v in pct):
+        fail("configs/gear_rules.json", "merge.intervalPercentByTier needs one positive entry per tier, starting at 100")
+    workshop = rules.get("workshop", {})
+    board = rules["board"]
+    if len(workshop.get("outputLaneByRow", [])) != board["height"] or any(l not in (0, 1, 2) for l in workshop.get("outputLaneByRow", [])):
+        fail("configs/gear_rules.json", "workshop.outputLaneByRow needs one lane (0-2) per board row")
+
     gears = gears_doc["gears"]
     unique_ids("gears/starter_gears.json", gears)
     rarities = set(shop["rarityWeights"])
@@ -90,6 +99,21 @@ def main() -> int:
         is_output = gear.get("category") in {"infantry", "turret"}
         if is_output and gear.get("baseIntervalTicks", 0) < 1:
             fail(where, "output gears need a positive baseIntervalTicks")
+    gear_ids = {g.get("id") for g in gears}
+    starters = workshop.get("starterGears", [])
+    cells = set()
+    for starter in starters:
+        if starter.get("definitionId") not in gear_ids:
+            fail("configs/gear_rules.json", f"starter gear {starter.get('definitionId')!r} is not in the catalog")
+        cell = (starter.get("x"), starter.get("y"))
+        if cell in cells or not (0 <= cell[0] < board["width"] and 0 <= cell[1] < board["height"]):
+            fail("configs/gear_rules.json", f"starter gear cell {cell} is invalid or duplicated")
+        cells.add(cell)
+    if not any(g.get("category") == "power-core" for g in gears if g.get("id") in {s.get("definitionId") for s in starters}):
+        fail("configs/gear_rules.json", "starter gears must include a power core")
+    for category in workshop.get("shopCategories", []):
+        if category not in GEAR_CATEGORIES or category == "power-core":
+            fail("configs/gear_rules.json", f"shop category {category!r} is unknown or not purchasable")
     cores = [g for g in gears if g.get("category") == "power-core"]
     if not cores:
         fail("gears/starter_gears.json", "at least one power core is required")
@@ -141,6 +165,7 @@ def main() -> int:
                 fail(where, f"waveId {node.get('waveId')!r} not found in {node.get('mission')}")
 
     currencies = load("economy/currencies.json")
+    currencies_ids = [c.get("id") for c in currencies["currencies"]] if currencies else []
     if currencies is not None:
         ids = set()
         for currency in currencies["currencies"]:
@@ -176,6 +201,37 @@ def main() -> int:
                 require_int(f"monetization/ad_policy.json[{pid}]", placement, key)
             if "alloy" in json.dumps(placement.get("reward", {})):
                 fail("monetization/ad_policy.json", f"{pid}: ad rewards may not grant premium currency")
+
+    manifest = load("art/asset_manifest.json")
+    if manifest is not None:
+        where = "art/asset_manifest.json"
+        statuses = ["planned", "concept", "approved_concept", "source_ready", "rigged", "animated",
+                    "runtime_integrated", "qa_passed", "approved"]
+        known_owners = ({g["id"] for g in gears} | enemy_ids | set(currencies_ids)
+                        | {"hero.rivet", "fortress.wayfarer", "region.copperwash", "project", "board", "ui", "vfx",
+                           "route", "rewards", "audio", "store", "booster.vanguard",
+                           "event.scrapstorm", "event.gear_frenzy", "event.engineering_trials"})
+        seen_assets = set()
+        for asset in manifest["assets"]:
+            aid = asset.get("assetId")
+            if not isinstance(aid, str) or not re.match(r"^[a-z0-9]+(_[a-z0-9]+)*$", aid) or aid in seen_assets:
+                fail(where, f"invalid or duplicate assetId {aid!r}")
+            seen_assets.add(aid)
+            owner = asset.get("logicalOwnerId", "")
+            if owner not in known_owners and not owner.startswith("gearbound."):
+                fail(where, f"{aid}: logicalOwnerId {owner!r} is not a known data ID or provisional owner")
+            status = asset.get("status")
+            if status not in statuses:
+                fail(where, f"{aid}: unknown status {status!r}")
+            elif statuses.index(status) >= statuses.index("approved_concept"):
+                if not asset.get("reviewer") or not asset.get("acceptanceEvidence"):
+                    fail(where, f"{aid}: status {status} needs a reviewer and acceptance evidence")
+                if asset.get("license") in ("", "pending") or asset.get("provenance") in ("", "none"):
+                    fail(where, f"{aid}: status {status} needs a license and provenance")
+            if status in ("runtime_integrated", "qa_passed", "approved") and not asset.get("runtimePaths"):
+                fail(where, f"{aid}: status {status} needs runtime paths")
+            if not str(asset.get("sourcePath", "")).startswith("assets-source/"):
+                fail(where, f"{aid}: sourcePath must live under assets-source/")
 
     rewards = load("events/progression_rewards.json")
     if rewards is not None:
