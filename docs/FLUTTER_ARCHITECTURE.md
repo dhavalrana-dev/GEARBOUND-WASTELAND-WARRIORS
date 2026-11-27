@@ -1,15 +1,46 @@
 # Flutter and Flame architecture
 
+Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
+
 ## Toolchain
 - Flutter 3.47.7 stable, Dart 3.13.5.
-- Flame 1.38.2 (`^1.38.2`), resolved and locked in `flutter/pubspec.lock`.
-- Flame's documented `FlameGame`, `World`, `CameraComponent`, and `GameWidget` lifecycle is used; Flutter owns responsive panels and Flame owns the board/battlefield canvas.
+- Flame 1.38.2 and `shared_preferences` 2.5.x. Versions are locked in `flutter/pubspec.lock`; no other runtime packages.
+- Flutter owns screens and panels. Flame owns the board and battlefield canvas, including board taps.
 
-## Code boundaries
-- `lib/mechanical/gear_network.dart`: plain Dart board, placement, merge, connectivity graph, rotational parity, booster cap and output interval calculation.
-- `lib/game/gearbound_game.dart`: Flame rendering of the mechanical board and three-lane battlefield. It recalculates its composition when the canvas changes size.
-- `lib/app/gearbound_app.dart`: orientation-aware Flutter workshop controls and status panels.
-- `test/mechanical/gear_network_test.dart`: rule checks corresponding to the Unity mechanical checks.
+## Module layout (`flutter/lib`)
 
-## Current limitation
-The screen is a mechanical/battlefield presentation prototype. Combat simulation, hero controls, gear-to-combat output, save data, and mission progression are not implemented yet. Android compilation reaches Gradle but cannot proceed until the installed NDK license is accepted. See `DEVELOPMENT_STATUS.md`.
+| Folder | Responsibility | Engine-independent? |
+|---|---|---|
+| `mechanical/` | Board, placement, merge, connectivity graph, rotation parity, output clocks | Yes |
+| `combat/` | Lane combat simulation, battle session | Yes |
+| `core/` | `SeededRandom` (`xorshift32-v1`) | Yes |
+| `data/` | Shared JSON loaders and rules (`shared_rules.dart`); runtime asset bundle (`shared_content.dart`) | Rules yes; content loading uses Flutter assets |
+| `economy/` | Wallet ledger, currencies | Yes |
+| `progression/` | Campaign progress, rewards, encounters, save store | Yes, except `campaign_store.dart` (SharedPreferences) |
+| `services/ads/` | Ad policy, provider interface, mock provider, rewarded controller | Yes (no SDK) |
+| `simulation/` | Cross-engine combat trace runner | Yes |
+| `features/campaign/` | Campaign hub: route map, events, contracts, rewards card | Flutter UI |
+| `features/workshop/` | Workshop screen and `WorkshopController` (shop, placement, merge, sell, battle scrap) | Controller yes; screen is Flutter UI |
+| `game/` | Flame rendering and board tap mapping | Flame |
+| `design_system/` | Color tokens: prototype palette plus the specification palette | Flutter |
+| `app/` | App shell; re-exports the screens | Flutter |
+
+## Workshop flow
+1. `WorkshopController` places the starter gears from `gear_rules.json` `workshop.starterGears` and grants `shop.startingScrap` battle scrap through a mission-scoped wallet that is never saved. It then rolls seeded offers from the categories in `workshop.shopCategories`.
+2. **Buy** spends battle scrap and puts the gear in hand. **Cancel** refunds it in full. **Tapping an empty cell** places the gear, and the board row sets its lane (`workshop.outputLaneByRow`).
+3. **Tapping a gear** selects it. Tapping an identical gear of the same tier merges the two into the top-left cell, with the interval set by `merge.intervalPercentByTier`. **Sell** refunds `sellRefundPercent` of every tier-1 copy merged into the gear.
+4. **Start wave** locks the controller, refunding any gear still in hand. After that, board taps are ignored.
+
+## Layout
+- **Portrait:** the battlefield and board get 11/20 of the height; status, shop, loadout and actions scroll in the remaining 9/20.
+- **Landscape:** the canvas fills the left side; a 300-pixel scrollable control column sits on the right.
+- Widget tests check for no overflow on phone landscape (2400×1080), a small portrait phone (720×1520) and tablet landscape (2732×2048).
+
+## Not yet built
+- Drag-and-drop placement (tap-to-place only), a gear details sheet, and undo after placement.
+- Multi-wave missions with inter-wave preparation (GB-025).
+- Production art, animation and audio.
+- Turret, mortar and other output behaviors; the shop sells only gears whose behavior is implemented.
+- Real ad or purchase SDKs.
+
+Android compilation is still blocked on the NDK license; see `DEVELOPMENT_STATUS.md`.

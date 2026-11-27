@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Workshop gear shop: buy, tap-to-place, merge, sell, reroll and cancel with mission-scoped battle scrap through the ledger. The board row sets the output lane, and the merge interval curve lives in `gear_rules.json`. Merged gears show a tier badge.
+- Split `gearbound_app.dart` (1,255 lines) into `features/campaign`, `features/workshop` and `design_system/tokens.dart`. Removed the demo-only MOVE PRESS and rotate controls.
+- Fixed workshop overflow in phone landscape and on small portrait phones; the controls now scroll.
 - Repository audit (`docs/REPOSITORY_AUDIT.md`). Fixed a line-ending bug that failed the asset-sync test after a branch switch by adding `.gitattributes`.
 - Economy foundation: idempotent wallet ledger with separated currencies (Dart + C#), save v3 with v1/v2 migration, a two-slot store with corruption recovery and serialized writes, and a clock-rollback guard.
 - Ad placement policy engine (Dart + C#) and a mock-provider rewarded-ad controller that grants exactly once. Ads stay disabled; no SDK is integrated.

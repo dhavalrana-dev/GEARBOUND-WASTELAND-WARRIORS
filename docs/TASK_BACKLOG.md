@@ -32,8 +32,10 @@ Statuses: `todo`, `in progress`, `blocked`, `done`. A task is done only after it
 | GB-027 | P0 | Wallet + idempotent ledger, separated currencies (Dart + C#) | GB-026 | reward_transaction_cases pass in both engines | wallet.dart, Wallet.cs, currencies.json | done |
 | GB-028 | P0 | Save v3, v1/v2 migration, two-slot store, corruption recovery, clock guard | GB-027 | save_migration_cases pass; corrupted primary recovers; newer saves never overwritten | campaign_store.dart, save_migration_test.dart | done |
 | GB-029 | P1 | Ad policy engine + mock rewarded controller | GB-027 | ad_policy_cases pass in both engines; grant-once under duplicate callbacks | ad_policy.dart, ad_provider.dart, AdPolicy.cs | done (no SDK) |
-| GB-030 | P0 | Gear shop + placement UI in Flutter workshop (battle scrap) | GB-017, GB-027 | Buy, place, merge, reroll and sell with battle_scrap through the ledger | workshop feature module + widget tests | todo |
-| GB-031 | P1 | Split gearbound_app.dart into feature modules | — | No behavior change; all tests pass | lib/features/* | todo |
+| GB-030 | P0 | Gear shop + placement UI in Flutter workshop (battle scrap) | GB-017, GB-027 | Buy, place, merge, reroll and sell with battle_scrap through the ledger | workshop_controller.dart, shop panel, board taps, controller and widget tests | done (tap-to-place; drag-and-drop and device check pending) |
+| GB-031 | P1 | Split gearbound_app.dart into feature modules | — | No behavior change; all tests pass | lib/features/*, design_system/tokens.dart | done |
+| GB-036 | P1 | Port merge curve, lane-by-row and workshop controller rules to Unity | GB-030 | Shared workshop fixture passes in both engines | C# controller + fixture | todo |
+| GB-037 | P2 | Implement turret output behavior so the Spark Turret can be sold | GB-030 | Powered turret fires on its clock; combat trace scenario added | output system + traces | todo |
 | GB-032 | P1 | Data-driven daily/weekly contract pools and achievements | GB-027 | Deterministic daily selection, unlock filtering, completion chest | shared/events/*, tests | todo |
 | GB-033 | P1 | Event engine: Scrapstorm v2, Gear Frenzy, Engineering Trials | GB-032 | Lifecycle states, claim windows, offline cache | event_catalog.json, tests | todo |
 | GB-034 | P1 | Real ad SDK + UMP consent behind policy (Phase F) | GB-029 | Google test ads in a debug build; consent gating verified on device | ads service | blocked (AdMob account, device build) |

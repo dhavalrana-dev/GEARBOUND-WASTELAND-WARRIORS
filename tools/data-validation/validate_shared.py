@@ -73,6 +73,15 @@ def main() -> int:
     if net["boosterBonusPercentCap"] < net["boosterBonusPercentEach"]:
         fail("configs/gear_rules.json", "booster cap is lower than a single booster")
 
+    merge = rules.get("merge", {})
+    pct = merge.get("intervalPercentByTier", [])
+    if len(pct) != merge.get("maxTier") or not pct or pct[0] != 100 or any(not isinstance(v, int) or v < 1 for v in pct):
+        fail("configs/gear_rules.json", "merge.intervalPercentByTier needs one positive entry per tier, starting at 100")
+    workshop = rules.get("workshop", {})
+    board = rules["board"]
+    if len(workshop.get("outputLaneByRow", [])) != board["height"] or any(l not in (0, 1, 2) for l in workshop.get("outputLaneByRow", [])):
+        fail("configs/gear_rules.json", "workshop.outputLaneByRow needs one lane (0-2) per board row")
+
     gears = gears_doc["gears"]
     unique_ids("gears/starter_gears.json", gears)
     rarities = set(shop["rarityWeights"])
@@ -90,6 +99,21 @@ def main() -> int:
         is_output = gear.get("category") in {"infantry", "turret"}
         if is_output and gear.get("baseIntervalTicks", 0) < 1:
             fail(where, "output gears need a positive baseIntervalTicks")
+    gear_ids = {g.get("id") for g in gears}
+    starters = workshop.get("starterGears", [])
+    cells = set()
+    for starter in starters:
+        if starter.get("definitionId") not in gear_ids:
+            fail("configs/gear_rules.json", f"starter gear {starter.get('definitionId')!r} is not in the catalog")
+        cell = (starter.get("x"), starter.get("y"))
+        if cell in cells or not (0 <= cell[0] < board["width"] and 0 <= cell[1] < board["height"]):
+            fail("configs/gear_rules.json", f"starter gear cell {cell} is invalid or duplicated")
+        cells.add(cell)
+    if not any(g.get("category") == "power-core" for g in gears if g.get("id") in {s.get("definitionId") for s in starters}):
+        fail("configs/gear_rules.json", "starter gears must include a power core")
+    for category in workshop.get("shopCategories", []):
+        if category not in GEAR_CATEGORIES or category == "power-core":
+            fail("configs/gear_rules.json", f"shop category {category!r} is unknown or not purchasable")
     cores = [g for g in gears if g.get("category") == "power-core"]
     if not cores:
         fail("gears/starter_gears.json", "at least one power core is required")

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart' show Color;
 
@@ -19,13 +20,18 @@ class GearboundGame extends FlameGame {
   BattlePhase _lastNotifiedPhase = BattlePhase.preparation;
   void Function()? onSessionChanged;
 
+  /// Board cell tapped during preparation (cell coordinates, not pixels).
+  void Function(int x, int y)? onCellTap;
+  ({int x, int y})? Function()? selectedCell;
+  bool Function()? isPlacing;
+
   @override
   Color backgroundColor() => const Color(0xFF202A30);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    _view = WorkshopBoardView(session);
+    _view = WorkshopBoardView(session, this);
     await world.add(_view!);
   }
 
@@ -64,8 +70,8 @@ class GearboundGame extends FlameGame {
   bool moveHeroToLane(int lane) => session.moveHeroToLane(lane);
 }
 
-class WorkshopBoardView extends PositionComponent {
-  WorkshopBoardView(this.session)
+class WorkshopBoardView extends PositionComponent with TapCallbacks {
+  WorkshopBoardView(this.session, [this.game])
     : super(
         size: Vector2.zero(),
         anchor: Anchor.center,
@@ -73,6 +79,7 @@ class WorkshopBoardView extends PositionComponent {
       );
 
   final BattleSession session;
+  final GearboundGame? game;
   GearBoard get board => session.board;
   GearNetworkResult get network => session.network;
   bool _portrait = false;
@@ -99,6 +106,20 @@ class WorkshopBoardView extends PositionComponent {
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     resizeTo(size);
+  }
+
+  /// Maps a point in this component's local space to a board cell.
+  ({int x, int y})? cellAt(Vector2 local) {
+    final x = ((local.x - _gridLeft) / _cell).floor();
+    final y = ((local.y - _gridTop) / _cell).floor();
+    if (x < 0 || y < 0 || x >= board.width || y >= board.height) return null;
+    return (x: x, y: y);
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    final cell = cellAt(event.localPosition);
+    if (cell != null) game?.onCellTap?.call(cell.x, cell.y);
   }
 
   @override
@@ -158,6 +179,22 @@ class WorkshopBoardView extends PositionComponent {
           gridPaint,
         );
         final node = board.at(x, y);
+        final selected = game?.selectedCell?.call();
+        final placing = game?.isPlacing?.call() ?? false;
+        if ((selected != null && selected.x == x && selected.y == y) ||
+            (placing && node == null)) {
+          canvas.drawRRect(
+            ui.RRect.fromRectAndRadius(rect, const ui.Radius.circular(7)),
+            ui.Paint()
+              ..color = placing
+                  ? const ui.Color(0x669CDD74)
+                  : const ui.Color(0xFFFFC05B)
+              ..style = placing
+                  ? ui.PaintingStyle.fill
+                  : ui.PaintingStyle.stroke
+              ..strokeWidth = 3,
+          );
+        }
         if (node == null) continue;
         final result = network.nodes[node.id];
         final center = rect.center;
@@ -203,6 +240,12 @@ class WorkshopBoardView extends PositionComponent {
             : result?.state == NetworkState.unpowered
             ? const ui.Color(0xFFE47A66)
             : const ui.Color(0xFFE9BA64);
+        if (node.tier > 1) {
+          canvas.drawParagraph(
+            _paragraph('T${node.tier}', 9, 0xFFFFE8C8, bold: true),
+            ui.Offset(rect.left + 3, rect.bottom - 13),
+          );
+        }
         canvas.drawCircle(
           center.translate(_cell * 0.27, -_cell * 0.27),
           math.max(2, _cell * 0.06),
