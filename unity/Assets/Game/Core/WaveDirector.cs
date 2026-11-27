@@ -41,7 +41,7 @@ namespace Gearbound.Core
             var spawns = Schedule(wave).Select(spawn =>
             {
                 if (!byId.TryGetValue(spawn.EnemyId, out var e)) throw new KeyNotFoundException($"Wave '{wave.Id}' references unknown enemy '{spawn.EnemyId}'.");
-                return new WaveSpawnEvent(spawn.Tick, spawn.Lane, e.Health, e.Armor, e.Damage, e.AttackRangeMm, e.MovementMmPerTick, e.AttackIntervalTicks);
+                return new WaveSpawnEvent(spawn.Tick, spawn.Lane, e.Health, e.Armor, e.Damage, e.AttackRangeMm, e.MovementMmPerTick, e.AttackIntervalTicks, e.WindupTicks, e.Cleave);
             });
             return new WaveDefinition(wave.Id, spawns, wave.RewardScrap);
         }

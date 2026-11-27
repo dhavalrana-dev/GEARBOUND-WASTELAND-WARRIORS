@@ -26,9 +26,21 @@ namespace Gearbound.Core
         public CombatState State { get; internal set; }
         public bool IsAlive => Health > 0;
 
+        /// <summary>Ticks between committing to an attack and the hit landing (0 = instant hit).</summary>
+        public int WindupTicks { get; }
+        /// <summary>When true, a wind-up hit lands on every opponent in range in the lane.</summary>
+        public bool Cleave { get; }
+        /// <summary>Ticks until a committed attack lands; the telegraph is visible while this is above 0.</summary>
+        public int WindupRemaining { get; internal set; }
+
         public Combatant(int id, CombatFaction faction, int lane, int positionMm, int health, int armor, int damage,
-            int attackRangeMm, int movementMmPerTick, int attackIntervalTicks, int shield = 0, int damageReductionPercent = 0)
+            int attackRangeMm, int movementMmPerTick, int attackIntervalTicks, int shield = 0, int damageReductionPercent = 0,
+            int windupTicks = 0, bool cleave = false)
         {
+            if (windupTicks < 0 || (windupTicks > 0 && windupTicks >= attackIntervalTicks))
+                throw new ArgumentOutOfRangeException(nameof(windupTicks), "Wind-up must be 0 or shorter than the attack interval.");
+            WindupTicks = windupTicks;
+            Cleave = cleave;
             if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
             if (lane < 0 || lane > 2) throw new ArgumentOutOfRangeException(nameof(lane));
             if (health <= 0 || armor < 0 || damage <= 0 || attackRangeMm < 0 || movementMmPerTick < 0 || attackIntervalTicks < 1 || shield < 0)
@@ -140,7 +152,8 @@ namespace Gearbound.Core
                 var start = startPositions[unit.Id];
                 var atFortress = unit.Faction == CombatFaction.Enemy && start <= 0;
                 var atEnemyBoundary = unit.Faction == CombatFaction.Friendly && start >= WorldLengthMm;
-                if (!hasNearbyTarget && !atFortress && !atEnemyBoundary && unit.MovementMmPerTick > 0)
+                // A unit winding up an attack holds its position until the hit lands.
+                if (!hasNearbyTarget && !atFortress && !atEnemyBoundary && unit.MovementMmPerTick > 0 && unit.WindupRemaining == 0)
                 {
                     var step = unit.Faction == CombatFaction.Friendly ? unit.MovementMmPerTick : -unit.MovementMmPerTick;
                     nextPositions[unit.Id] = Math.Max(0, Math.Min(WorldLengthMm, start + step));
@@ -154,12 +167,21 @@ namespace Gearbound.Core
             var events = new List<CombatDamageEvent>();
             foreach (var unit in living)
             {
+                if (unit.WindupRemaining > 0)
+                {
+                    // Telegraphed attack: the hit lands when the wind-up ends, on whoever is in range then.
+                    unit.WindupRemaining--;
+                    unit.State = CombatState.Attacking;
+                    if (unit.WindupRemaining == 0) ReleaseWindup(unit, living, events);
+                    continue;
+                }
                 var target = FindTarget(unit, living);
                 if (target != null)
                 {
                     if (unit.AttackCooldownTicks == 0)
                     {
-                        events.Add(new CombatDamageEvent { TargetId = target.Id, AttackerId = unit.Id, Damage = unit.Damage });
+                        if (unit.WindupTicks > 0) unit.WindupRemaining = unit.WindupTicks;
+                        else events.Add(new CombatDamageEvent { TargetId = target.Id, AttackerId = unit.Id, Damage = unit.Damage });
                         unit.AttackCooldownTicks = unit.AttackIntervalTicks;
                         unit.State = CombatState.Attacking;
                     }
@@ -169,7 +191,8 @@ namespace Gearbound.Core
                 {
                     if (unit.AttackCooldownTicks == 0)
                     {
-                        events.Add(new CombatDamageEvent { TargetId = 0, AttackerId = unit.Id, Damage = unit.Damage });
+                        if (unit.WindupTicks > 0) unit.WindupRemaining = unit.WindupTicks;
+                        else events.Add(new CombatDamageEvent { TargetId = 0, AttackerId = unit.Id, Damage = unit.Damage });
                         unit.AttackCooldownTicks = unit.AttackIntervalTicks;
                         unit.State = CombatState.Attacking;
                     }
@@ -189,6 +212,36 @@ namespace Gearbound.Core
                 }
             }
             foreach (var unit in combatants.Where(unit => unit.Health <= 0)) unit.State = CombatState.Dead;
+        }
+
+        /// <summary>
+        /// Resolves a finished wind-up: cleave hits every opponent in range in the lane (ID order), otherwise the
+        /// nearest one. With no opponent in range, an enemy at the fortress line hits the fortress; otherwise it misses.
+        /// </summary>
+        private static void ReleaseWindup(Combatant unit, Combatant[] living, List<CombatDamageEvent> events)
+        {
+            if (unit.Cleave)
+            {
+                var hit = false;
+                foreach (var target in living.Where(t => t.IsAlive && t.Faction != unit.Faction && t.Lane == unit.Lane
+                    && Math.Abs(t.PositionMm - unit.PositionMm) <= unit.AttackRangeMm).OrderBy(t => t.Id))
+                {
+                    events.Add(new CombatDamageEvent { TargetId = target.Id, AttackerId = unit.Id, Damage = unit.Damage });
+                    hit = true;
+                }
+                if (hit) return;
+            }
+            else
+            {
+                var target = FindTarget(unit, living);
+                if (target != null)
+                {
+                    events.Add(new CombatDamageEvent { TargetId = target.Id, AttackerId = unit.Id, Damage = unit.Damage });
+                    return;
+                }
+            }
+            if (unit.Faction == CombatFaction.Enemy && unit.PositionMm <= 0)
+                events.Add(new CombatDamageEvent { TargetId = 0, AttackerId = unit.Id, Damage = unit.Damage });
         }
 
         private static Combatant FindTarget(Combatant attacker, IEnumerable<Combatant> candidates)

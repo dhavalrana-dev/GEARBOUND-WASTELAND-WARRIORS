@@ -234,6 +234,43 @@
         }
       ],
       "heroUsesSpecialWhenReady": true
+    },
+    {
+      "id": "boss-cleave-crowded-lane",
+      "waveId": "wave.3",
+      "worldLengthMm": 10000,
+      "maxTicks": 3600,
+      "gears": [
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 1
+        },
+        {
+          "id": "press-b",
+          "kind": "infantry",
+          "x": 3,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 1
+        },
+        {
+          "id": "ratchet",
+          "kind": "booster",
+          "x": 2,
+          "y": 1
+        }
+      ],
+      "heroCommands": []
     }
   ]
 }

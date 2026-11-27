@@ -9,6 +9,7 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **GB-058 boss telegraphs on `feature/boss-telegraphs`.** Enemies can have a wind-up: they commit to an attack, a warning zone shows in their lane, and the hit lands when the wind-up ends on whoever is still in range. Optional **cleave** hits everyone in range in the lane. Scrapmaw now has an 18-tick wind-up with cleave, so leaving its lane in time dodges the hit.
 - **GB-053 mission checkpoints on `feature/mission-checkpoint`.**
   - **When saved:** a wave-boundary checkpoint (`MissionSnapshot`, schema 1) is written when each wave starts and when each intermission begins, and cleared on victory, defeat or abandon.
   - **Resuming after the app was killed:** an intermission checkpoint resumes into the rebuild phase. A mid-wave kill **restarts that wave, paused, with the board locked as it was**, so killing the app can't be used to rebuild against a wave already seen.
@@ -28,6 +29,16 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 12 (boss telegraphs)
+- Flutter analyze: no issues. Flutter tests: **169/169**. Unity EditMode: **44/44**. Both engines get rule tests: timing, dodge, cleave, a winding-up attacker holding position, validation, and Scrapmaw loading its new fields. Flutter adds a telegraph render test.
+- **Intentional trace change, re-proven:**
+  - The three scenarios without Scrapmaw kept identical hashes.
+  - The two boss scenarios changed because Scrapmaw now telegraphs and cleaves. They were regenerated from the C# reference, and **Dart reproduces them independently, tick for tick**.
+  - New scenario `boss-cleave-crowded-lane` (6 total): a defeat, because one lane is over-stacked and the side lanes are open.
+- **The asset drift test caught** that the Flutter copy of `enemies.json` was stale after the edit; it was re-synced.
+- `COMBAT_ENGINE.md` was rewritten to match the code. The old version claimed a hero recovery timer and critical rolls that don't exist.
+- **Not verified:** whether the 18-tick (0.6 s) warning feels fair on a real device.
+
 ### 2026-11-27 session 11 (mission checkpoints)
 - Flutter analyze: no issues. Flutter tests: **162/162**. `mission_checkpoint_test.dart` adds 9 tests:
   - snapshot round trip and rejection of corrupt input;

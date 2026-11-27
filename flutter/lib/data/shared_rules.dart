@@ -41,6 +41,8 @@ class EnemyDefinition {
     required this.movementMmPerTick,
     required this.attackIntervalTicks,
     required this.rewardScrap,
+    this.windupTicks = 0,
+    this.cleave = false,
   });
 
   final String id;
@@ -53,6 +55,8 @@ class EnemyDefinition {
   final int movementMmPerTick;
   final int attackIntervalTicks;
   final int rewardScrap;
+  final int windupTicks;
+  final bool cleave;
 }
 
 class ShopConfig {
@@ -168,6 +172,8 @@ List<EnemyDefinition> loadEnemies(String json) {
         movementMmPerTick: e['movementMmPerTick'] as int,
         attackIntervalTicks: e['attackIntervalTicks'] as int,
         rewardScrap: e['rewardScrap'] as int,
+        windupTicks: e['windupTicks'] as int? ?? 0,
+        cleave: e['cleave'] as bool? ?? false,
       ),
   ];
   _requireUnique(enemies.map((e) => e.id), 'enemy');
@@ -354,6 +360,8 @@ WaveDefinition buildWave(AuthoredWave wave, List<EnemyDefinition> enemies) {
             attackRangeMm: e.attackRangeMm,
             movementMmPerTick: e.movementMmPerTick,
             attackIntervalTicks: e.attackIntervalTicks,
+            windupTicks: e.windupTicks,
+            cleave: e.cleave,
           );
         }(),
     ],

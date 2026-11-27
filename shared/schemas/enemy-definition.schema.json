@@ -3,26 +3,91 @@
   "$id": "https://gearbound.invalid/schemas/enemy-definition.schema.json",
   "title": "Gearbound enemy archetype definitions",
   "type": "object",
-  "required": ["schemaVersion", "enemies"],
+  "required": [
+    "schemaVersion",
+    "enemies"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "enemies": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "name", "role", "health", "armor", "damage", "attackRangeMm", "movementMmPerTick", "attackIntervalTicks", "rewardScrap"],
+        "required": [
+          "id",
+          "name",
+          "role",
+          "health",
+          "armor",
+          "damage",
+          "attackRangeMm",
+          "movementMmPerTick",
+          "attackIntervalTicks",
+          "rewardScrap"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$" },
-          "name": { "type": "string", "minLength": 1 },
-          "role": { "enum": ["basic", "fast", "heavy", "ranged", "shield", "saboteur", "repair", "elite", "miniboss", "boss"] },
-          "health": { "type": "integer", "minimum": 1 },
-          "armor": { "type": "integer", "minimum": 0 },
-          "damage": { "type": "integer", "minimum": 1 },
-          "attackRangeMm": { "type": "integer", "minimum": 0 },
-          "movementMmPerTick": { "type": "integer", "minimum": 0 },
-          "attackIntervalTicks": { "type": "integer", "minimum": 1 },
-          "rewardScrap": { "type": "integer", "minimum": 0 }
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "enum": [
+              "basic",
+              "fast",
+              "heavy",
+              "ranged",
+              "shield",
+              "saboteur",
+              "repair",
+              "elite",
+              "miniboss",
+              "boss"
+            ]
+          },
+          "health": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "armor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "damage": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "attackRangeMm": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "movementMmPerTick": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "attackIntervalTicks": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "rewardScrap": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "windupTicks": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Ticks between committing to an attack and the hit landing (0 = instant). The telegraph is shown during this time."
+          },
+          "cleave": {
+            "type": "boolean",
+            "description": "When true, the hit lands on every opponent in range in the lane, not only the nearest."
+          }
         },
         "additionalProperties": false
       }
