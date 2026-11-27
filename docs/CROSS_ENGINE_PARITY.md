@@ -38,6 +38,7 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Multi-wave BattleSession (intermission, soldier withdrawal, hero reset, reward totals) | Yes | Yes | Mirrored unit tests (no shared trace yet) |
 | Workshop seed derivation `mixSeed32` (fmix32) | No | Yes | Dart vectors only (GB-049) |
 | Hero SP and special (Wrench Quake) | Yes | Yes | combat_traces `boss-wave-hero-special` ✔ both; heroes.json parity tests |
+| Attack wind-up and cleave (boss telegraphs) | Yes | Yes | combat_traces (boss scenarios + `boss-cleave-crowded-lane`) ✔ both |
 | Presentation / input | No | Prototype | — |
 
 ## Combat trace parity (spec scenario 4)

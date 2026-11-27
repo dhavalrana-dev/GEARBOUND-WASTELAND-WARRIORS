@@ -19,6 +19,8 @@ class WaveSpawnEvent {
     required this.attackRangeMm,
     required this.movementMmPerTick,
     required this.attackIntervalTicks,
+    this.windupTicks = 0,
+    this.cleave = false,
   }) {
     if (tick < 0 ||
         lane < 0 ||
@@ -41,6 +43,8 @@ class WaveSpawnEvent {
   final int attackRangeMm;
   final int movementMmPerTick;
   final int attackIntervalTicks;
+  final int windupTicks;
+  final bool cleave;
 }
 
 class WaveDefinition {
@@ -251,6 +255,8 @@ class BattleSession {
           attackRangeMm: spawn.attackRangeMm,
           movementMmPerTick: spawn.movementMmPerTick,
           attackIntervalTicks: spawn.attackIntervalTicks,
+          windupTicks: spawn.windupTicks,
+          cleave: spawn.cleave,
         ),
       );
     }

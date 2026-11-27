@@ -26,8 +26,18 @@ class Combatant {
     required this.attackIntervalTicks,
     this.shield = 0,
     this.damageReductionPercent = 0,
+    this.windupTicks = 0,
+    this.cleave = false,
   }) : maxHealth = health,
        health = health {
+    if (windupTicks < 0 ||
+        (windupTicks > 0 && windupTicks >= attackIntervalTicks)) {
+      throw ArgumentError.value(
+        windupTicks,
+        'windupTicks',
+        'Wind-up must be 0 or shorter than the attack interval.',
+      );
+    }
     if (id <= 0 || lane < 0 || lane > 2) {
       throw ArgumentError('Invalid entity identity or lane.');
     }
@@ -62,6 +72,15 @@ class Combatant {
   final int movementMmPerTick;
   final int attackIntervalTicks;
   int attackCooldownTicks = 0;
+
+  /// Ticks between committing to an attack and the hit landing (0 = instant).
+  final int windupTicks;
+
+  /// When true, a wind-up hit lands on every opponent in range in the lane.
+  final bool cleave;
+
+  /// Ticks until a committed attack lands; the telegraph shows while > 0.
+  int windupRemaining = 0;
   CombatState state = CombatState.idle;
   bool get isAlive => health > 0;
 }
@@ -171,10 +190,12 @@ class CombatSimulation {
       final atFortress = unit.faction == CombatFaction.enemy && start <= 0;
       final atBoundary =
           unit.faction == CombatFaction.friendly && start >= worldLengthMm;
+      // A unit winding up an attack holds its position until the hit lands.
       if (!hasNearbyTarget &&
           !atFortress &&
           !atBoundary &&
-          unit.movementMmPerTick > 0) {
+          unit.movementMmPerTick > 0 &&
+          unit.windupRemaining == 0) {
         final delta = unit.faction == CombatFaction.friendly
             ? unit.movementMmPerTick
             : -unit.movementMmPerTick;
@@ -193,14 +214,26 @@ class CombatSimulation {
 
     final events = <({int targetId, int attackerId, int damage})>[];
     for (final unit in living) {
+      if (unit.windupRemaining > 0) {
+        // Telegraphed attack: lands when the wind-up ends, on whoever is in
+        // range then.
+        unit.windupRemaining--;
+        unit.state = CombatState.attacking;
+        if (unit.windupRemaining == 0) _releaseWindup(unit, living, events);
+        continue;
+      }
       final target = _findTarget(unit, living);
       if (target != null) {
         if (unit.attackCooldownTicks == 0) {
-          events.add((
-            targetId: target.id,
-            attackerId: unit.id,
-            damage: unit.damage,
-          ));
+          if (unit.windupTicks > 0) {
+            unit.windupRemaining = unit.windupTicks;
+          } else {
+            events.add((
+              targetId: target.id,
+              attackerId: unit.id,
+              damage: unit.damage,
+            ));
+          }
           unit.attackCooldownTicks = unit.attackIntervalTicks;
           unit.state = CombatState.attacking;
         } else if (unit.state != CombatState.moving) {
@@ -208,7 +241,11 @@ class CombatSimulation {
         }
       } else if (unit.faction == CombatFaction.enemy && unit.positionMm <= 0) {
         if (unit.attackCooldownTicks == 0) {
-          events.add((targetId: 0, attackerId: unit.id, damage: unit.damage));
+          if (unit.windupTicks > 0) {
+            unit.windupRemaining = unit.windupTicks;
+          } else {
+            events.add((targetId: 0, attackerId: unit.id, damage: unit.damage));
+          }
           unit.attackCooldownTicks = unit.attackIntervalTicks;
           unit.state = CombatState.attacking;
         } else {
@@ -236,6 +273,47 @@ class CombatSimulation {
     }
     for (final unit in _combatants.where((unit) => unit.health <= 0)) {
       unit.state = CombatState.dead;
+    }
+  }
+
+  /// Resolves a finished wind-up: cleave hits every opponent in range in the
+  /// lane (ID order), otherwise the nearest. With nobody in range, an enemy at
+  /// the fortress line hits the fortress; otherwise the attack misses.
+  static void _releaseWindup(
+    Combatant unit,
+    List<Combatant> living,
+    List<({int targetId, int attackerId, int damage})> events,
+  ) {
+    if (unit.cleave) {
+      final targets =
+          living
+              .where(
+                (t) =>
+                    t.isAlive &&
+                    t.faction != unit.faction &&
+                    t.lane == unit.lane &&
+                    (t.positionMm - unit.positionMm).abs() <=
+                        unit.attackRangeMm,
+              )
+              .toList()
+            ..sort((a, b) => a.id.compareTo(b.id));
+      for (final t in targets) {
+        events.add((targetId: t.id, attackerId: unit.id, damage: unit.damage));
+      }
+      if (targets.isNotEmpty) return;
+    } else {
+      final target = _findTarget(unit, living);
+      if (target != null) {
+        events.add((
+          targetId: target.id,
+          attackerId: unit.id,
+          damage: unit.damage,
+        ));
+        return;
+      }
+    }
+    if (unit.faction == CombatFaction.enemy && unit.positionMm <= 0) {
+      events.add((targetId: 0, attackerId: unit.id, damage: unit.damage));
     }
   }
 

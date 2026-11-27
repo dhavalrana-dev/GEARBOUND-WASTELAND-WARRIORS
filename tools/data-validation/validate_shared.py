@@ -127,6 +127,12 @@ def main() -> int:
         for key, minimum in (("health", 1), ("armor", 0), ("damage", 1), ("attackRangeMm", 0),
                              ("movementMmPerTick", 0), ("attackIntervalTicks", 1), ("rewardScrap", 0)):
             require_int(where, enemy, key, minimum)
+        if "windupTicks" in enemy:
+            require_int(where, enemy, "windupTicks", 0)
+            if isinstance(enemy.get("windupTicks"), int) and isinstance(enemy.get("attackIntervalTicks"), int)                     and enemy["windupTicks"] >= enemy["attackIntervalTicks"]:
+                fail(where, "windupTicks must be shorter than attackIntervalTicks")
+        if "cleave" in enemy and not isinstance(enemy["cleave"], bool):
+            fail(where, "cleave must be true or false")
 
     r = shop["reroll"]
     if r["costCap"] < r["baseCost"]:

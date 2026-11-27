@@ -358,6 +358,45 @@ class WorkshopBoardView extends PositionComponent
     );
   }
 
+  /// Wind-up warning: a zone covering the attacker's reach in its lane that
+  /// grows more opaque as the hit approaches, outlined and marked with "!" so
+  /// it does not rely on color alone.
+  void _drawTelegraph(
+    ui.Canvas canvas,
+    Combatant unit,
+    double x,
+    double laneY,
+    double battleWidth,
+    double radius,
+  ) {
+    final reach =
+        battleWidth * unit.attackRangeMm / session.combat.worldLengthMm;
+    final towardFortress = unit.faction == CombatFaction.enemy;
+    final zone = ui.Rect.fromLTRB(
+      towardFortress ? x - reach : x,
+      laneY - radius * 2.2,
+      towardFortress ? x : x + reach,
+      laneY + radius * 0.4,
+    );
+    final progress = 1 - unit.windupRemaining / unit.windupTicks;
+    final alpha = (0x30 + (0x90 * progress)).round().clamp(0, 0xFF);
+    canvas.drawRRect(
+      ui.RRect.fromRectAndRadius(zone, const ui.Radius.circular(4)),
+      ui.Paint()..color = ui.Color.fromARGB(alpha, 0xE4, 0x4A, 0x3C),
+    );
+    canvas.drawRRect(
+      ui.RRect.fromRectAndRadius(zone, const ui.Radius.circular(4)),
+      ui.Paint()
+        ..color = const ui.Color(0xFFFF8A6B)
+        ..style = ui.PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+    canvas.drawParagraph(
+      _paragraph('!', radius * 1.6, 0xFFFFE8C8, bold: true),
+      ui.Offset(x - radius * 0.3, laneY - radius * 4.2),
+    );
+  }
+
   void _drawDragFeedback(ui.Canvas canvas) {
     final position = dragPosition;
     if (position == null) return;
@@ -462,6 +501,16 @@ class WorkshopBoardView extends PositionComponent
       final x = panelRect.left + 16 + battleWidth * progress;
       final y = laneTop + unit.lane * laneSpacing - radius;
       final isHero = unit.id == session.heroId;
+      if (unit.windupRemaining > 0 && unit.windupTicks > 0) {
+        _drawTelegraph(
+          canvas,
+          unit,
+          x,
+          laneTop + unit.lane * laneSpacing,
+          battleWidth,
+          radius,
+        );
+      }
       final color = unit.faction == CombatFaction.enemy
           ? const ui.Color(0xFFD96E52)
           : isHero

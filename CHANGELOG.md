@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Boss telegraphs: optional enemy attack wind-up and cleave in Dart and C#, with a lane warning zone. Scrapmaw's attack can now be dodged by leaving its lane. Boss combat traces were regenerated intentionally, and Dart matches them; added a sixth scenario. `COMBAT_ENGINE.md` now matches the code.
 - Mission checkpoints: a mission survives the app being killed. It resumes at the rebuild phase, or restarts the interrupted wave with the same locked board, from a Resume/Abandon card on the route. Rewards can't be paid twice after a resume.
 - Hero special ability: Rivet charges SP from landed hits and can trigger Wrench Quake, a lane area attack, as a validated command in Dart and C#. Added a new cross-engine trace scenario (existing hashes unchanged), the SP bar and special button UI, and `shared/heroes/heroes.json`.
 - Mission lifecycle: pause menu with Resume and Abandon (confirmed; resets the streak), auto-pause when the app is hidden during combat, system Back routed to the pause menu, and a simulation catch-up cap. Fixed rotation pausing the game and the Back-button streak exploit.

@@ -52,10 +52,15 @@ namespace Gearbound.Core
         public int MovementMmPerTick { get; }
         public int AttackIntervalTicks { get; }
         public int RewardScrap { get; }
+        public int WindupTicks { get; }
+        public bool Cleave { get; }
 
         public EnemyDefinition(string id, string name, string role, int health, int armor, int damage, int attackRangeMm,
-            int movementMmPerTick, int attackIntervalTicks, int rewardScrap)
+            int movementMmPerTick, int attackIntervalTicks, int rewardScrap, int windupTicks = 0, bool cleave = false)
         {
+            if (windupTicks < 0) throw new ArgumentOutOfRangeException(nameof(windupTicks));
+            WindupTicks = windupTicks;
+            Cleave = cleave;
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Enemy ID is required.", nameof(id));
             if (health < 1 || armor < 0 || damage < 1 || attackRangeMm < 0 || movementMmPerTick < 0 || attackIntervalTicks < 1 || rewardScrap < 0)
                 throw new ArgumentOutOfRangeException("Enemy stats are outside their allowed range.");
@@ -133,7 +138,8 @@ namespace Gearbound.Core
                 var e = SharedJson.Obj(item, "enemy");
                 list.Add(new EnemyDefinition(SharedJson.Str(e, "id"), SharedJson.Str(e, "name"), SharedJson.Str(e, "role"),
                     SharedJson.Int(e, "health"), SharedJson.Int(e, "armor"), SharedJson.Int(e, "damage"), SharedJson.Int(e, "attackRangeMm"),
-                    SharedJson.Int(e, "movementMmPerTick"), SharedJson.Int(e, "attackIntervalTicks"), SharedJson.Int(e, "rewardScrap")));
+                    SharedJson.Int(e, "movementMmPerTick"), SharedJson.Int(e, "attackIntervalTicks"), SharedJson.Int(e, "rewardScrap"),
+                    e.ContainsKey("windupTicks") ? SharedJson.Int(e, "windupTicks") : 0, SharedJson.Bool(e, "cleave")));
             }
             RequireUniqueIds(list.Select(e => e.Id), "enemy");
             return list;

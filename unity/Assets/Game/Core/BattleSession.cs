@@ -17,9 +17,14 @@ namespace Gearbound.Core
         public int AttackRangeMm { get; }
         public int MovementMmPerTick { get; }
         public int AttackIntervalTicks { get; }
+        public int WindupTicks { get; }
+        public bool Cleave { get; }
 
-        public WaveSpawnEvent(int tick, int lane, int health, int armor, int damage, int attackRangeMm, int movementMmPerTick, int attackIntervalTicks)
+        public WaveSpawnEvent(int tick, int lane, int health, int armor, int damage, int attackRangeMm, int movementMmPerTick, int attackIntervalTicks,
+            int windupTicks = 0, bool cleave = false)
         {
+            WindupTicks = windupTicks;
+            Cleave = cleave;
             if (tick < 0 || lane < 0 || lane > 2 || health <= 0 || armor < 0 || damage <= 0 || attackRangeMm < 0 || movementMmPerTick < 0 || attackIntervalTicks < 1)
                 throw new ArgumentOutOfRangeException("Wave spawn data is outside its allowed range.");
             Tick = tick;
@@ -152,7 +157,8 @@ namespace Gearbound.Core
             {
                 var spawn = wave.Spawns[nextSpawnIndex++];
                 Combat.Add(new Combatant(nextEnemyId++, CombatFaction.Enemy, spawn.Lane, Combat.WorldLengthMm,
-                    spawn.Health, spawn.Armor, spawn.Damage, spawn.AttackRangeMm, spawn.MovementMmPerTick, spawn.AttackIntervalTicks));
+                    spawn.Health, spawn.Armor, spawn.Damage, spawn.AttackRangeMm, spawn.MovementMmPerTick, spawn.AttackIntervalTicks,
+                    windupTicks: spawn.WindupTicks, cleave: spawn.Cleave));
             }
 
             if (specialQueued)
