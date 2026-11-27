@@ -133,6 +133,46 @@ class WorkshopController {
     _rollOffers();
   }
 
+  /// Rebuilds a controller from [toJson] output at a wave boundary: the
+  /// mission wallet (with its processed claim keys, so no wave reward can be
+  /// paid twice), offers, reroll count, ID counters and RNG state, so the
+  /// shop continues exactly where it stopped. Starter gears are not placed
+  /// again; the board comes from the checkpoint.
+  WorkshopController.restore({
+    required this.board,
+    required this.catalog,
+    required this.shop,
+    required this.rules,
+    required Map<String, Object?> json,
+  }) : seed = json['seed'] as int,
+       _rng = SeededRandom(json['rngState'] as int)
+         ..draws = json['rngDraws'] as int,
+       wallet = Wallet.fromJson(
+         json['wallet'] as Map<String, Object?>,
+         defaultAssetRules(),
+       ) {
+    offers = (json['offers'] as List).cast<String?>();
+    rerollsTaken = json['rerollsTaken'] as int;
+    locked = json['locked'] as bool;
+    final handId = json['hand'] as String?;
+    hand = handId == null ? null : _definition(handId);
+    _nextGearNumber = json['nextGearNumber'] as int;
+    _nextTxn = json['nextTxn'] as int;
+  }
+
+  Map<String, Object?> toJson() => {
+    'seed': seed,
+    'rngState': _rng.state,
+    'rngDraws': _rng.draws,
+    'wallet': wallet.toJson(),
+    'offers': offers,
+    'rerollsTaken': rerollsTaken,
+    'locked': locked,
+    'hand': hand?.id,
+    'nextGearNumber': _nextGearNumber,
+    'nextTxn': _nextTxn,
+  };
+
   final GearBoard board;
   final List<GearDefinition> catalog;
   final ShopConfig shop;

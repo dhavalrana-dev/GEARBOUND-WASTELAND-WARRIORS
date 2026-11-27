@@ -115,6 +115,23 @@ class CampaignStore {
     return progress;
   }
 
+  static const missionKey = 'gearbound.mission.active';
+
+  /// Raw checkpoint of an interrupted mission, or null. Decoding and
+  /// validation happen in `MissionSnapshot.tryDecode`.
+  Future<String?> loadMissionCheckpoint() => _storage.getString(missionKey);
+
+  /// Saves the checkpoint, or clears it when [encoded] is null (stored as an
+  /// empty string, which reads back as no checkpoint).
+  Future<void> saveMissionCheckpoint(String? encoded) {
+    if (persistenceBlocked) return Future.value();
+    final next = _pending.then(
+      (_) => _storage.setString(missionKey, encoded ?? ''),
+    );
+    _pending = next.catchError((Object _) {});
+    return next;
+  }
+
   /// Queues a save behind any in-flight save. The legacy key is left in place
   /// as a read-only fallback until a later release removes it.
   Future<void> save(CampaignProgress progress) {

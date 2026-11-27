@@ -8,6 +8,7 @@ import '../../progression/campaign_progress.dart';
 import '../../progression/campaign_store.dart';
 import '../../progression/rewards.dart';
 import '../../design_system/tokens.dart';
+import '../workshop/mission_snapshot.dart';
 import '../workshop/workshop_screen.dart';
 
 class CampaignHubScreen extends StatefulWidget {
@@ -25,6 +26,9 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
   CampaignProgress? _progress;
   SharedContent? _content;
 
+  /// An interrupted mission found in storage, if any.
+  MissionSnapshot? _checkpoint;
+
   @override
   void initState() {
     super.initState();
@@ -40,17 +44,49 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
       // Fall back to the built-in encounter scripts rather than blocking play.
       debugPrint('Shared content unavailable: $error');
     }
+    MissionSnapshot? checkpoint;
+    try {
+      checkpoint = MissionSnapshot.tryDecode(
+        await _store.loadMissionCheckpoint(),
+      );
+    } on Object catch (error) {
+      // A failed read must never block the route; treat it as no checkpoint.
+      debugPrint('Mission checkpoint unavailable: $error');
+    }
     if (mounted) {
       setState(() {
         _progress = progress;
         _content = content;
+        _checkpoint = checkpoint;
       });
     }
   }
 
-  Future<void> _launchLevel(int index) async {
+  Future<void> _saveCheckpoint(MissionSnapshot? snapshot) async {
+    _checkpoint = snapshot;
+    await _store.saveMissionCheckpoint(snapshot?.encode());
+  }
+
+  /// Ends an interrupted mission without playing it: counts as abandoning
+  /// (the Overclock Streak resets), nothing else is lost.
+  Future<void> _abandonCheckpoint() async {
+    final progress = _progress;
+    if (progress == null || _checkpoint == null) return;
+    progress.recordAbandon();
+    await _store.save(progress);
+    await _saveCheckpoint(null);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _launchLevel(int index, {bool resume = false}) async {
     final progress = _progress;
     if (progress == null || !progress.isUnlocked(index)) return;
+    final checkpoint = _checkpoint;
+    if (checkpoint != null && !resume) {
+      // Starting another mission abandons the interrupted one.
+      await _abandonCheckpoint();
+    }
+    if (!mounted) return;
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => WorkshopScreen(
@@ -58,6 +94,8 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
           progress: progress,
           content: _content,
           onProgressSaved: _store.save,
+          resume: resume ? checkpoint : null,
+          onCheckpoint: _saveCheckpoint,
         ),
       ),
     );
@@ -82,6 +120,18 @@ class _CampaignHubScreenState extends State<CampaignHubScreen> {
                 child: _HubHeader(scrap: progress.scrap),
               ),
             ),
+            if (_checkpoint case final checkpoint?)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+                sliver: SliverToBoxAdapter(
+                  child: _ResumeCard(
+                    checkpoint: checkpoint,
+                    onResume: () =>
+                        _launchLevel(checkpoint.levelIndex, resume: true),
+                    onAbandon: _abandonCheckpoint,
+                  ),
+                ),
+              ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               sliver: SliverToBoxAdapter(
@@ -706,4 +756,81 @@ class _RewardRow extends StatelessWidget {
       ),
     ],
   );
+}
+
+class _ResumeCard extends StatelessWidget {
+  const _ResumeCard({
+    required this.checkpoint,
+    required this.onResume,
+    required this.onAbandon,
+  });
+
+  final MissionSnapshot checkpoint;
+  final VoidCallback onResume;
+  final VoidCallback onAbandon;
+
+  @override
+  Widget build(BuildContext context) {
+    final level =
+        checkpoint.levelIndex >= 0 &&
+            checkpoint.levelIndex < campaignLevels.length
+        ? campaignLevels[checkpoint.levelIndex].name
+        : checkpoint.levelId;
+    final wave = checkpoint.atIntermission
+        ? 'rebuild before wave ${checkpoint.waveIndex + 2}'
+        : 'wave ${checkpoint.waveIndex + 1} restarts';
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: GbColors.panel,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: GbColors.amber),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'MISSION INTERRUPTED · ${level.toUpperCase()}',
+            style: const TextStyle(
+              color: GbColors.cream,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Wave ${checkpoint.atIntermission ? checkpoint.waveIndex + 1 : checkpoint.waveIndex}/${checkpoint.waveCount} cleared · $wave. '
+            'Starting another mission abandons this one (the streak resets).',
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onAbandon,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: GbColors.cream,
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  child: const Text('ABANDON'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: onResume,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: GbColors.amber,
+                    foregroundColor: GbColors.ink,
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  child: const Text('RESUME'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
