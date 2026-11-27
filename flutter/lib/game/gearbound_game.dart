@@ -25,6 +25,15 @@ class GearboundGame extends FlameGame {
   ({int x, int y})? Function()? selectedCell;
   bool Function()? isPlacing;
 
+  /// Drag on the board: start returns false to refuse (empty cell, core).
+  bool Function(int x, int y)? onDragStartCell;
+  void Function(int x, int y)? onDropCell;
+  void Function()? onDragCancelled;
+
+  /// Target-cell feedback while dragging: null = no preview, otherwise
+  /// (valid, powered).
+  ({bool valid, bool powered})? Function(int x, int y)? previewCell;
+
   @override
   Color backgroundColor() => const Color(0xFF202A30);
 
@@ -70,7 +79,8 @@ class GearboundGame extends FlameGame {
   bool moveHeroToLane(int lane) => session.moveHeroToLane(lane);
 }
 
-class WorkshopBoardView extends PositionComponent with TapCallbacks {
+class WorkshopBoardView extends PositionComponent
+    with TapCallbacks, DragCallbacks {
   WorkshopBoardView(this.session, [this.game])
     : super(
         size: Vector2.zero(),
@@ -120,6 +130,48 @@ class WorkshopBoardView extends PositionComponent with TapCallbacks {
   void onTapUp(TapUpEvent event) {
     final cell = cellAt(event.localPosition);
     if (cell != null) game?.onCellTap?.call(cell.x, cell.y);
+  }
+
+  /// Pointer position of an accepted drag, in local coordinates.
+  Vector2? dragPosition;
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    super.onDragStart(event);
+    final cell = cellAt(event.localPosition);
+    final accepted =
+        cell != null && (game?.onDragStartCell?.call(cell.x, cell.y) ?? false);
+    dragPosition = accepted ? event.localPosition.clone() : null;
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    super.onDragUpdate(event);
+    // Accumulate deltas from the drag-start point. In Flame 1.38,
+    // `localEndPosition` adds the delta to a position that already includes it,
+    // so it runs ahead of the finger (found by the pointer-drag widget test).
+    dragPosition?.add(event.localDelta);
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
+    final position = dragPosition;
+    dragPosition = null;
+    if (position == null) return;
+    final cell = cellAt(position);
+    if (cell == null) {
+      game?.onDragCancelled?.call();
+    } else {
+      game?.onDropCell?.call(cell.x, cell.y);
+    }
+  }
+
+  @override
+  void onDragCancel(DragCancelEvent event) {
+    super.onDragCancel(event);
+    if (dragPosition != null) game?.onDragCancelled?.call();
+    dragPosition = null;
   }
 
   @override
@@ -271,10 +323,45 @@ class WorkshopBoardView extends PositionComponent with TapCallbacks {
       );
       canvas.drawLine(ac, bc, connected);
     }
+    _drawDragFeedback(canvas);
     final labelTop = _gridTop + _cell * 5 + 3;
     canvas.drawParagraph(
       _paragraph('5 × 5 MECHANICAL GRID', 9, 0xFF8EAAA9, bold: true),
       ui.Offset(_gridLeft, labelTop),
+    );
+  }
+
+  void _drawDragFeedback(ui.Canvas canvas) {
+    final position = dragPosition;
+    if (position == null) return;
+    final cell = cellAt(position);
+    if (cell != null) {
+      final preview = game?.previewCell?.call(cell.x, cell.y);
+      if (preview != null) {
+        final color = !preview.valid
+            ? const ui.Color(0x99E47A66)
+            : preview.powered
+            ? const ui.Color(0x889CDD74)
+            : const ui.Color(0x88E9BA64);
+        canvas.drawRRect(
+          ui.RRect.fromRectAndRadius(
+            ui.Rect.fromLTWH(
+              _gridLeft + cell.x * _cell,
+              _gridTop + cell.y * _cell,
+              _cell - 3,
+              _cell - 3,
+            ),
+            const ui.Radius.circular(7),
+          ),
+          ui.Paint()..color = color,
+        );
+      }
+    }
+    // Ghost gear under the finger.
+    canvas.drawCircle(
+      position.toOffset(),
+      _cell * 0.33,
+      ui.Paint()..color = const ui.Color(0xAAFFE8C8),
     );
   }
 

@@ -97,6 +97,70 @@ void main() {
     expect(board.at(3, 3), isNull);
   });
 
+  testWidgets('drag hooks move a gear, show status, and undo restores it', (
+    tester,
+  ) async {
+    useTallPhone(tester);
+    final content = (await tester.runAsync(
+      () => SharedContent.load(rootBundle),
+    ))!;
+    final game = await pumpWorkshop(tester, content);
+    final board = game.session.board;
+
+    expect(game.onDragStartCell!(0, 2), isFalse); // the core cannot be dragged
+    expect(game.onDragStartCell!(1, 2), isTrue);
+    expect(game.previewCell!(0, 1), (valid: true, powered: true));
+    expect(game.previewCell!(4, 4), (valid: true, powered: false));
+    expect(game.previewCell!(0, 2)?.valid, isFalse);
+    game.onDropCell!(0, 1);
+    await tester.pump();
+    expect(board.at(0, 1)?.definitionId, 'unit.rivetguard');
+    expect(board.at(1, 2), isNull);
+    expect(find.textContaining('Powered · lane 1'), findsOneWidget);
+
+    await tester.tap(find.text('UNDO'));
+    await tester.pump();
+    expect(board.at(1, 2)?.definitionId, 'unit.rivetguard');
+    expect(board.at(0, 1), isNull);
+    expect(find.text('Nothing to undo.'), findsNothing);
+  });
+
+  testWidgets('a real pointer drag on the canvas moves a gear', (tester) async {
+    useTallPhone(tester);
+    final content = (await tester.runAsync(
+      () => SharedContent.load(rootBundle),
+    ))!;
+    final game = await pumpWorkshop(tester, content);
+    await tester.pump(const Duration(milliseconds: 50));
+    final view = game.world.children.whereType<WorkshopBoardView>().single;
+
+    Offset centerOf(int x, int y) {
+      // Average every probe point that maps to the cell.
+      var sx = 0.0, sy = 0.0, n = 0;
+      for (var px = 0.0; px < view.size.x; px += 2) {
+        for (var py = 0.0; py < view.size.y; py += 2) {
+          if (view.cellAt(Vector2(px, py)) == (x: x, y: y)) {
+            sx += px;
+            sy += py;
+            n++;
+          }
+        }
+      }
+      expect(n, greaterThan(0));
+      final origin = tester.getTopLeft(find.byType(GameWidget<GearboundGame>));
+      return origin + Offset(sx / n, sy / n);
+    }
+
+    final from = centerOf(1, 2);
+    final to = centerOf(0, 1);
+    await tester.dragFrom(from, to - from);
+    // Let the gesture recognizers' timers finish before teardown.
+    await tester.pump(const Duration(milliseconds: 100));
+    final board = game.session.board;
+    expect(board.at(0, 1)?.definitionId, 'unit.rivetguard');
+    expect(board.at(1, 2), isNull);
+  });
+
   for (final (name, size) in [
     ('phone landscape', const Size(2400, 1080)),
     ('small phone portrait', const Size(720, 1520)),

@@ -74,7 +74,7 @@ The goal is a finished game, not an oversized unfinished prototype.
 |---|---|---|
 | 00 | Repository and simulation foundation | Implemented; device verification pending |
 | 01 | Toolchain and build readiness | **Blocked** (Android NDK license, user action) |
-| 02 | Complete mechanical workshop | **In progress** (shop done in PR #4; drag, move and undo remaining) |
+| 02 | Complete mechanical workshop | **Implemented in Flutter** (shop, drag, move, undo, previews); device test and Unity port (GB-036) pending |
 | 03 | Combat and multi-wave mission flow | In progress (single wave only) |
 | 04 | Visual preproduction | Planned (asset manifest created, all `planned`) |
 | 05 | Production vertical slice | Planned |

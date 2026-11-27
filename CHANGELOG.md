@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Workshop drag-and-drop with a ghost and a target-cell power preview, moving placed gears, undo for place, move, merge and sell, and a selected-gear status line. Fixed drag tracking running ahead of the finger, and dropping a gear onto the core silently doing nothing.
 - Replaced `ART_DIRECTION.md` with the v2 production style bible, reconciled with the game data IDs. Replaced `PHASE_ROADMAP.md` with the 19-phase v2 roadmap, mapping v1 and A–J, with the current baseline.
 - Added the vertical-slice asset manifest (`shared/art/asset_manifest.json`, 316 planned records) with a schema, validator rules and `PRODUCTION_ASSET_INVENTORY.md`.
 - Added `TOOLCHAIN_REPORT.md` with the Android diagnosis, and backlog tasks GB-038 to GB-048.

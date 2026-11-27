@@ -41,6 +41,9 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
   late final BattleSession _session;
   late GearNetworkResult _network;
   WorkshopController? _workshop;
+
+  /// Board cell a drag started from; null while dragging the hand gear.
+  ({int x, int y})? _dragFrom;
   String? _notice;
   bool _resultRecorded = false;
   bool _useVanguard = false;
@@ -76,7 +79,11 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     _game = GearboundGame(_session)
       ..onCellTap = _onCellTap
       ..selectedCell = (() => _workshop?.selected)
-      ..isPlacing = (() => _workshop?.hand != null);
+      ..isPlacing = (() => _workshop?.hand != null)
+      ..onDragStartCell = _onDragStart
+      ..onDropCell = _onDrop
+      ..onDragCancelled = (() => _dragFrom = null)
+      ..previewCell = _previewCell;
     _game.onSessionChanged = () {
       if (_session.phase == BattlePhase.victory && !_resultRecorded) {
         _resultRecorded = true;
@@ -115,6 +122,63 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     _refreshNetwork();
   }
 
+  bool _onDragStart(int x, int y) {
+    final workshop = _workshop;
+    if (workshop == null || _session.phase != BattlePhase.preparation) {
+      return false;
+    }
+    if (workshop.hand != null) {
+      _dragFrom = null;
+      return true;
+    }
+    final node = _board.at(x, y);
+    if (node == null || node.kind == GearKind.core) return false;
+    _dragFrom = (x: x, y: y);
+    return true;
+  }
+
+  void _onDrop(int x, int y) {
+    final workshop = _workshop;
+    if (workshop == null) return;
+    final from = _dragFrom;
+    _dragFrom = null;
+    _show(
+      from == null ? workshop.tapCell(x, y) : workshop.drop(from, (x: x, y: y)),
+    );
+    _refreshNetwork();
+  }
+
+  ({bool valid, bool powered})? _previewCell(int x, int y) {
+    final workshop = _workshop;
+    if (workshop == null) return null;
+    final preview = workshop.previewAt(x, y, from: _dragFrom);
+    return (
+      valid: preview.valid,
+      powered: preview.state == NetworkState.powered,
+    );
+  }
+
+  /// One-line status for the selected board gear.
+  String? _selectedStatus() {
+    final cell = _workshop?.selected;
+    final node = cell == null ? null : _board.at(cell.x, cell.y);
+    if (node == null) return null;
+    final result = _network.nodes[node.id];
+    final state = switch (result?.state) {
+      NetworkState.powered => 'Powered',
+      NetworkState.unpowered => 'Unpowered: connect it to the core',
+      NetworkState.jammed => 'Jammed: odd gear loop',
+      NetworkState.conflicted => 'Conflicted: more than one core',
+      null => 'Unknown',
+    };
+    if (node.outputKind == GearOutputKind.none) {
+      return 'Tier ${node.tier} · $state';
+    }
+    final interval = result?.effectiveIntervalTicks ?? 0;
+    final seconds = interval == 0 ? '-' : (interval / 30).toStringAsFixed(1);
+    return 'Tier ${node.tier} · $state · lane ${node.targetLane + 1} · one soldier every ${seconds}s';
+  }
+
   void _show(WorkshopAction result) {
     _notice = switch (result) {
       WorkshopAction.ok => null,
@@ -126,6 +190,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       WorkshopAction.handFull => 'Place or cancel the gear in hand first.',
       WorkshopAction.cannotSellCore => 'The power core cannot be sold.',
       WorkshopAction.locked => 'The workshop is locked during the wave.',
+      WorkshopAction.nothingToUndo => 'Nothing to undo.',
       WorkshopAction.noOffer ||
       WorkshopAction.nothingToPlace ||
       WorkshopAction.nothingSelected => null,
@@ -147,6 +212,8 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     return _ShopPanel(
       workshop: workshop,
       notice: _notice,
+      status: _selectedStatus(),
+      onUndo: () => _workshopAction((w) => w.undo()),
       onBuy: (slot) => _workshopAction((w) => w.buy(slot)),
       onReroll: () => _workshopAction((w) => w.reroll()),
       onCancel: () => _workshopAction((w) => w.cancelHand()),
@@ -552,6 +619,8 @@ class _ShopPanel extends StatelessWidget {
   const _ShopPanel({
     required this.workshop,
     required this.notice,
+    required this.status,
+    required this.onUndo,
     required this.onBuy,
     required this.onReroll,
     required this.onCancel,
@@ -560,6 +629,8 @@ class _ShopPanel extends StatelessWidget {
 
   final WorkshopController workshop;
   final String? notice;
+  final String? status;
+  final VoidCallback onUndo;
   final ValueChanged<int> onBuy;
   final VoidCallback onReroll;
   final VoidCallback onCancel;
@@ -571,10 +642,10 @@ class _ShopPanel extends StatelessWidget {
     final selected = workshop.selectedDefinition;
     final scrap = workshop.battleScrap;
     final hint = hand != null
-        ? 'Placing ${hand.name}: tap an empty cell. Row sets the lane.'
+        ? 'Placing ${hand.name}: tap or drag to an empty cell. Row sets the lane.'
         : selected != null
-        ? '${selected.name} selected: tap an identical gear to merge.'
-        : 'Buy a gear, then tap the board. Tap a gear to select it.';
+        ? '${selected.name} selected: drag to move, or onto an identical gear to merge.'
+        : 'Buy a gear, then tap or drag it onto the board.';
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
@@ -625,19 +696,34 @@ class _ShopPanel extends StatelessWidget {
               fontSize: 11,
             ),
           ),
-          if (hand != null || selected != null)
-            Align(
-              alignment: Alignment.centerRight,
-              child: hand != null
-                  ? TextButton(
-                      onPressed: onCancel,
-                      child: Text('CANCEL (+${hand.cost})'),
-                    )
-                  : TextButton(
-                      onPressed: onSell,
-                      child: Text('SELL (+${workshop.selectedSellValue})'),
-                    ),
+          if (status != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                status!,
+                style: const TextStyle(color: GbColors.cream, fontSize: 11),
+              ),
             ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: workshop.canUndo ? onUndo : null,
+                icon: const Icon(Icons.undo, size: 18),
+                label: const Text('UNDO'),
+              ),
+              if (hand != null || selected != null)
+                hand != null
+                    ? TextButton(
+                        onPressed: onCancel,
+                        child: Text('CANCEL (+${hand.cost})'),
+                      )
+                    : TextButton(
+                        onPressed: onSell,
+                        child: Text('SELL (+${workshop.selectedSellValue})'),
+                      ),
+            ],
+          ),
         ],
       ),
     );
