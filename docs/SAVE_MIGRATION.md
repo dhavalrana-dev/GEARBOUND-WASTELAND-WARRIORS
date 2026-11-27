@@ -30,8 +30,11 @@ Implementation: `flutter/lib/progression/campaign_progress.dart` (`CampaignProgr
 
 **Limitation:** moving the clock *forwards* cannot be detected offline. Trusted server time is required before online events or valuable time-gated rewards (Phase H).
 
+## Mission checkpoint (separate slot)
+
+`CampaignStore.missionKey` (`gearbound.mission.active`) holds at most one `MissionSnapshot` (schema 1, `flutter/lib/features/workshop/mission_snapshot.dart`). It's separate from the progression save, so a broken checkpoint can never damage campaign progress. An empty or unreadable value means "no checkpoint". Snapshots are taken only at wave boundaries. Their resume rules are described in `FLUTTER_ARCHITECTURE.md`.
+
 ## Not yet done
 
 - Cloud save and conflict resolution (Phase H).
 - Separate storage for purchase entitlements (Phase G), and a settings store.
-- An active-mission snapshot for restoring an interrupted battle.

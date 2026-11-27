@@ -40,6 +40,11 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
    - Once a mission has started, system Back opens the pause menu. Abandoning asks for confirmation and resets the Overclock Streak.
    - Simulation catch-up is capped at 0.25 s per frame.
    - The game widget has a `GlobalKey`, so rotation moves it between layouts instead of rebuilding it. This matters because Flame reports widget disposal as an app pause.
+10. **Checkpoints** (`MissionSnapshot`):
+   - **When:** saved when each wave starts and at each intermission; cleared on victory, defeat or abandon.
+   - **Resume after a kill:** an intermission checkpoint resumes into the rebuild phase. A mid-wave kill restarts that wave, paused, with the board locked and wave-1 opening soldiers redeployed.
+   - **What's restored:** `WorkshopController.restore` rebuilds the mission wallet (claim keys included), offers, reroll count and RNG state.
+   - **Checks:** `BattleSession.restoreCheckpoint` only applies to a fresh session and rejects values that don't fit the mission.
 
 ## Layout
 - **Portrait:** the battlefield and board get 11/20 of the height; status, shop, loadout and actions scroll in the remaining 9/20.

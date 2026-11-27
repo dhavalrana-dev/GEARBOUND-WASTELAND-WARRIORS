@@ -9,6 +9,11 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
+- **GB-053 mission checkpoints on `feature/mission-checkpoint`.**
+  - **When saved:** a wave-boundary checkpoint (`MissionSnapshot`, schema 1) is written when each wave starts and when each intermission begins, and cleared on victory, defeat or abandon.
+  - **Resuming after the app was killed:** an intermission checkpoint resumes into the rebuild phase. A mid-wave kill **restarts that wave, paused, with the board locked as it was**, so killing the app can't be used to rebuild against a wave already seen.
+  - **Route screen:** an interrupted mission shows a Resume/Abandon card. Starting another mission abandons it (the streak resets).
+  - **No double payouts:** the mission wallet's claim keys and the shop's RNG state are restored, so rewards can't be paid twice and the shop continues exactly where it stopped.
 - **GB-055 hero special on `feature/hero-special`.** Rivet gains SP from landed hits (10 per hit, max 100). With a full bar, **Wrench Quake** deals 25 damage, armor applying, to enemies within 1,200 mm in his lane. It's a validated command in both engines, applied after spawns and before the combat step. Tuning lives in `shared/heroes/heroes.json`, and tests in both engines keep the code equal to the file.
 - **GB-052 mission lifecycle on `feature/mission-lifecycle`.** Adds a gameplay pause menu (Resume; Abandon with confirmation), auto-pause when the app is hidden during combat (it never auto-resumes), system Back routed to the pause menu once a mission has started, and a 0.25 s per-frame catch-up cap.
 - **GB-025 multi-wave missions on `feature/workshop-drag-undo`** (same branch as GB-039, uncommitted). `BattleSession` supports waves with an intermission in both engines. Route node `copperwash-01` is now the 3-wave shared mission `copperwash_01`; wave 1 is identical to the old encounter. Each intermission pays the wave reward in battle scrap, rolls fresh offers and reopens the workshop.
@@ -23,6 +28,20 @@ Updated: 2026-11-27 (Asia/Calcutta)
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. The first five nodes have hand-authored spawn timings and roles; later encounters use deterministic scaling.
 
 ## Verification ledger
+### 2026-11-27 session 11 (mission checkpoints)
+- Flutter analyze: no issues. Flutter tests: **162/162**. `mission_checkpoint_test.dart` adds 9 tests:
+  - snapshot round trip and rejection of corrupt input;
+  - the restored shop continuing its exact RNG and keeping its claim keys;
+  - `restoreCheckpoint` rejecting impossible values;
+  - a mid-wave resume (paused, locked board, opening soldiers redeployed);
+  - an intermission resume with no double reward;
+  - victory clearing the checkpoint;
+  - an invalid checkpoint being discarded;
+  - the route card's Abandon.
+- Validator, reference fixtures, asset sync and combat traces: clean. Unity EditMode: **not re-run** (no C# or shared data changed; last result 39/39).
+- **Hardening:** a failed checkpoint read can no longer block the route screen. Checkpoints that no longer fit the game data are discarded rather than crashing.
+- **Not verified:** an actual OS process kill on a device (the Android build is blocked, GB-038). The checkpoint is local only; there's no cloud save yet (Phase 12).
+
 ### 2026-11-27 session 10 (hero special)
 - Flutter analyze: no issues. Flutter tests: **153/153**. Unity EditMode: **39/39** (4 new hero-special tests).
 - **Cross-engine parity:** new combat scenario `boss-wave-hero-special` (the hero uses the special whenever ready; SP is part of that trace's hash) matches tick by tick in Dart and in the C# generator. **The 4 existing trace hashes are unchanged.** The special clears the boss wave at tick 385 versus 416 without it.

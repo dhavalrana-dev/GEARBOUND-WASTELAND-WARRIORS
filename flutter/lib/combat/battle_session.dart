@@ -177,6 +177,45 @@ class BattleSession {
   void refreshNetwork() => network = GearNetwork.rebuild(board);
   bool moveHeroToLane(int lane) => combat.moveLane(heroId, lane);
 
+  /// Applies a wave-boundary checkpoint to a fresh session (see
+  /// `MissionSnapshot`). At an intermission the session waits to start the
+  /// wave after [waveIndex]; otherwise it is back in preparation for
+  /// [waveIndex] itself. Returns false if the session already started or the
+  /// values do not fit this mission.
+  bool restoreCheckpoint({
+    required int waveIndex,
+    required bool atIntermission,
+    required int fortressHealth,
+    required int heroLane,
+    required int heroHealth,
+    required int heroSp,
+    required int scrapReward,
+  }) {
+    if (phase != BattlePhase.preparation || elapsedTicks != 0) return false;
+    if (waveIndex < 0 || waveIndex >= waves.length) return false;
+    if (atIntermission && waveIndex == waves.length - 1) return false;
+    if (fortressHealth < 1 || fortressHealth > combat.fortressMaxHealth) {
+      return false;
+    }
+    if (heroLane < 0 || heroLane > 2) return false;
+    final hero = combat.combatants.where((u) => u.id == heroId).firstOrNull;
+    // A knocked-out hero (health 0) stays knocked out after a resume.
+    if (hero == null || heroHealth < 0 || heroHealth > hero.maxHealth) {
+      return false;
+    }
+    this.waveIndex = waveIndex;
+    phase = atIntermission ? BattlePhase.intermission : BattlePhase.preparation;
+    combat.fortressHealth = fortressHealth;
+    hero
+      ..lane = heroLane
+      ..health = heroHealth
+      ..positionMm = 0
+      ..state = heroHealth == 0 ? CombatState.dead : CombatState.idle;
+    this.heroSp = heroSp.clamp(0, special.spMax).toInt();
+    this.scrapReward = scrapReward < 0 ? 0 : scrapReward;
+    return true;
+  }
+
   WaveDefinition get currentWave => waves[waveIndex];
   bool get isFinalWave => waveIndex == waves.length - 1;
 

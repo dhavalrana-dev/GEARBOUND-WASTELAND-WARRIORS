@@ -12,6 +12,7 @@ import '../../progression/campaign_progress.dart';
 import '../../progression/encounters.dart';
 import '../../progression/rewards.dart';
 import '../../design_system/tokens.dart';
+import 'mission_snapshot.dart';
 import 'workshop_controller.dart';
 
 class WorkshopScreen extends StatefulWidget {
@@ -21,9 +22,17 @@ class WorkshopScreen extends StatefulWidget {
     required this.onProgressSaved,
     this.content,
     this.shopSeed,
+    this.resume,
+    this.onCheckpoint,
     super.key,
   });
   final int levelIndex;
+
+  /// Wave-boundary checkpoint to resume (from an interrupted session).
+  final MissionSnapshot? resume;
+
+  /// Saves the mission checkpoint, or clears it when given null.
+  final Future<void> Function(MissionSnapshot?)? onCheckpoint;
 
   /// Fixed shop seed for tests; production seeds from the clock.
   final int? shopSeed;
@@ -60,7 +69,25 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
   void initState() {
     super.initState();
     final content = widget.content;
-    if (content != null) {
+    _waves = encounterWavesForLevel(widget.levelIndex, content: content);
+    final resume = _validResume(widget.resume, content);
+    if (widget.resume != null && resume == null) {
+      // Unusable checkpoint (data changed, other level): start fresh.
+      unawaited(widget.onCheckpoint?.call(null));
+    }
+    if (content != null && resume != null) {
+      _board = GearBoard();
+      for (final node in resume.board) {
+        _board.place(node);
+      }
+      _workshop = WorkshopController.restore(
+        board: _board,
+        catalog: content.gears,
+        shop: content.shop,
+        rules: content.workshopRules,
+        json: resume.workshop!,
+      );
+    } else if (content != null) {
       _board = GearBoard();
       _workshop = WorkshopController(
         board: _board,
@@ -76,7 +103,6 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       // built-in demo board, without a shop.
       _board = makeStarterBoard();
     }
-    _waves = encounterWavesForLevel(widget.levelIndex, content: widget.content);
     _network = GearNetwork.rebuild(_board);
     _session = BattleSession(
       board: _board,
@@ -94,6 +120,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       ..onDragCancelled = (() => _dragFrom = null)
       ..previewCell = _previewCell;
     _lifecycle = AppLifecycleListener(onHide: _onAppHidden);
+    if (resume != null) _applyResume(resume);
     _game.onSessionChanged = () {
       if (_session.phase == BattlePhase.intermission &&
           _intermissionsHandled <= _session.waveIndex) {
@@ -105,6 +132,12 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         _notice =
             'Wave ${_session.waveIndex + 1} cleared: '
             '+${_session.lastWaveReward} battle scrap. Rebuild, then start the next wave.';
+        _checkpoint(atIntermission: true, waveIndex: _session.waveIndex);
+      }
+      if ((_session.phase == BattlePhase.victory ||
+              _session.phase == BattlePhase.defeat) &&
+          !_resultRecorded) {
+        unawaited(widget.onCheckpoint?.call(null));
       }
       if (_session.phase == BattlePhase.victory && !_resultRecorded) {
         _resultRecorded = true;
@@ -264,6 +297,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       _workshop?.lock();
       _refreshNetwork();
       _notice = null;
+      _checkpoint(atIntermission: false, waveIndex: _session.waveIndex + 1);
       if (_game.startWave()) setState(() {});
       return;
     }
@@ -276,6 +310,17 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       streakLevel: widget.progress.winStreak,
       vanguard: vanguard,
     );
+    _deployOpeningSoldiers(lanes);
+    _checkpoint(atIntermission: false, waveIndex: _session.waveIndex);
+    unawaited(widget.onProgressSaved(widget.progress));
+    if (_game.startWave()) setState(() {});
+  }
+
+  /// Opening soldiers chosen at wave 1 (streak and Vanguard). Kept so a
+  /// restarted wave 1 redeploys exactly the same ones.
+  List<int> _openingLanes = const [];
+
+  void _deployOpeningSoldiers(List<int> lanes) {
     for (var i = 0; i < lanes.length; i++) {
       // Same stats as a Rivetguard Press soldier; IDs 90000+ are reserved for
       // opening reinforcements so they never collide with outputs or enemies.
@@ -294,9 +339,80 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         ),
       );
     }
+    _openingLanes = List.unmodifiable(lanes);
     _openingSoldiers = lanes.length;
-    unawaited(widget.onProgressSaved(widget.progress));
-    if (_game.startWave()) setState(() {});
+  }
+
+  MissionSnapshot? _validResume(MissionSnapshot? r, SharedContent? content) {
+    if (r == null || content == null || r.workshop == null) return null;
+    if (r.levelIndex != widget.levelIndex ||
+        r.levelId != campaignLevels[widget.levelIndex].id ||
+        r.waveCount != _waves.length ||
+        r.waveIndex < 0 ||
+        r.waveIndex >= _waves.length) {
+      return null;
+    }
+    final known = {for (final g in content.gears) g.id};
+    if (r.board.any((n) => !known.contains(n.definitionId))) return null;
+    return r;
+  }
+
+  void _applyResume(MissionSnapshot r) {
+    final ok = _session.restoreCheckpoint(
+      waveIndex: r.waveIndex,
+      atIntermission: r.atIntermission,
+      fortressHealth: r.fortressHealth,
+      heroLane: r.heroLane,
+      heroHealth: r.heroHealth,
+      heroSp: r.heroSp,
+      scrapReward: r.scrapReward,
+    );
+    if (!ok) {
+      unawaited(widget.onCheckpoint?.call(null));
+      return;
+    }
+    _openingLanes = List.unmodifiable(r.openingLanes);
+    if (r.atIntermission) {
+      _intermissionsHandled = r.waveIndex + 1;
+      _notice = 'Mission resumed. Rebuild, then start wave ${r.waveIndex + 2}.';
+      return;
+    }
+    // The app closed mid-wave: restart that wave with the same locked board,
+    // paused so the player can get their bearings.
+    _intermissionsHandled = r.waveIndex;
+    _workshop?.lock();
+    if (r.waveIndex == 0) _deployOpeningSoldiers(r.openingLanes);
+    _session.start();
+    _game.setSimulationPaused(true);
+    _pauseMenuOpen = true;
+  }
+
+  /// Saves a wave-boundary checkpoint (never mid-wave).
+  void _checkpoint({required bool atIntermission, required int waveIndex}) {
+    final save = widget.onCheckpoint;
+    if (save == null) return;
+    final hero = _session.combat.combatants.firstWhere(
+      (u) => u.id == _session.heroId,
+    );
+    unawaited(
+      save(
+        MissionSnapshot(
+          levelId: campaignLevels[widget.levelIndex].id,
+          levelIndex: widget.levelIndex,
+          waveIndex: waveIndex,
+          waveCount: _session.waves.length,
+          atIntermission: atIntermission,
+          fortressHealth: _session.combat.fortressHealth,
+          heroLane: hero.lane,
+          heroHealth: hero.health,
+          heroSp: _session.heroSp,
+          scrapReward: _session.scrapReward,
+          openingLanes: _openingLanes,
+          board: [..._board.nodes],
+          workshop: _workshop?.toJson(),
+        ),
+      ),
+    );
   }
 
   Widget _loadout() => _LoadoutBar(
@@ -361,6 +477,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       _resultRecorded = true;
       widget.progress.recordAbandon();
     }
+    await widget.onCheckpoint?.call(null);
     await widget.onProgressSaved(widget.progress);
     if (mounted) Navigator.of(context).pop();
   }
