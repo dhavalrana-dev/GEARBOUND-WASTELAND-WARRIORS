@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'rewards.dart';
+
 const campaignLevels = <CampaignLevel>[
   CampaignLevel(
     id: 'copperwash-01',
@@ -132,7 +134,14 @@ class CampaignProgress {
     this.eventPoints = 0,
     Set<int>? claimedEventTiers,
     Map<String, int>? weeklyBestStars,
-  }) : bestStars = bestStars ?? {},
+    this.winStreak = 0,
+    Map<String, int>? boosters,
+    Set<int>? claimedStarChests,
+    this.loginStep = 0,
+    this.lastLoginClaimDay = '',
+  }) : boosters = boosters ?? {},
+       claimedStarChests = claimedStarChests ?? {},
+       bestStars = bestStars ?? {},
        contractProgress = contractProgress ?? {},
        claimedContracts = claimedContracts ?? {},
        claimedEventTiers = claimedEventTiers ?? {},
@@ -147,6 +156,70 @@ class CampaignProgress {
   int eventPoints;
   final Set<int> claimedEventTiers;
   final Map<String, int> weeklyBestStars;
+
+  /// Consecutive victories, capped at [winStreakMaxLevel]; a defeat resets it.
+  int winStreak;
+  final Map<String, int> boosters;
+  final Set<int> claimedStarChests;
+
+  /// Supply Log days claimed so far. Missed days pause the track, never reset it.
+  int loginStep;
+  String lastLoginClaimDay;
+
+  static const saveVersion = 2;
+
+  int get totalStars => bestStars.values.fold(0, (sum, stars) => sum + stars);
+  int boosterCount(String id) => boosters[id] ?? 0;
+  RewardBundle get nextLoginReward =>
+      loginTrackDays[loginStep % loginTrackDays.length];
+
+  bool canClaimLogin({DateTime? at}) =>
+      lastLoginClaimDay != _dateKey(at ?? DateTime.now());
+
+  bool claimLogin({DateTime? at}) {
+    final now = at ?? DateTime.now();
+    _ensurePeriods(now);
+    if (!canClaimLogin(at: now)) return false;
+    _grant(nextLoginReward);
+    loginStep++;
+    lastLoginClaimDay = _dateKey(now);
+    return true;
+  }
+
+  bool canClaimStarChest(int stars) =>
+      starChests.any((chest) => chest.stars == stars) &&
+      totalStars >= stars &&
+      !claimedStarChests.contains(stars);
+
+  bool claimStarChest(int stars) {
+    if (!canClaimStarChest(stars)) return false;
+    claimedStarChests.add(stars);
+    _grant(starChests.firstWhere((chest) => chest.stars == stars).reward);
+    return true;
+  }
+
+  /// Removes one booster for the coming battle. Boosters are earned only.
+  bool consumeBooster(String id) {
+    final count = boosters[id] ?? 0;
+    if (count < 1) return false;
+    if (count == 1) {
+      boosters.remove(id);
+    } else {
+      boosters[id] = count - 1;
+    }
+    return true;
+  }
+
+  void recordDefeat() => winStreak = 0;
+
+  void _grant(RewardBundle reward) {
+    scrap += reward.scrap;
+    for (final entry in reward.boosters.entries) {
+      final cap = boosterMaxStack(entry.key);
+      final next = (boosters[entry.key] ?? 0) + entry.value;
+      boosters[entry.key] = next > cap ? cap : next;
+    }
+  }
 
   int get unlockedLevelIndex {
     var index = 0;
@@ -204,6 +277,7 @@ class CampaignProgress {
       eventPoints += stars - previousWeekly;
     }
     if (firstClear) scrap += 3 + stars;
+    if (winStreak < winStreakMaxLevel) winStreak++;
     _advanceContract(
       dailyContracts.firstWhere((task) => task.id == 'daily-win'),
       1,
@@ -260,6 +334,12 @@ class CampaignProgress {
   }
 
   Map<String, Object?> toJson() => {
+    'saveVersion': saveVersion,
+    'winStreak': winStreak,
+    'boosters': boosters,
+    'claimedStarChests': claimedStarChests.toList()..sort(),
+    'loginStep': loginStep,
+    'lastLoginClaimDay': lastLoginClaimDay,
     'scrap': scrap,
     'bestStars': bestStars,
     'dayKey': dayKey,
@@ -286,6 +366,17 @@ class CampaignProgress {
             .whereType<int>()
             .toSet(),
         weeklyBestStars: _intMap(json['weeklyBestStars']),
+        winStreak: ((json['winStreak'] as int?) ?? 0)
+            .clamp(0, winStreakMaxLevel)
+            .toInt(),
+        boosters: _intMap(json['boosters']),
+        claimedStarChests: (json['claimedStarChests'] as List<Object?>? ?? [])
+            .whereType<int>()
+            .toSet(),
+        loginStep: ((json['loginStep'] as int?) ?? 0) < 0
+            ? 0
+            : (json['loginStep'] as int?) ?? 0,
+        lastLoginClaimDay: json['lastLoginClaimDay'] as String? ?? '',
       );
 
   String encode() => jsonEncode(toJson());

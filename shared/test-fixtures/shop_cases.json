@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "rerollCosts": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    5,
+    5
+  ],
+  "cases": [
+    {
+      "id": "all-unlocked-seed-1",
+      "seed": 1,
+      "unlocked": null,
+      "locked": null,
+      "boardHasGuaranteedCategory": true,
+      "expectedOffers": [
+        [
+          "boost.ratchet",
+          "boost.ratchet",
+          "unit.rivetguard"
+        ],
+        [
+          "boost.ratchet",
+          "drive.coupler",
+          "drive.coupler"
+        ],
+        [
+          "drive.coupler",
+          "boost.ratchet",
+          "drive.coupler"
+        ],
+        [
+          "unit.rivetguard",
+          "unit.rivetguard",
+          "drive.coupler"
+        ]
+      ]
+    },
+    {
+      "id": "all-unlocked-seed-12345",
+      "seed": 12345,
+      "unlocked": null,
+      "locked": null,
+      "boardHasGuaranteedCategory": true,
+      "expectedOffers": [
+        [
+          "unit.rivetguard",
+          "drive.coupler",
+          "unit.rivetguard"
+        ],
+        [
+          "drive.coupler",
+          "drive.coupler",
+          "unit.rivetguard"
+        ],
+        [
+          "unit.rivetguard",
+          "unit.rivetguard",
+          "drive.coupler"
+        ],
+        [
+          "drive.coupler",
+          "drive.coupler",
+          "boost.ratchet"
+        ]
+      ]
+    },
+    {
+      "id": "zero-seed",
+      "seed": 0,
+      "unlocked": null,
+      "locked": null,
+      "boardHasGuaranteedCategory": true,
+      "expectedOffers": [
+        [
+          "drive.coupler",
+          "unit.rivetguard",
+          "drive.coupler"
+        ],
+        [
+          "boost.ratchet",
+          "unit.rivetguard",
+          "unit.rivetguard"
+        ]
+      ]
+    },
+    {
+      "id": "guarantee-transmission",
+      "seed": 7,
+      "unlocked": null,
+      "locked": null,
+      "boardHasGuaranteedCategory": false,
+      "expectedOffers": [
+        [
+          "boost.ratchet",
+          "boost.ratchet",
+          "drive.coupler"
+        ],
+        [
+          "unit.rivetguard",
+          "unit.rivetguard",
+          "drive.coupler"
+        ],
+        [
+          "boost.ratchet",
+          "drive.coupler",
+          "drive.coupler"
+        ],
+        [
+          "boost.ratchet",
+          "unit.rivetguard",
+          "drive.coupler"
+        ]
+      ]
+    },
+    {
+      "id": "locked-first-slot",
+      "seed": 99,
+      "unlocked": null,
+      "locked": [
+        "turret.spark",
+        null,
+        null
+      ],
+      "boardHasGuaranteedCategory": true,
+      "expectedOffers": [
+        [
+          "turret.spark",
+          "boost.ratchet",
+          "drive.coupler"
+        ],
+        [
+          "turret.spark",
+          "boost.ratchet",
+          "drive.coupler"
+        ],
+        [
+          "turret.spark",
+          "unit.rivetguard",
+          "drive.coupler"
+        ]
+      ]
+    },
+    {
+      "id": "restricted-unlocks",
+      "seed": 2024,
+      "unlocked": [
+        "drive.coupler",
+        "unit.rivetguard"
+      ],
+      "locked": null,
+      "boardHasGuaranteedCategory": false,
+      "expectedOffers": [
+        [
+          "drive.coupler",
+          "unit.rivetguard",
+          "drive.coupler"
+        ],
+        [
+          "unit.rivetguard",
+          "drive.coupler",
+          "drive.coupler"
+        ],
+        [
+          "drive.coupler",
+          "drive.coupler",
+          "unit.rivetguard"
+        ]
+      ]
+    }
+  ]
+}

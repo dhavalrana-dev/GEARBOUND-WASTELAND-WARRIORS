@@ -1,0 +1,42 @@
+using System;
+
+namespace Gearbound.Core
+{
+    /// <summary>
+    /// Shared <c>xorshift32-v1</c> generator. Shifts are 13/17/5, a zero seed is replaced by
+    /// <see cref="ZeroSeedReplacement"/>, and every call consumes exactly one 32-bit draw.
+    /// Verified against shared/test-fixtures/random_vectors.json.
+    /// </summary>
+    public sealed class SeededRandom
+    {
+        public const uint ZeroSeedReplacement = 0x9E3779B9u;
+        public uint State { get; private set; }
+        public int Draws { get; private set; }
+
+        public SeededRandom(uint seed) => State = seed == 0 ? ZeroSeedReplacement : seed;
+
+        public static SeededRandom FromState(uint state, int draws = 0)
+        {
+            if (state == 0) throw new ArgumentOutOfRangeException(nameof(state), "xorshift32 state can never be zero.");
+            return new SeededRandom(state) { Draws = draws };
+        }
+
+        public uint NextUint()
+        {
+            var x = State;
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            State = x;
+            Draws++;
+            return x;
+        }
+
+        /// <summary>Multiply-shift mapping into [0, exclusiveMax). One draw, no rejection loop.</summary>
+        public int NextInt(int exclusiveMax)
+        {
+            if (exclusiveMax < 1) throw new ArgumentOutOfRangeException(nameof(exclusiveMax));
+            return (int)(((ulong)NextUint() * (ulong)exclusiveMax) >> 32);
+        }
+    }
+}

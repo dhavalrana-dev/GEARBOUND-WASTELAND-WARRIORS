@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gearbound.invalid/schemas/enemy-definition.schema.json",
+  "title": "Gearbound enemy archetype definitions",
+  "type": "object",
+  "required": ["schemaVersion", "enemies"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "enemies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "role", "health", "armor", "damage", "attackRangeMm", "movementMmPerTick", "attackIntervalTicks", "rewardScrap"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$" },
+          "name": { "type": "string", "minLength": 1 },
+          "role": { "enum": ["basic", "fast", "heavy", "ranged", "shield", "saboteur", "repair", "elite", "miniboss", "boss"] },
+          "health": { "type": "integer", "minimum": 1 },
+          "armor": { "type": "integer", "minimum": 0 },
+          "damage": { "type": "integer", "minimum": 1 },
+          "attackRangeMm": { "type": "integer", "minimum": 0 },
+          "movementMmPerTick": { "type": "integer", "minimum": 0 },
+          "attackIntervalTicks": { "type": "integer", "minimum": 1 },
+          "rewardScrap": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "missionId": "route.copperwash.001",
+  "waves": [
+    {
+      "id": "wave.1",
+      "spawns": [
+        {
+          "tick": 0,
+          "lane": 0,
+          "enemyId": "raider.basic"
+        },
+        {
+          "tick": 45,
+          "lane": 1,
+          "enemyId": "raider.basic"
+        },
+        {
+          "tick": 90,
+          "lane": 2,
+          "enemyId": "raider.basic"
+        }
+      ]
+    },
+    {
+      "id": "wave.2",
+      "spawns": [
+        {
+          "tick": 0,
+          "lane": 1,
+          "enemyId": "raider.basic"
+        },
+        {
+          "tick": 24,
+          "lane": 0,
+          "enemyId": "raider.runner"
+        },
+        {
+          "tick": 36,
+          "lane": 2,
+          "enemyId": "raider.basic"
+        },
+        {
+          "tick": 72,
+          "lane": 0,
+          "enemyId": "raider.basic"
+        }
+      ]
+    },
+    {
+      "id": "wave.3",
+      "spawns": [
+        {
+          "tick": 0,
+          "lane": 0,
+          "enemyId": "raider.basic"
+        },
+        {
+          "tick": 45,
+          "lane": 2,
+          "enemyId": "raider.basic"
+        },
+        {
+          "tick": 90,
+          "lane": 1,
+          "enemyId": "boss.scrapmaw"
+        }
+      ]
+    }
+  ]
+}
