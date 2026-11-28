@@ -35,6 +35,21 @@ namespace Gearbound.Tests
             SharedDataLoader.LoadGears(Shared("gears/starter_gears.json")), SharedDataLoader.LoadShop(Shared("economy/shop.json")),
             WorkshopRules.Load(Shared("configs/gear_rules.json")), seed, () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
+        private static WorkshopController RestoreController(GearBoard board, Dictionary<string, object> json) =>
+            WorkshopController.Restore(board, SharedDataLoader.LoadGears(Shared("gears/starter_gears.json")),
+                SharedDataLoader.LoadShop(Shared("economy/shop.json")), WorkshopRules.Load(Shared("configs/gear_rules.json")), json,
+                () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        /// <summary>Structural equality of parsed JSON (object key order ignored).</summary>
+        internal static bool JsonEquals(object a, object b)
+        {
+            if (a is Dictionary<string, object> da && b is Dictionary<string, object> db)
+                return da.Count == db.Count && da.All(p => db.TryGetValue(p.Key, out var v) && JsonEquals(p.Value, v));
+            if (a is List<object> la && b is List<object> lb)
+                return la.Count == lb.Count && la.Zip(lb, JsonEquals).All(x => x);
+            return Equals(a, b);
+        }
+
         private static string Camel(WorkshopAction a) { var s = a.ToString(); return char.ToLowerInvariant(s[0]) + s.Substring(1); }
         private static string Camel(NetworkState s) { var t = s.ToString(); return char.ToLowerInvariant(t[0]) + t.Substring(1); }
 
@@ -115,8 +130,20 @@ namespace Gearbound.Tests
                 Assert.AreEqual(Expected(SharedJson.Obj(steps[0], "step")), Snapshot(w, "start"), id + " start");
                 for (var i = 0; i < ops.Count; i++)
                 {
-                    var result = Apply(w, SharedJson.Obj(ops[i], "op"));
-                    Assert.AreEqual(Expected(SharedJson.Obj(steps[i + 1], "step")), Snapshot(w, result), $"{id} step {i + 1} ({ops[i]})");
+                    var op = SharedJson.Obj(ops[i], "op");
+                    var step = SharedJson.Obj(steps[i + 1], "step");
+                    string result;
+                    if ((string)op["op"] == "checkpoint")
+                    {
+                        // C# must save exactly what Dart saved, survive a text round trip, then resume from Dart's JSON.
+                        var dart = SharedJson.Obj(step["checkpoint"], "checkpoint");
+                        var mine = SharedJson.Parse(SharedJson.Write(w.ToJson()));
+                        Assert.IsTrue(JsonEquals(dart, mine), $"{id} step {i + 1}: C# checkpoint differs: {SharedJson.Write(w.ToJson())}");
+                        w = RestoreController(w.Board, dart);
+                        result = "checkpoint";
+                    }
+                    else result = Apply(w, op);
+                    Assert.AreEqual(Expected(step), Snapshot(w, result), $"{id} step {i + 1} ({ops[i]})");
                 }
             }
         }
@@ -182,6 +209,25 @@ namespace Gearbound.Tests
             Assert.AreEqual(WorkshopAction.AllHeld, w.Reroll());
             Assert.AreEqual(scrap, w.BattleScrapBalance);
             Assert.AreEqual(0, w.RerollsTaken);
+        }
+
+        [Test]
+        public void CheckpointWithoutHoldsRestoresWithNone()
+        {
+            var w = NewController(9);
+            w.ToggleHold(2);
+            var json = w.ToJson();
+            json.Remove("held");
+            var restored = RestoreController(w.Board, json);
+            CollectionAssert.AreEqual(new[] { false, false, false }, restored.Held);
+            Assert.AreEqual(WorkshopAction.Ok, restored.Reroll());
+        }
+
+        [Test]
+        public void SharedJsonWriterEscapesAndRoundTrips()
+        {
+            var value = new Dictionary<string, object> { ["a"] = "q\"b\\c\n", ["n"] = 4294967295L, ["l"] = new List<object> { true, null, -3L } };
+            Assert.IsTrue(JsonEquals(value, SharedJson.Parse(SharedJson.Write(value))));
         }
 
         [Test]

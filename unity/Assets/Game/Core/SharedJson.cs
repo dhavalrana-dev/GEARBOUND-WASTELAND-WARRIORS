@@ -44,6 +44,71 @@ namespace Gearbound.Core
         public static bool Bool(Dictionary<string, object> obj, string key, bool fallback = false) =>
             obj.TryGetValue(key, out var value) && value is bool flag ? flag : fallback;
 
+        /// <summary>
+        /// Writes a value built from dictionaries (keys in insertion order), lists, strings, booleans, null and integers
+        /// as compact JSON. Used for checkpoints that Dart must be able to read back.
+        /// </summary>
+        public static string Write(object value)
+        {
+            var b = new StringBuilder();
+            WriteValue(b, value);
+            return b.ToString();
+        }
+
+        private static void WriteValue(StringBuilder b, object value)
+        {
+            if (value == null) { b.Append("null"); return; }
+            if (value is string s) { WriteString(b, s); return; }
+            if (value is bool flag) { b.Append(flag ? "true" : "false"); return; }
+            if (value is int || value is long || value is uint)
+            {
+                b.Append(Convert.ToInt64(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture));
+                return;
+            }
+            if (value is IDictionary<string, object> map)
+            {
+                b.Append('{');
+                var first = true;
+                foreach (var pair in map)
+                {
+                    if (!first) b.Append(',');
+                    first = false;
+                    WriteString(b, pair.Key);
+                    b.Append(':');
+                    WriteValue(b, pair.Value);
+                }
+                b.Append('}');
+                return;
+            }
+            if (value is System.Collections.IEnumerable items)
+            {
+                b.Append('[');
+                var first = true;
+                foreach (var item in items)
+                {
+                    if (!first) b.Append(',');
+                    first = false;
+                    WriteValue(b, item);
+                }
+                b.Append(']');
+                return;
+            }
+            throw new FormatException("Cannot write " + value.GetType().Name + " as shared JSON.");
+        }
+
+        private static void WriteString(StringBuilder b, string s)
+        {
+            b.Append('"');
+            foreach (var c in s)
+            {
+                if (c == '"') b.Append("\\\"");
+                else if (c == '\\') b.Append("\\\\");
+                else if (c < ' ') b.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
+                else b.Append(c);
+            }
+            b.Append('"');
+        }
+
         private sealed class Reader
         {
             private readonly string text;

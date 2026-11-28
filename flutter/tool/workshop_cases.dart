@@ -24,7 +24,9 @@ const fixturePath = '../shared/test-fixtures/workshop_cases.json';
 
 /// Scripts. Ops: buy(slot), buyId(id: first slot offering it, else slot -1),
 /// tap(x,y), drop(from,to), sell, undo, cancel, reroll, lock,
-/// intermission(wave,reward), preview(x,y[,from]), hold(slot).
+/// intermission(wave,reward), preview(x,y[,from]), hold(slot), checkpoint
+/// (save with toJson, then continue on a controller restored from that JSON;
+/// the step records the saved JSON so Unity can restore Dart's checkpoint).
 final scripts = <Map<String, Object?>>[
   {
     'id': 'place-merge-sell-undo',
@@ -163,6 +165,30 @@ final scripts = <Map<String, Object?>>[
     ],
   },
   {
+    'id': 'checkpoint-resume',
+    'require': ['ok', 'checkpoint'],
+    'firstOpOk': true,
+    'ops': [
+      {'op': 'buyId', 'id': 'unit.rivetguard'},
+      {'op': 'tap', 'x': 1, 'y': 3},
+      {'op': 'hold', 'slot': 2},
+      {'op': 'reroll'},
+      {'op': 'buy', 'slot': 0},
+      {'op': 'checkpoint'},
+      {'op': 'tap', 'x': 2, 'y': 3},
+      {'op': 'lock'},
+      {'op': 'checkpoint'},
+      {'op': 'intermission', 'wave': 1, 'reward': 8},
+      {'op': 'checkpoint'},
+      {'op': 'reroll'},
+      {'op': 'lock'},
+      {'op': 'intermission', 'wave': 1, 'reward': 8},
+      {'op': 'lock'},
+      {'op': 'intermission', 'wave': 2, 'reward': 6},
+      {'op': 'reroll'},
+    ],
+  },
+  {
     'id': 'turret-lanes-and-sale',
     'require': ['ok'],
     'firstOpOk': true,
@@ -225,12 +251,14 @@ List<Map<String, Object?>> run(
   final catalog = loadGears(readShared('gears/starter_gears.json'));
   final shop = loadShop(readShared('economy/shop.json'));
   final rules = WorkshopRules.fromJson(readShared('configs/gear_rules.json'));
-  final w = WorkshopController(
+  DateTime clock() => DateTime.utc(2026);
+  var w = WorkshopController(
     board: GearBoard(),
     catalog: catalog,
     shop: shop,
     rules: rules,
     seed: seed,
+    clock: clock,
   );
   final steps = [_snapshot(w, 'start')];
   ({int x, int y}) cell(Object? v) {
@@ -240,6 +268,7 @@ List<Map<String, Object?>> run(
 
   for (final op in (script['ops'] as List).cast<Map<String, Object?>>()) {
     final String result;
+    Object? saved;
     switch (op['op']) {
       case 'buy':
         result = w.buy(op['slot'] as int).name;
@@ -278,10 +307,22 @@ List<Map<String, Object?>> run(
         result =
             'valid=${p.valid};state=${p.state?.name};'
             'interval=${p.intervalTicks};lane=${p.lane}';
+      case 'checkpoint':
+        // Round-trip through text, as a real checkpoint does.
+        saved = jsonDecode(jsonEncode(w.toJson()));
+        w = WorkshopController.restore(
+          board: w.board,
+          catalog: catalog,
+          shop: shop,
+          rules: rules,
+          json: saved as Map<String, Object?>,
+          clock: clock,
+        );
+        result = 'checkpoint';
       default:
         throw ArgumentError('unknown op ${op['op']}');
     }
-    steps.add(_snapshot(w, result));
+    steps.add({..._snapshot(w, result), 'checkpoint': ?saved});
   }
   return steps;
 }
@@ -311,7 +352,9 @@ Map<String, Object?> build() {
     'rules':
         'Replay ops on a fresh WorkshopController (shared gear_rules, shop, '
         'starter_gears). steps[0] is the state after construction; steps[i] '
-        'after ops[i-1]. held[i] is true while offer slot i is held. Board '
+        'after ops[i-1]. held[i] is true while offer slot i is held. A checkpoint '
+        'step also holds the saved WorkshopController JSON (ledger times use '
+        'the fixed clock 2026-01-01T00:00:00.000Z). Board '
         'entries: id|definition|tier|x,y|lane|interval, sorted by row then '
         'column.',
     'mixSeed32': [

@@ -14,7 +14,7 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 
 `flutter/tool/baseline_check.dart` replays the random, shop, wave, combat-trace and workshop fixtures outside the test runner, so they can also be checked in an ahead-of-time compiled binary (`dart compile exe`). That is how release and phone builds run Dart. Verified on the VM and as AOT on Windows x64 (2026-11-28); ARM64 on a phone is still to do (Phase 01).
 
-`flutter/tool/workshop_cases.dart` writes `shared/test-fixtures/workshop_cases.json`: `mixSeed32` vectors and six scripted workshop sessions (ops plus the full state after each op: result, battle scrap, offers, held offers, hand, selection, rerolls, lock and every board gear with its ID, tier, lane and interval). Unlike the Python fixtures, the expected values come from the Dart controller, and Unity's `WorkshopFixtureTests` replays them step for step through the independent C# port. Check with `dart run tool/workshop_cases.dart --check` from `flutter/`; `workshop_fixture_test.dart` fails too when it is stale. C# (`SharedRulesTests`) and Dart (`test/data/shared_rules_test.dart`) each replay the fixtures.
+`flutter/tool/workshop_cases.dart` writes `shared/test-fixtures/workshop_cases.json`: `mixSeed32` vectors and seven scripted workshop sessions (ops plus the full state after each op: result, battle scrap, offers, held offers, hand, selection, rerolls, lock and every board gear with its ID, tier, lane and interval). Checkpoint steps also store the Dart controller's saved JSON: Unity must save structurally identical JSON and then resume from Dart's copy, so a checkpoint written by either engine can be resumed by the other. Unlike the Python fixtures, the expected values come from the Dart controller, and Unity's `WorkshopFixtureTests` replays them step for step through the independent C# port. Check with `dart run tool/workshop_cases.dart --check` from `flutter/`; `workshop_fixture_test.dart` fails too when it is stale. C# (`SharedRulesTests`) and Dart (`test/data/shared_rules_test.dart`) each replay the fixtures.
 
 ## Shared algorithms
 
@@ -39,7 +39,7 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Wallet ledger (idempotency, premium verification, caps) | Yes | Yes | reward_transaction_cases ✔ both |
 | Ad placement policy | Yes | Yes | ad_policy_cases ✔ both |
 | Save migration v1/v2 → v3 | n/a (no Unity save yet) | Yes | save_migration_cases (Dart) |
-| Workshop controller (buy, place, merge, move, sell, undo, reroll, offer holds, lock, intermission, preview) | Yes (rules only, no UI; no checkpoint restore) | Yes | workshop_cases ✔ both |
+| Workshop controller (buy, place, merge, move, sell, undo, reroll, offer holds, lock, intermission, preview, checkpoint save/restore) | Yes (rules only, no UI) | Yes | workshop_cases ✔ both |
 | Multi-wave BattleSession (intermission, soldier withdrawal, hero reset, reward totals) | Yes | Yes | Mirrored unit tests (no shared trace yet) |
 | Workshop seed derivation `mixSeed32` (fmix32) | Yes | Yes | workshop_cases `mixSeed32` vectors ✔ both |
 | Hero SP and special (Wrench Quake) | Yes | Yes | combat_traces `boss-wave-hero-special` ✔ both; heroes.json parity tests |

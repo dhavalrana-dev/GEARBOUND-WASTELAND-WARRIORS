@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedBy": "flutter/tool/workshop_cases.dart",
-  "rules": "Replay ops on a fresh WorkshopController (shared gear_rules, shop, starter_gears). steps[0] is the state after construction; steps[i] after ops[i-1]. held[i] is true while offer slot i is held. Board entries: id|definition|tier|x,y|lane|interval, sorted by row then column.",
+  "rules": "Replay ops on a fresh WorkshopController (shared gear_rules, shop, starter_gears). steps[0] is the state after construction; steps[i] after ops[i-1]. held[i] is true while offer slot i is held. A checkpoint step also holds the saved WorkshopController JSON (ledger times use the fixed clock 2026-01-01T00:00:00.000Z). Board entries: id|definition|tier|x,y|lane|interval, sorted by row then column.",
   "mixSeed32": [
     {
       "seed": 0,
@@ -2211,6 +2211,763 @@
           "board": [
             "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
             "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checkpoint-resume",
+      "seed": 1,
+      "ops": [
+        {
+          "op": "buyId",
+          "id": "unit.rivetguard"
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 3
+        },
+        {
+          "op": "hold",
+          "slot": 2
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "buy",
+          "slot": 0
+        },
+        {
+          "op": "checkpoint"
+        },
+        {
+          "op": "tap",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "checkpoint"
+        },
+        {
+          "op": "intermission",
+          "wave": 1,
+          "reward": 8
+        },
+        {
+          "op": "checkpoint"
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "intermission",
+          "wave": 1,
+          "reward": 8
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "intermission",
+          "wave": 2,
+          "reward": 6
+        },
+        {
+          "op": "reroll"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "checkpoint",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ],
+          "checkpoint": {
+            "seed": 1,
+            "rngState": 3890067424,
+            "rngDraws": 5,
+            "wallet": {
+              "profileId": "mission",
+              "sequence": 4,
+              "balances": {
+                "battle_scrap": 1
+              },
+              "processedKeys": [
+                "buy:1",
+                "buy:3",
+                "mission_start",
+                "reroll:2"
+              ],
+              "ledger": [
+                {
+                  "txn": "txn-1",
+                  "key": "mission_start",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": 12,
+                  "type": "grant",
+                  "source": "mission_start",
+                  "ref": "",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-2",
+                  "key": "buy:1",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -5,
+                  "type": "spend",
+                  "source": "buy",
+                  "ref": "unit.rivetguard",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-3",
+                  "key": "reroll:2",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -1,
+                  "type": "spend",
+                  "source": "reroll",
+                  "ref": "shop",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-4",
+                  "key": "buy:3",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -5,
+                  "type": "spend",
+                  "source": "buy",
+                  "ref": "unit.rivetguard",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                }
+              ]
+            },
+            "offers": [
+              null,
+              "unit.rivetguard",
+              "drive.coupler"
+            ],
+            "held": [
+              false,
+              false,
+              true
+            ],
+            "rerollsTaken": 1,
+            "locked": false,
+            "hand": "unit.rivetguard",
+            "nextGearNumber": 4,
+            "nextTxn": 4
+          }
+        },
+        {
+          "result": "ok",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "checkpoint",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ],
+          "checkpoint": {
+            "seed": 1,
+            "rngState": 3890067424,
+            "rngDraws": 5,
+            "wallet": {
+              "profileId": "mission",
+              "sequence": 4,
+              "balances": {
+                "battle_scrap": 1
+              },
+              "processedKeys": [
+                "buy:1",
+                "buy:3",
+                "mission_start",
+                "reroll:2"
+              ],
+              "ledger": [
+                {
+                  "txn": "txn-1",
+                  "key": "mission_start",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": 12,
+                  "type": "grant",
+                  "source": "mission_start",
+                  "ref": "",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-2",
+                  "key": "buy:1",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -5,
+                  "type": "spend",
+                  "source": "buy",
+                  "ref": "unit.rivetguard",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-3",
+                  "key": "reroll:2",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -1,
+                  "type": "spend",
+                  "source": "reroll",
+                  "ref": "shop",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-4",
+                  "key": "buy:3",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -5,
+                  "type": "spend",
+                  "source": "buy",
+                  "ref": "unit.rivetguard",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                }
+              ]
+            },
+            "offers": [
+              null,
+              "unit.rivetguard",
+              "drive.coupler"
+            ],
+            "held": [
+              false,
+              false,
+              true
+            ],
+            "rerollsTaken": 1,
+            "locked": true,
+            "hand": null,
+            "nextGearNumber": 5,
+            "nextTxn": 4
+          }
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "checkpoint",
+          "scrap": 9,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ],
+          "checkpoint": {
+            "seed": 1,
+            "rngState": 1555165486,
+            "rngDraws": 7,
+            "wallet": {
+              "profileId": "mission",
+              "sequence": 5,
+              "balances": {
+                "battle_scrap": 9
+              },
+              "processedKeys": [
+                "buy:1",
+                "buy:3",
+                "mission_start",
+                "reroll:2",
+                "wave_reward:1"
+              ],
+              "ledger": [
+                {
+                  "txn": "txn-1",
+                  "key": "mission_start",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": 12,
+                  "type": "grant",
+                  "source": "mission_start",
+                  "ref": "",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-2",
+                  "key": "buy:1",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -5,
+                  "type": "spend",
+                  "source": "buy",
+                  "ref": "unit.rivetguard",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-3",
+                  "key": "reroll:2",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -1,
+                  "type": "spend",
+                  "source": "reroll",
+                  "ref": "shop",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-4",
+                  "key": "buy:3",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": -5,
+                  "type": "spend",
+                  "source": "buy",
+                  "ref": "unit.rivetguard",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                },
+                {
+                  "txn": "txn-5",
+                  "key": "wave_reward:1",
+                  "profile": "mission",
+                  "asset": "battle_scrap",
+                  "amount": 8,
+                  "type": "grant",
+                  "source": "wave_reward",
+                  "ref": "wave 1",
+                  "verification": "local",
+                  "at": "2026-01-01T00:00:00.000Z"
+                }
+              ]
+            },
+            "offers": [
+              "drive.coupler",
+              "unit.rivetguard",
+              "drive.coupler"
+            ],
+            "held": [
+              false,
+              false,
+              true
+            ],
+            "rerollsTaken": 0,
+            "locked": false,
+            "hand": null,
+            "nextGearNumber": 5,
+            "nextTxn": 4
+          }
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 14,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 13,
+          "offers": [
+            "boost.ratchet",
+            "boost.ratchet",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90",
+            "unit.rivetguard#4|unit.rivetguard|t1|2,3|lane2|90"
           ]
         }
       ]

@@ -13,7 +13,7 @@ After changing any box, update the progress table and run `python -I tools/build
 |---|---|---|---|
 | 00 | Repository and simulation foundation | 10/10 | 100% |
 | 01 | Toolchain and build readiness | 7/9 | 77% |
-| 02 | Complete mechanical workshop | 9/13 | 69% |
+| 02 | Complete mechanical workshop | 10/13 | 76% |
 | 03 | Combat and multi-wave mission flow | 6/12 | 50% |
 | 04 | Visual preproduction | 4/12 | 33% |
 | 05 | Production vertical slice | 0/9 | 0% |
@@ -30,7 +30,7 @@ After changing any box, update the progress table and run `python -I tools/build
 | 16 | Closed testing and soft launch | 0/3 | 0% |
 | 17 | Commercial release | 0/3 | 0% |
 | 18 | Post-launch operations | 0/2 | 0% |
-| **All** | | **52/126** | **41%** |
+| **All** | | **53/126** | **42%** |
 <!-- progress:end -->
 
 Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every shared check clean; Unity EditMode previous report 57/57.
@@ -86,7 +86,8 @@ Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every share
     - Evidence: hold/release toggle on each shop card (lock icon + HOLD/HELD label, tooltip); held offers survive rerolls and the next wave's shop, clear when bought, and a reroll with every slot held is refused without charge (`allHeld`). Same rule in Dart and C#; new `offer-holds` case in `workshop_cases.json` replayed by both; checkpoints carry `held` and older ones restore with none. Flutter 187/187, Unity EditMode 61/61, baseline 52 checks on VM and AOT (session 23). Not checked on a device
   - [ ] 2.10 Rotation and a conflict explanation
     - Needed only once gears with partial ports exist
-  - [ ] 2.11 Port workshop checkpoint save and restore to Unity
+  - [x] 2.11 Port workshop checkpoint save and restore to Unity (GB-066)
+    - Evidence: C# `WorkshopController.ToJson`/`Restore` and `Wallet.ToJson`/`FromJson` use the Flutter JSON format; new `checkpoint-resume` case in `workshop_cases.json` stores Dart's checkpoint JSON at 3 steps, C# must produce structurally equal JSON and then resume from Dart's copy for the rest of the script. Unity EditMode 63/63, Flutter 187/187, baseline 53 checks on VM and AOT (session 24). The board and battle-session parts of `MissionSnapshot` stay Flutter-only until the Unity client (GB-046)
   - [ ] 2.12 Opening-shop edge case decision: 1 of 500 seeds (GB-050)
     - Owner design decision
   - [ ] 2.13 Touch check on a device

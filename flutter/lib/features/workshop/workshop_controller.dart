@@ -115,7 +115,9 @@ class WorkshopController {
     required this.shop,
     required this.rules,
     required int seed,
-  }) : _rng = SeededRandom(mixSeed32(seed)),
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now,
+       _rng = SeededRandom(mixSeed32(seed)),
        seed = seed,
        wallet = Wallet(rules: defaultAssetRules(), profileId: 'mission') {
     for (final starter in rules.starterGears) {
@@ -124,6 +126,7 @@ class WorkshopController {
       );
     }
     wallet.apply(
+      at: _clock(),
       TxnRequest(
         idempotencyKey: 'mission_start',
         type: 'grant',
@@ -145,7 +148,9 @@ class WorkshopController {
     required this.shop,
     required this.rules,
     required Map<String, Object?> json,
-  }) : seed = json['seed'] as int,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now,
+       seed = json['seed'] as int,
        _rng = SeededRandom(json['rngState'] as int)
          ..draws = json['rngDraws'] as int,
        wallet = Wallet.fromJson(
@@ -187,6 +192,9 @@ class WorkshopController {
   final int seed;
   final Wallet wallet;
   final SeededRandom _rng;
+
+  /// Ledger timestamps; injectable so shared fixtures are deterministic.
+  final DateTime Function() _clock;
 
   List<String?> offers = const [];
 
@@ -363,6 +371,7 @@ class WorkshopController {
     if (!locked) return WorkshopAction.ok;
     if (rewardScrap > 0) {
       wallet.apply(
+        at: _clock(),
         TxnRequest(
           idempotencyKey: 'wave_reward:$clearedWave',
           type: 'grant',
@@ -544,6 +553,7 @@ class WorkshopController {
     if (amount <= 0) return true;
     return wallet
         .apply(
+          at: _clock(),
           TxnRequest(
             idempotencyKey: '$type:${_nextTxn++}',
             type: 'spend',
@@ -556,6 +566,7 @@ class WorkshopController {
   }
 
   void _grant(int amount, String type, String ref) => wallet.apply(
+    at: _clock(),
     TxnRequest(
       idempotencyKey: '$type:${_nextTxn++}',
       type: 'refund',

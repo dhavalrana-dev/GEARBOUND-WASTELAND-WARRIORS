@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Unity workshop checkpoints (GB-066, Phase 02 task 2.11): C# `WorkshopController.ToJson`/`Restore` and `Wallet.ToJson`/`FromJson` read and write the Flutter checkpoint format; the new `checkpoint-resume` fixture case makes Unity resume from Dart-written checkpoints step for step.
 - Offer holds in the workshop shop (GB-065, Phase 02 task 2.9): hold an offer to keep it through rerolls and the next wave's shop; a reroll with every offer held is refused without charge. Dart and C# rules match through the new `offer-holds` case in `workshop_cases.json`.
 - Add an original ART-01 mood-board concept for the Tactile Industrial Comic 2.5D visual direction; embed it in the working board and record its prompt and provenance. It remains unapproved concept art.
 - Visual direction v3, **Tactile Industrial Comic 2.5D** (GB-062): `ART_DIRECTION.md` v3 with the visual benchmark gate (ART-B) and a 19-step execution order; new style bible, material library, character design, rigging, animation, environment, prompt, validation, rendering and performance-budget specifications; UI/UX specification v2; `PRODUCTION_ASSET_INVENTORY.md` renamed `ASSET_INVENTORY.md`; 7 new manifest records (337); a working reference board in `assets-source/style-bible/`. Documentation and diagrams only; no art is approved.

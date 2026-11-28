@@ -162,10 +162,33 @@ namespace Gearbound.Baseline
                 if (ops.Count + 1 != steps.Count) failure = "step count";
                 else if (Expected(SharedJson.Obj(steps[0], "step")) != Snapshot(w, "start")) failure = "start";
                 for (var i = 0; failure == null && i < ops.Count; i++)
-                    if (Expected(SharedJson.Obj(steps[i + 1], "step")) != Snapshot(w, Apply(w, SharedJson.Obj(ops[i], "op")))) failure = "step " + (i + 1);
+                {
+                    var op = SharedJson.Obj(ops[i], "op");
+                    var step = SharedJson.Obj(steps[i + 1], "step");
+                    string opResult;
+                    if ((string)op["op"] == "checkpoint")
+                    {
+                        var dart = SharedJson.Obj(step["checkpoint"], "checkpoint");
+                        if (!JsonEquals(dart, SharedJson.Parse(SharedJson.Write(w.ToJson())))) { failure = "step " + (i + 1) + " checkpoint"; break; }
+                        w = WorkshopController.Restore(w.Board, gears, shop, rules, dart, () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+                        opResult = "checkpoint";
+                    }
+                    else opResult = Apply(w, op);
+                    if (Expected(step) != Snapshot(w, opResult)) failure = "step " + (i + 1);
+                }
                 Check(result, failure == null, $"workshop case {id}{(failure == null ? "" : " at " + failure)}");
                 result.WorkshopCases++;
             }
+        }
+
+        /// <summary>Structural equality of parsed JSON (object key order ignored).</summary>
+        private static bool JsonEquals(object a, object b)
+        {
+            if (a is Dictionary<string, object> da && b is Dictionary<string, object> db)
+                return da.Count == db.Count && da.All(p => db.TryGetValue(p.Key, out var v) && JsonEquals(p.Value, v));
+            if (a is List<object> la && b is List<object> lb)
+                return la.Count == lb.Count && la.Zip(lb, JsonEquals).All(x => x);
+            return Equals(a, b);
         }
 
         private static string Camel(string s) => char.ToLowerInvariant(s[0]) + s.Substring(1);

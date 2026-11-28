@@ -9,7 +9,7 @@ Updated: 2026-11-28 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
-- **On `feature/unity-workshop-controller`:** committed in `3b5a343`: GB-036/GB-049 Unity workshop rules with the shared `workshop_cases.json` fixture; GB-024 all 12 route nodes on shared mission data; a `flutter/windows/` desktop runner used only to review the game locally; GB-056 output labels on Flutter workshop gears. GB-012 Unity Android baseline (session 20), GB-062 visual direction v3 and the GB-040 mood-board concept (session 22) are on PR #15. GB-065 offer holds (session 23) is on `feature/offer-locking`, stacked on PR #15.
+- **On `feature/unity-workshop-controller`:** committed in `3b5a343`: GB-036/GB-049 Unity workshop rules with the shared `workshop_cases.json` fixture; GB-024 all 12 route nodes on shared mission data; a `flutter/windows/` desktop runner used only to review the game locally; GB-056 output labels on Flutter workshop gears. GB-012 Unity Android baseline (session 20), GB-062 visual direction v3 and the GB-040 mood-board concept (session 22) are on PR #15. GB-065 offer holds (session 23) is PR #16, stacked on PR #15. GB-066 Unity workshop checkpoints (session 24) is on `feature/unity-workshop-checkpoint`, stacked on PR #16.
 
 ### Merged to `main` (PRs #1–#13)
 The entries below name the branch each item was built on; all of them are merged.
@@ -34,6 +34,25 @@ The entries below name the branch each item was built on; all of them are merged
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. All 12 nodes load shared missions since GB-024 (session 15); node 1 has three waves, nodes 2–12 one each until GB-051.
 
 ## Verification ledger
+### 2026-11-28 session 24 (Phase 02 task 2.11: Unity workshop checkpoints, GB-066)
+- **C# save and restore:**
+  - `WorkshopController.ToJson()` and `WorkshopController.Restore(...)` use the same fields as Flutter `toJson`/`restore`: seed, RNG state and draws, wallet, offers, holds, reroll count, lock, hand and the ID counters.
+  - `Wallet.ToJson()` and `Wallet.FromJson(...)` use the Dart wallet format (balances, sorted processed keys, ledger), so restored wave-reward keys still block double payment.
+  - `SharedJson.Write` is a small writer that keeps Core dependency-free; it still compiles under Mono `mcs`, and the combat traces are up to date.
+  - A checkpoint without `held` restores with no holds.
+- **Dart:** `WorkshopController` takes an optional clock for ledger timestamps (default: now), so fixture checkpoints are deterministic.
+- **Cross-engine proof:** the new `checkpoint-resume` case (17 steps, 3 checkpoints: with a gear in hand, while locked, and after an intermission).
+  - At each checkpoint, Unity's JSON must equal Dart's after a text round trip, and Unity then continues from **Dart's** JSON.
+  - Paying the wave-1 reward again after a restore is refused.
+- **Test results:**
+  - Unity EditMode **63/63**, including a checkpoint without holds and a writer escape round trip. The editor device baseline reads 38 checks and 7 workshop cases.
+  - Flutter analyze: clean. Flutter tests: **187/187**.
+  - `baseline_check`: 53 checks on the VM and as an AOT binary.
+  - Workshop cases, validator, reference fixtures, asset sync and combat traces: all up to date.
+- **Not done:**
+  - The board and battle-session parts of `MissionSnapshot` stay Flutter-only until a Unity client needs them (GB-046).
+  - The Android baselines were not rebuilt for this change.
+
 ### 2026-11-28 session 23 (Phase 02 task 2.9: offer holds, GB-065)
 - **Rule (both engines):**
   - `toggleHold(slot)` / `ToggleHold` holds or releases an offer for free.

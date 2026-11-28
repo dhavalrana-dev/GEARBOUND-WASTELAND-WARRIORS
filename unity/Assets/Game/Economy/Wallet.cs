@@ -75,6 +75,59 @@ namespace Gearbound.Economy
             ProfileId = profileId;
         }
 
+        /// <summary>
+        /// Same shape as Dart <c>Wallet.toJson</c>: profileId, sequence, balances, sorted processedKeys and the ledger.
+        /// Integers are boxed as <c>long</c> so the result compares directly with parsed JSON.
+        /// </summary>
+        public Dictionary<string, object> ToJson()
+        {
+            var balanceMap = new Dictionary<string, object>(StringComparer.Ordinal);
+            foreach (var pair in balances) balanceMap[pair.Key] = pair.Value;
+            var keys = processed.ToList();
+            keys.Sort(StringComparer.Ordinal);
+            return new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["profileId"] = ProfileId,
+                ["sequence"] = Sequence,
+                ["balances"] = balanceMap,
+                ["processedKeys"] = keys.Cast<object>().ToList(),
+                ["ledger"] = ledger.Select(e => (object)new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["txn"] = e.TransactionId, ["key"] = e.IdempotencyKey, ["profile"] = e.ProfileId, ["asset"] = e.Asset,
+                    ["amount"] = e.Amount, ["type"] = e.Type, ["source"] = e.Source, ["ref"] = e.ReferenceId,
+                    ["verification"] = e.Verification == TxnVerification.Verified ? "verified" : "local", ["at"] = e.CreatedAtUtc,
+                }).ToList(),
+            };
+        }
+
+        /// <summary>Reads Dart <c>Wallet.toJson</c> output, with the same defaults as Dart <c>Wallet.fromJson</c>.</summary>
+        public static Wallet FromJson(Dictionary<string, object> json, AssetRules rules)
+        {
+            var profile = json.TryGetValue("profileId", out var p) && p is string ps ? ps : "local";
+            var wallet = new Wallet(rules, profile);
+            wallet.Sequence = json.TryGetValue("sequence", out var seq) && seq is long n ? n : 0;
+            if (json.TryGetValue("balances", out var b) && b is Dictionary<string, object> map)
+                foreach (var pair in map)
+                    if (pair.Value is long amount && amount > 0) wallet.balances[pair.Key] = amount;
+            if (json.TryGetValue("processedKeys", out var k) && k is List<object> keys)
+                foreach (var key in keys.OfType<string>()) wallet.processed.Add(key);
+            if (json.TryGetValue("ledger", out var l) && l is List<object> entries)
+            {
+                foreach (var item in entries.OfType<Dictionary<string, object>>())
+                {
+                    string S(string key, string fallback) => item.TryGetValue(key, out var v) && v is string sv ? sv : fallback;
+                    wallet.ledger.Add(new LedgerEntry
+                    {
+                        TransactionId = S("txn", ""), IdempotencyKey = S("key", ""), ProfileId = S("profile", ""), Asset = S("asset", ""),
+                        Amount = item.TryGetValue("amount", out var a) && a is long av ? av : 0, Type = S("type", ""), Source = S("source", ""),
+                        ReferenceId = S("ref", ""), Verification = S("verification", "local") == "verified" ? TxnVerification.Verified : TxnVerification.Local,
+                        CreatedAtUtc = S("at", ""),
+                    });
+                }
+            }
+            return wallet;
+        }
+
         public long Balance(string asset) => balances.TryGetValue(asset, out var value) ? value : 0;
         public bool HasProcessed(string key) => processed.Contains(key);
 

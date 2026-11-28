@@ -72,7 +72,8 @@ namespace Gearbound.Workshop
     /// flutter/lib/features/workshop/workshop_controller.dart, checked by shared/test-fixtures/workshop_cases.json.
     /// Battle scrap is a mission-scoped wallet that is never saved; every spend and refund goes through the ledger.
     /// Buys and rerolls are not undoable: Cancel refunds an unplaced buy, and undoing a reroll would preview offers for free.
-    /// Not ported yet: checkpoint save/restore (Flutter <c>toJson</c>/<c>restore</c>).
+    /// Checkpoints: <see cref="ToJson"/> and <see cref="Restore"/> use the same JSON as Flutter <c>toJson</c>/<c>restore</c>,
+    /// so either engine can resume the other's checkpoint (proved by the checkpoint steps in workshop_cases.json).
     /// </summary>
     public sealed class WorkshopController
     {
@@ -85,7 +86,7 @@ namespace Gearbound.Workshop
             public int ScrapGained;
         }
 
-        private readonly SeededRandom rng;
+        private SeededRandom rng;
         private readonly Func<DateTime> clock;
         private readonly List<UndoEntry> undo = new List<UndoEntry>();
         private int nextGearNumber = 1;
@@ -114,8 +115,8 @@ namespace Gearbound.Workshop
             CurrencyMax = new Dictionary<string, long>(StringComparer.Ordinal) { [BattleScrap] = 100000 },
         };
 
-        public WorkshopController(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop, WorkshopRules rules,
-            uint seed, Func<DateTime> clock = null)
+        private WorkshopController(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop, WorkshopRules rules,
+            uint seed, Func<DateTime> clock, Wallet wallet)
         {
             Board = board ?? throw new ArgumentNullException(nameof(board));
             Catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
@@ -123,8 +124,14 @@ namespace Gearbound.Workshop
             Rules = rules ?? throw new ArgumentNullException(nameof(rules));
             Seed = seed;
             this.clock = clock ?? (() => DateTime.UtcNow);
+            Wallet = wallet;
+        }
+
+        public WorkshopController(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop, WorkshopRules rules,
+            uint seed, Func<DateTime> clock = null)
+            : this(board, catalog, shop, rules, seed, clock, new Wallet(MissionAssetRules(), "mission"))
+        {
             rng = new SeededRandom(SeededRandom.MixSeed32(seed));
-            Wallet = new Wallet(MissionAssetRules(), "mission");
             foreach (var starter in rules.StarterGears)
             {
                 if (!board.TryPlace(NewNode(Definition(starter.DefinitionId), starter.X, starter.Y, 1), out var error))
@@ -137,6 +144,47 @@ namespace Gearbound.Workshop
             }, this.clock());
             RollOffers();
         }
+
+        /// <summary>
+        /// Rebuilds a controller from <see cref="ToJson"/> output (or Flutter's <c>toJson</c>) at a wave boundary: the mission
+        /// wallet with its processed claim keys, offers, holds, reroll count, ID counters and RNG state. Starter gears are
+        /// not placed again; the board comes from the checkpoint. Selection and undo history are not saved.
+        /// A checkpoint without <c>held</c> (written before offer holds) restores with no holds.
+        /// </summary>
+        public static WorkshopController Restore(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop,
+            WorkshopRules rules, Dictionary<string, object> json, Func<DateTime> clock = null)
+        {
+            if (json == null) throw new ArgumentNullException(nameof(json));
+            var w = new WorkshopController(board, catalog, shop, rules, (uint)SharedJson.Long(json, "seed"), clock,
+                Wallet.FromJson(SharedJson.Obj(json["wallet"], "wallet"), MissionAssetRules()));
+            w.rng = SeededRandom.FromState((uint)SharedJson.Long(json, "rngState"), SharedJson.Int(json, "rngDraws"));
+            w.Offers = SharedJson.Arr(json, "offers").Select(o => o as string).ToArray();
+            w.Held = json.TryGetValue("held", out var held) && held is List<object> list
+                ? list.Select(h => h is bool flag && flag).ToArray()
+                : new bool[w.Offers.Length];
+            w.RerollsTaken = SharedJson.Int(json, "rerollsTaken");
+            w.Locked = SharedJson.Bool(json, "locked");
+            w.Hand = json.TryGetValue("hand", out var hand) && hand is string handId ? w.Definition(handId) : null;
+            w.nextGearNumber = SharedJson.Int(json, "nextGearNumber");
+            w.nextTxn = SharedJson.Int(json, "nextTxn");
+            return w;
+        }
+
+        /// <summary>Checkpoint state in the Flutter <c>toJson</c> format; integers are boxed as <c>long</c>.</summary>
+        public Dictionary<string, object> ToJson() => new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["seed"] = (long)Seed,
+            ["rngState"] = (long)rng.State,
+            ["rngDraws"] = (long)rng.Draws,
+            ["wallet"] = Wallet.ToJson(),
+            ["offers"] = Offers.Cast<object>().ToList(),
+            ["held"] = Held.Cast<object>().ToList(),
+            ["rerollsTaken"] = (long)RerollsTaken,
+            ["locked"] = Locked,
+            ["hand"] = Hand?.Id,
+            ["nextGearNumber"] = (long)nextGearNumber,
+            ["nextTxn"] = (long)nextTxn,
+        };
 
         public bool CanUndo => !Locked && undo.Count > 0;
         public int BattleScrapBalance => (int)Wallet.Balance(BattleScrap);
