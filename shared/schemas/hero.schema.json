@@ -23,14 +23,16 @@
           "attackIntervalTicks": { "type": "integer", "minimum": 1 },
           "special": {
             "type": "object",
-            "required": ["id", "name", "spMax", "spPerHit", "damage", "radiusMm"],
+            "required": ["id", "name", "spMax", "spPerHit", "damage", "radiusMm", "knockbackMm", "stunTicks"],
             "properties": {
               "id": { "type": "string", "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*$" },
               "name": { "type": "string", "minLength": 1 },
               "spMax": { "type": "integer", "minimum": 1 },
               "spPerHit": { "type": "integer", "minimum": 0 },
               "damage": { "type": "integer", "minimum": 1 },
-              "radiusMm": { "type": "integer", "minimum": 0 }
+              "radiusMm": { "type": "integer", "minimum": 0 },
+              "knockbackMm": { "type": "integer", "minimum": 0 },
+              "stunTicks": { "type": "integer", "minimum": 0 }
             },
             "additionalProperties": false
           },

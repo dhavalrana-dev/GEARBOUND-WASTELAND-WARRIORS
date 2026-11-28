@@ -23,6 +23,7 @@ namespace Gearbound.Core
         public int MovementMmPerTick { get; }
         public int AttackIntervalTicks { get; }
         public int AttackCooldownTicks { get; internal set; }
+        public int StunRemaining { get; internal set; }
         public CombatState State { get; internal set; }
         public bool IsAlive => Health > 0;
 
@@ -156,14 +157,16 @@ namespace Gearbound.Core
         /// <paramref name="faction"/> in <paramref name="lane"/> within <paramref name="radiusMm"/> of
         /// <paramref name="centerMm"/>, in entity ID order. Returns how many were hit.
         /// </summary>
-        public int AreaDamage(CombatFaction faction, int lane, int centerMm, int radiusMm, int damage)
+        public int AreaDamage(CombatFaction faction, int lane, int centerMm, int radiusMm, int damage, int knockbackMm = 0, int stunTicks = 0)
         {
+            if (knockbackMm < 0 || stunTicks < 0) throw new ArgumentOutOfRangeException("Control effects cannot be negative.");
             var targets = combatants.Where(u => u.IsAlive && u.Faction == faction && u.Lane == lane && Math.Abs(u.PositionMm - centerMm) <= radiusMm)
                 .OrderBy(u => u.Id).ToArray();
             foreach (var target in targets)
             {
                 ApplyDamage(target, damage);
                 if (target.Health <= 0) target.State = CombatState.Dead;
+                else ApplyControlEffect(target, centerMm, knockbackMm, stunTicks);
             }
             return targets.Length;
         }
@@ -180,6 +183,13 @@ namespace Gearbound.Core
             var nextPositions = new Dictionary<int, int>();
             foreach (var unit in living)
             {
+                if (unit.StunRemaining > 0)
+                {
+                    unit.StunRemaining--;
+                    nextPositions[unit.Id] = startPositions[unit.Id];
+                    unit.State = CombatState.Stunned;
+                    continue;
+                }
                 if (unit.AttackCooldownTicks > 0) unit.AttackCooldownTicks--;
                 var hasNearbyTarget = living.Any(target => target.IsAlive && target.Faction != unit.Faction && target.Lane == unit.Lane
                     && Math.Abs(startPositions[target.Id] - startPositions[unit.Id]) <= unit.AttackRangeMm);
@@ -216,6 +226,7 @@ namespace Gearbound.Core
             }
             foreach (var unit in living)
             {
+                if (unit.StunRemaining > 0 || unit.State == CombatState.Stunned) continue;
                 if (unit.WindupRemaining > 0)
                 {
                     // Telegraphed attack: the hit lands when the wind-up ends, on whoever is in range then.
@@ -313,6 +324,17 @@ namespace Gearbound.Core
             var absorbed = Math.Min(target.Shield, remaining);
             target.Shield -= absorbed;
             target.Health = Math.Max(0, target.Health - (remaining - absorbed));
+        }
+
+        private void ApplyControlEffect(Combatant target, int centerMm, int knockbackMm, int stunTicks)
+        {
+            if (knockbackMm > 0)
+            {
+                var direction = target.PositionMm >= centerMm ? 1 : -1;
+                target.PositionMm = Math.Max(0, Math.Min(WorldLengthMm, target.PositionMm + direction * knockbackMm));
+                target.State = CombatState.KnockedBack;
+            }
+            if (stunTicks > target.StunRemaining) target.StunRemaining = stunTicks;
         }
     }
 }

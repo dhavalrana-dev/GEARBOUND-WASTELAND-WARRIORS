@@ -180,7 +180,7 @@ Updated 2026-11-28.
 **Status (2026-11-28):**
 - 03.1 done in both engines (GB-025): init, prep, wave, intermission with rewards, victory or defeat, result.
 - 03.2 partial: lane commands and the Wrench Quake special (GB-055). Other hero actions not evaluated yet.
-- 03.3 partial: armor, shields, wind-up and cleave (GB-058) and turret projectiles (GB-037). Hero recovery done (GB-067); status effects and knockback pending.
+- 03.3 partial: armor, shields, wind-up and cleave (GB-058), turret projectiles (GB-037), and hero recovery (GB-067). Initial stun/knockback support is now wired to Wrench Quake; broader effect sources and cross-engine verification remain before this item is complete.
 - 03.4 partial: fortress, wave, SP and telegraph feedback with temporary visuals.
 - 03.5 done in Flutter (GB-052, GB-053); not device-tested.
 - Playable builds: the Android debug APK on the emulator and the Windows desktop debug runner. Not yet on a physical phone.

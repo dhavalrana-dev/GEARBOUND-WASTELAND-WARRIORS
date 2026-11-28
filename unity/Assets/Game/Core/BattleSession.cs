@@ -63,14 +63,16 @@ namespace Gearbound.Core
         public int Damage { get; }
         public int RadiusMm { get; }
 
-        public HeroSpecial(string id, int spMax, int spPerHit, int damage, int radiusMm)
+        public HeroSpecial(string id, int spMax, int spPerHit, int damage, int radiusMm, int knockbackMm, int stunTicks)
         {
-            if (spMax < 1 || spPerHit < 1 || damage < 1 || radiusMm < 0) throw new ArgumentOutOfRangeException("Hero special values are outside their allowed range.");
-            Id = id; SpMax = spMax; SpPerHit = spPerHit; Damage = damage; RadiusMm = radiusMm;
+            if (spMax < 1 || spPerHit < 1 || damage < 1 || radiusMm < 0 || knockbackMm < 0 || stunTicks < 0) throw new ArgumentOutOfRangeException("Hero special values are outside their allowed range.");
+            Id = id; SpMax = spMax; SpPerHit = spPerHit; Damage = damage; RadiusMm = radiusMm; KnockbackMm = knockbackMm; StunTicks = stunTicks;
         }
 
         /// <summary>Rivet's Wrench Quake; a test keeps this equal to heroes.json.</summary>
-        public static readonly HeroSpecial Rivet = new HeroSpecial("special.wrench_quake", 100, 10, 25, 1200);
+        public static readonly HeroSpecial Rivet = new HeroSpecial("special.wrench_quake", 100, 10, 25, 1200, 350, 15);
+        public int KnockbackMm { get; }
+        public int StunTicks { get; }
     }
 
     /// <summary>How a knocked-out hero comes back, from shared/heroes/heroes.json (<c>recovery</c>).</summary>
@@ -199,7 +201,7 @@ namespace Gearbound.Core
                 var hero = Combat.Combatants.FirstOrDefault(u => u.Id == HeroId && u.IsAlive);
                 if (hero != null)
                 {
-                    Combat.AreaDamage(CombatFaction.Enemy, hero.Lane, hero.PositionMm, Special.RadiusMm, Special.Damage);
+                    Combat.AreaDamage(CombatFaction.Enemy, hero.Lane, hero.PositionMm, Special.RadiusMm, Special.Damage, Special.KnockbackMm, Special.StunTicks);
                     HeroSp = 0;
                 }
             }
