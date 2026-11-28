@@ -250,6 +250,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       WorkshopAction.cannotSellCore => 'The power core cannot be sold.',
       WorkshopAction.locked => 'The workshop is locked during the wave.',
       WorkshopAction.nothingToUndo => 'Nothing to undo.',
+      WorkshopAction.allHeld => 'Release a held offer to reroll.',
       WorkshopAction.noOffer ||
       WorkshopAction.nothingToPlace ||
       WorkshopAction.nothingSelected => null,
@@ -274,6 +275,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
       status: _selectedStatus(),
       onUndo: () => _workshopAction((w) => w.undo()),
       onBuy: (slot) => _workshopAction((w) => w.buy(slot)),
+      onHold: (slot) => _workshopAction((w) => w.toggleHold(slot)),
       onReroll: () => _workshopAction((w) => w.reroll()),
       onCancel: () => _workshopAction((w) => w.cancelHand()),
       onSell: () => _workshopAction((w) => w.sellSelected()),
@@ -917,6 +919,7 @@ class _ShopPanel extends StatelessWidget {
     required this.status,
     required this.onUndo,
     required this.onBuy,
+    required this.onHold,
     required this.onReroll,
     required this.onCancel,
     required this.onSell,
@@ -927,6 +930,7 @@ class _ShopPanel extends StatelessWidget {
   final String? status;
   final VoidCallback onUndo;
   final ValueChanged<int> onBuy;
+  final ValueChanged<int> onHold;
   final VoidCallback onReroll;
   final VoidCallback onCancel;
   final VoidCallback onSell;
@@ -940,7 +944,9 @@ class _ShopPanel extends StatelessWidget {
         ? 'Placing ${hand.name}: tap or drag to an empty cell. Row sets the lane.'
         : selected != null
         ? '${selected.name} selected: drag to move, or onto an identical gear to merge.'
-        : 'Buy a gear, then tap or drag it onto the board.';
+        : workshop.allHeld
+        ? 'All offers held: release one to reroll.'
+        : 'Buy a gear, then tap or drag it onto the board. Hold an offer to keep it through rerolls and waves.';
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
@@ -967,7 +973,10 @@ class _ShopPanel extends StatelessWidget {
                 ),
               ),
               TextButton.icon(
-                onPressed: hand == null && scrap >= workshop.rerollPrice
+                onPressed:
+                    hand == null &&
+                        !workshop.allHeld &&
+                        scrap >= workshop.rerollPrice
                     ? onReroll
                     : null,
                 icon: const Icon(Icons.refresh, size: 18),
@@ -1036,14 +1045,22 @@ class _ShopPanel extends StatelessWidget {
     }
     final gear = workshop.definitionFor(id);
     final affordable = gear.cost <= scrap;
-    return OutlinedButton(
+    final held = workshop.held[slot];
+    final buy = OutlinedButton(
       key: ValueKey('offer-$slot'),
       onPressed: handEmpty && affordable ? () => onBuy(slot) : null,
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(58),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         foregroundColor: GbColors.cream,
-        side: BorderSide(color: affordable ? GbColors.amber : Colors.white24),
+        side: BorderSide(
+          color: held
+              ? GbColors.technologyCyan
+              : affordable
+              ? GbColors.amber
+              : Colors.white24,
+          width: held ? 2 : 1,
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1060,6 +1077,42 @@ class _ShopPanel extends StatelessWidget {
           ),
         ],
       ),
+    );
+    // Held state is shown by the lock icon and label, not by color alone.
+    return Row(
+      children: [
+        Expanded(child: buy),
+        SizedBox(
+          width: 40,
+          height: 58,
+          child: Tooltip(
+            message: held ? 'Release ${gear.name}' : 'Hold ${gear.name}',
+            child: InkWell(
+              key: ValueKey('hold-$slot'),
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => onHold(slot),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    held ? Icons.lock : Icons.lock_open,
+                    size: 18,
+                    color: held ? GbColors.technologyCyan : Colors.white54,
+                  ),
+                  Text(
+                    held ? 'HELD' : 'HOLD',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: held ? GbColors.technologyCyan : Colors.white54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

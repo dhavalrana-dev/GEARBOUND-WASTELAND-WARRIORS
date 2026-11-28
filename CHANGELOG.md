@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Offer holds in the workshop shop (GB-065, Phase 02 task 2.9): hold an offer to keep it through rerolls and the next wave's shop; a reroll with every offer held is refused without charge. Dart and C# rules match through the new `offer-holds` case in `workshop_cases.json`.
 - Add an original ART-01 mood-board concept for the Tactile Industrial Comic 2.5D visual direction; embed it in the working board and record its prompt and provenance. It remains unapproved concept art.
 - Visual direction v3, **Tactile Industrial Comic 2.5D** (GB-062): `ART_DIRECTION.md` v3 with the visual benchmark gate (ART-B) and a 19-step execution order; new style bible, material library, character design, rigging, animation, environment, prompt, validation, rendering and performance-budget specifications; UI/UX specification v2; `PRODUCTION_ASSET_INVENTORY.md` renamed `ASSET_INVENTORY.md`; 7 new manifest records (337); a working reference board in `assets-source/style-bible/`. Documentation and diagrams only; no art is approved.
 - Unity Android build (GB-012, Phase 01 item 1.7): new engine-free `Gearbound.Baseline` replays the shared fixtures in C#, and `AndroidBaselineBuild.Build` produces an IL2CPP APK (ARM64 + x86_64) whose baseline scene passes on the Pixel 10 Pro XL emulator. Unity EditMode 59/59.

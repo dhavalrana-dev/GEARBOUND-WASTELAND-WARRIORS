@@ -24,7 +24,7 @@ const fixturePath = '../shared/test-fixtures/workshop_cases.json';
 
 /// Scripts. Ops: buy(slot), buyId(id: first slot offering it, else slot -1),
 /// tap(x,y), drop(from,to), sell, undo, cancel, reroll, lock,
-/// intermission(wave,reward), preview(x,y[,from]).
+/// intermission(wave,reward), preview(x,y[,from]), hold(slot).
 final scripts = <Map<String, Object?>>[
   {
     'id': 'place-merge-sell-undo',
@@ -140,6 +140,29 @@ final scripts = <Map<String, Object?>>[
     ],
   },
   {
+    'id': 'offer-holds',
+    'require': ['ok', 'allHeld', 'noOffer', 'locked'],
+    'firstOpOk': true,
+    'ops': [
+      {'op': 'hold', 'slot': 0},
+      {'op': 'reroll'},
+      {'op': 'hold', 'slot': 2},
+      {'op': 'reroll'},
+      {'op': 'hold', 'slot': 1},
+      {'op': 'reroll'},
+      {'op': 'hold', 'slot': 1},
+      {'op': 'buy', 'slot': 0},
+      {'op': 'hold', 'slot': 0},
+      {'op': 'cancel'},
+      {'op': 'lock'},
+      {'op': 'hold', 'slot': 1},
+      {'op': 'intermission', 'wave': 1, 'reward': 6},
+      {'op': 'reroll'},
+      {'op': 'hold', 'slot': 2},
+      {'op': 'reroll'},
+    ],
+  },
+  {
     'id': 'turret-lanes-and-sale',
     'require': ['ok'],
     'firstOpOk': true,
@@ -185,6 +208,7 @@ Map<String, Object?> _snapshot(WorkshopController w, String result) {
     'offers': w.offers,
     'hand': w.hand?.id,
     'selected': sel == null ? null : [sel.x, sel.y],
+    'held': w.held,
     'rerollsTaken': w.rerollsTaken,
     'locked': w.locked,
     'board': [for (final n in nodes) _node(n)],
@@ -233,6 +257,8 @@ List<Map<String, Object?>> run(
         result = w.cancelHand().name;
       case 'reroll':
         result = w.reroll().name;
+      case 'hold':
+        result = w.toggleHold(op['slot'] as int).name;
       case 'lock':
         w.lock();
         result = 'ok';
@@ -285,8 +311,9 @@ Map<String, Object?> build() {
     'rules':
         'Replay ops on a fresh WorkshopController (shared gear_rules, shop, '
         'starter_gears). steps[0] is the state after construction; steps[i] '
-        'after ops[i-1]. Board entries: id|definition|tier|x,y|lane|interval, '
-        'sorted by row then column.',
+        'after ops[i-1]. held[i] is true while offer slot i is held. Board '
+        'entries: id|definition|tier|x,y|lane|interval, sorted by row then '
+        'column.',
     'mixSeed32': [
       for (final s in [0, 1, 2, 42, 0x7FFFFFFF, 0xFFFFFFFF])
         {'seed': s, 'mixed': mixSeed32(s)},

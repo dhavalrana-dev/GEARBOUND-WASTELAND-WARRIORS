@@ -35,6 +35,7 @@
 
 **Preparation:**
 - Tap a card to buy; drag the ghost to a highlighted cell; tap a placed gear to select it.
+- **Hold** an offer with the lock toggle beside its card (free). A held offer shows a lock icon and the HELD label, survives rerolls and the next wave's shop, and is released by buying it or tapping the toggle again. With every offer held, Reroll is disabled and the hint says to release one.
 - A merge preview appears over a compatible occupied cell; undo restores the prior board snapshot.
 - Errors explain the bounds, occupancy, cost or connection constraint.
 - *Rotation and a conflict explanation are deferred (task 2.10) until gears with partial ports exist.*

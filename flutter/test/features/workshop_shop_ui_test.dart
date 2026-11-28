@@ -97,6 +97,52 @@ void main() {
     expect(board.at(3, 3), isNull);
   });
 
+  testWidgets(
+    'holding an offer keeps it through a reroll; all held disables reroll',
+    (tester) async {
+      useTallPhone(tester);
+      final content = (await tester.runAsync(
+        () => SharedContent.load(rootBundle),
+      ))!;
+      await pumpWorkshop(tester, content);
+      String offerName(int slot) => tester
+          .widgetList<Text>(
+            find.descendant(
+              of: find.byKey(ValueKey('offer-$slot')),
+              matching: find.byType(Text),
+            ),
+          )
+          .first
+          .data!;
+      final kept = offerName(0);
+
+      expect(find.text('HOLD'), findsNWidgets(3));
+      await tester.tap(find.byKey(const ValueKey('hold-0')));
+      await tester.pump();
+      expect(find.text('HELD'), findsOneWidget);
+      expect(find.byTooltip('Release $kept'), findsOneWidget);
+
+      await tester.tap(find.textContaining('REROLL'));
+      await tester.pump();
+      expect(find.text('11 battle scrap'), findsOneWidget);
+      expect(offerName(0), kept);
+      expect(find.text('HELD'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('hold-1')));
+      await tester.tap(find.byKey(const ValueKey('hold-2')));
+      await tester.pump();
+      expect(find.text('HELD'), findsNWidgets(3));
+      expect(find.textContaining('All offers held'), findsOneWidget);
+      final reroll = tester.widget<TextButton>(
+        find.ancestor(
+          of: find.textContaining('REROLL'),
+          matching: find.byWidgetPredicate((w) => w is TextButton),
+        ),
+      );
+      expect(reroll.onPressed, isNull);
+    },
+  );
+
   testWidgets('drag hooks move a gear, show status, and undo restores it', (
     tester,
   ) async {

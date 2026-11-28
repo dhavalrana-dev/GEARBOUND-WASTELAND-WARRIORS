@@ -182,7 +182,8 @@ namespace Gearbound.Baseline
                 .Select(n => $"{n.Id}|{n.DefinitionId}|t{n.Tier}|{n.X},{n.Y}|lane{n.TargetLane}|{n.BaseIntervalTicks}");
             var sel = w.Selected.HasValue ? $"{w.Selected.Value.X},{w.Selected.Value.Y}" : "null";
             return $"result={result} scrap={w.BattleScrapBalance} offers=[{string.Join(",", w.Offers.Select(o => o ?? "null"))}] " +
-                   $"hand={w.Hand?.Id ?? "null"} selected={sel} rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
+                   $"hand={w.Hand?.Id ?? "null"} selected={sel} held=[{string.Join(",", w.Held.Select(h => h ? "true" : "false"))}] " +
+                   $"rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
         }
 
         private static string Expected(Dictionary<string, object> s)
@@ -191,7 +192,8 @@ namespace Gearbound.Baseline
             var sel = s["selected"] is List<object> l ? $"{l[0]},{l[1]}" : "null";
             var board = ((List<object>)s["board"]).Cast<string>();
             return $"result={s["result"]} scrap={SharedJson.Int(s, "scrap")} offers=[{string.Join(",", offers)}] " +
-                   $"hand={(string)s["hand"] ?? "null"} selected={sel} rerolls={SharedJson.Int(s, "rerollsTaken")} " +
+                   $"hand={(string)s["hand"] ?? "null"} selected={sel} held=[{string.Join(",", ((List<object>)s["held"]).Select(h => (bool)h ? "true" : "false"))}] " +
+                   $"rerolls={SharedJson.Int(s, "rerollsTaken")} " +
                    $"locked={((bool)s["locked"] ? "True" : "False")} board=[{string.Join(";", board)}]";
         }
 
@@ -207,6 +209,7 @@ namespace Gearbound.Baseline
                 case "undo": return Camel(w.Undo().ToString());
                 case "cancel": return Camel(w.CancelHand().ToString());
                 case "reroll": return Camel(w.Reroll().ToString());
+                case "hold": return Camel(w.ToggleHold(SharedJson.Int(op, "slot")).ToString());
                 case "lock": w.Lock(); return "ok";
                 case "intermission": return Camel(w.BeginIntermission(SharedJson.Int(op, "wave"), SharedJson.Int(op, "reward")).ToString());
                 case "preview":

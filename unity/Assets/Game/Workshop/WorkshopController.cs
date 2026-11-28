@@ -51,7 +51,7 @@ namespace Gearbound.Workshop
     public enum WorkshopAction
     {
         Ok, Locked, NoOffer, HandFull, InsufficientScrap, Occupied, NothingToPlace,
-        NotMergeable, MaxTier, CannotSellCore, NothingSelected, NothingToUndo,
+        NotMergeable, MaxTier, CannotSellCore, NothingSelected, NothingToUndo, AllHeld,
     }
 
     /// <summary>What would happen if a gear were placed or moved to a cell.</summary>
@@ -100,6 +100,8 @@ namespace Gearbound.Workshop
         public SeededRandom Random => rng;
 
         public string[] Offers { get; private set; } = Array.Empty<string>();
+        /// <summary>Offers the player is holding: a reroll and a new wave's shop keep them.</summary>
+        public bool[] Held { get; private set; } = Array.Empty<bool>();
         public int RerollsTaken { get; private set; }
         public bool Locked { get; private set; }
         /// <summary>Definition bought but not yet placed.</summary>
@@ -166,8 +168,25 @@ namespace Gearbound.Workshop
             var next = (string[])Offers.Clone();
             next[slot] = null;
             Offers = next;
+            var held = (bool[])Held.Clone();
+            held[slot] = false;
+            Held = held;
             return WorkshopAction.Ok;
         }
+
+        /// <summary>Holds or releases an offer. Free; a held offer survives rerolls and the next wave's shop until bought or released.</summary>
+        public WorkshopAction ToggleHold(int slot)
+        {
+            if (Locked) return WorkshopAction.Locked;
+            if (slot < 0 || slot >= Offers.Length || Offers[slot] == null) return WorkshopAction.NoOffer;
+            var held = (bool[])Held.Clone();
+            held[slot] = !held[slot];
+            Held = held;
+            return WorkshopAction.Ok;
+        }
+
+        /// <summary>True when every slot is held, so a reroll could not change anything.</summary>
+        public bool AllHeld => Held.Length > 0 && Held.All(h => h);
 
         /// <summary>Undo an unplaced purchase for a full refund.</summary>
         public WorkshopAction CancelHand()
@@ -181,6 +200,7 @@ namespace Gearbound.Workshop
         public WorkshopAction Reroll()
         {
             if (Locked) return WorkshopAction.Locked;
+            if (AllHeld) return WorkshopAction.AllHeld;
             if (!Spend(RerollPrice, "reroll", "shop")) return WorkshopAction.InsufficientScrap;
             RerollsTaken++;
             RollOffers();
@@ -258,7 +278,7 @@ namespace Gearbound.Workshop
 
         /// <summary>
         /// Reopens the workshop between waves: pays the cleared wave's reward once per wave number through the ledger,
-        /// resets the reroll price and rolls fresh offers. The board is kept as built.
+        /// resets the reroll price and rolls fresh offers around any held ones. The board is kept as built.
         /// </summary>
         public WorkshopAction BeginIntermission(int clearedWave, int rewardScrap)
         {
@@ -370,7 +390,14 @@ namespace Gearbound.Workshop
         private void RollOffers()
         {
             var pool = new HashSet<string>(Catalog.Where(g => Rules.ShopCategories.Contains(g.Category)).Select(g => g.Id), StringComparer.Ordinal);
-            Offers = GearShop.Roll(rng, Catalog, Shop, pool, null, Board.Nodes.Any(n => n.Kind == GearKind.Transmission));
+            if (Held.Length != Shop.OfferCount) Held = new bool[Shop.OfferCount];
+            string[] keep = null;
+            if (Held.Any(h => h))
+            {
+                keep = new string[Held.Length];
+                for (var i = 0; i < Held.Length; i++) keep[i] = Held[i] ? Offers[i] : null;
+            }
+            Offers = GearShop.Roll(rng, Catalog, Shop, pool, keep, Board.Nodes.Any(n => n.Kind == GearKind.Transmission));
         }
 
         private bool Spend(int amount, string type, string reference)
