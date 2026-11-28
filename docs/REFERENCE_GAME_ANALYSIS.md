@@ -24,6 +24,8 @@ Gearbound borrows broad genre patterns only. It will use an original rolling for
 
 Before finalizing presentation, capture authorized in-game screenshots or use official promotional material with attribution and document observations for: placement feedback, phase transitions, lane visibility, attack readability, shop density, boss telegraphs, and mobile touch targets. Asset extraction and redistribution are out of scope.
 
+> **Section references:** the 2026-11-27 sections below cite art direction **v2** section numbers. Since v3 (2026-11-28) those rules live in the specifications listed in `ART_DIRECTION.md` §4.
+
 ## Package analysis (local reference copies, 2026-11-27)
 
 The project owner placed reference packages in `Reference APK/`. That folder is gitignored and never committed. This analysis used only package manifests, native library and managed assembly *names*, folder names, file-type counts, and the engine version header. **No code was decompiled, and no assets, data or text were copied into Gearbound.**
@@ -117,3 +119,27 @@ The copy in `Reference APK/The.Last.Friend*` is an unauthorized redistribution o
 - **GB-055 (P1):** a hero special ability charged by an SP bar (Phase 03.2), entering the simulation as a validated command.
 - **GB-056 (P2):** spawn-rate and tier numbers on output gears, plus a lane marker linking each output gear to its lane.
 - **GB-057 (P2):** mission objective types beyond survival (protect, escort, reach), shown in an objective panel.
+
+## Visual direction v3 references (2026-11-28)
+
+The v3 direction (`ART_DIRECTION.md`, Tactile Industrial Comic 2.5D) adds three references and reframes the earlier three.
+
+**How this was gathered:** general design knowledge of widely published games. No new store pages were fetched, no game was installed, and no image was collected or stored. Each entry names the **principle** Gearbound takes and the **line it must not cross**. Hands-on capture, if the owner wants it, uses legitimately owned copies or official press material only.
+
+| Reference | Principle Gearbound takes | Must not cross |
+|---|---|---|
+| Gear Fight! | Gear placement, power and merge feedback; numbers on output gears (adopted, GB-056); a short build phase that cuts straight to the consequence | Its chibi characters, gear ring art and UI layout |
+| The Last Friend | Character energy and an elevated side view with a fortress on the left; hero and defenses in one frame | Its characters, RV, companions, palette and HUD art |
+| SteamWorld Build / Dig | Machines with personality; industrial worlds told through structures and equipment; tactile mechanical detail on every surface | Its robot characters, Western-steampunk iconography and any specific building or tool design |
+| Clash Royale | A miniature diorama battlefield that reads instantly on a phone; chunky, toy-like objects with clear silhouettes; satisfying button and chest feedback | Its arena layouts, towers, card frames, chest designs, fonts and character styles |
+| Hades | Illustrated, high-quality interface and character portraits; dramatic but legible effects; one coherent painted identity across every screen | Its ink-heavy portrait style, mythology motifs, boon UI and fonts |
+| Candy Crush Saga | Route map progression, event presentation, reward chests, daily goals; per-feature atlases; content packs for LiveOps | Its candy visuals, glossy button family, map art and characters |
+
+**Distinctive markers that keep Gearbound original:**
+- **Tactility through gears.** The player's own machine is the hero object, drawn as weighty layered metal.
+- **The copper-and-teal Wayfarer crew** against crimson scrap raiders, in a sunlit industrial pass.
+- **Angular comic anatomy** with designed cel shadows leaning cobalt.
+- **A chamfered, riveted steel-and-brass UI**, never glossy or rounded.
+- **A three-lane miniature diorama** with a visible board-to-lane link.
+
+**Originality review:** `ASSET_VALIDATION_GUIDE.md` §8 checks every gate's output against this table.

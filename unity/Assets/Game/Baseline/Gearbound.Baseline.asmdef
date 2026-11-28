@@ -1,0 +1,7 @@
+{
+  "name": "Gearbound.Baseline",
+  "rootNamespace": "Gearbound.Baseline",
+  "references": ["Gearbound.Core", "Gearbound.Economy", "Gearbound.Workshop"],
+  "noEngineReferences": true,
+  "autoReferenced": true
+}

@@ -4,7 +4,8 @@
   "references": [
     "Gearbound.Core",
     "Gearbound.Economy",
-    "Gearbound.Workshop"
+    "Gearbound.Workshop",
+    "Gearbound.Baseline"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gearbound Reference Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE work: an art-direction board the owner reviews for ART-01
+   IDEA a workshop pin-board of painted steel: swatches, plates and a diorama cross-section
+   PICTURE the elevated side-view battlefield drawn as a layered diorama with the three lanes
+   COLOUR gunmetal ground, brass and copper working colours, energy gold as the sharp accent
+   TYPE Saira Condensed (industrial display) + Barlow (text)
+   LAYOUT title strip, full-width diorama, then palette, materials, gears, shapes, compositions, benchmark */
+:root{color-scheme:light dark;--bg:light-dark(#e9e1d2,#151d26);--panel:light-dark(#f6f0e4,#1f2a35);--ink:light-dark(#1d232a,#efe4d0);--soft:light-dark(#5b5246,#a9b4bf);--line:light-dark(#c9bca6,#34424f);--brass:#d6ac63;--copper:#c56b42;--gold:#f4bf4f;--teal:#35a7b5;--crimson:#d65760}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,"Segoe UI",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1,h2{font-family:"Saira Condensed","Arial Narrow",sans-serif;line-height:1.05;letter-spacing:-.01em;margin:0}
+h1{font-size:clamp(32px,5vw,52px);font-weight:800;text-wrap:balance}
+h2{font-size:28px;font-weight:800;margin-bottom:6px}
+p{margin:6px 0 0;max-width:70ch}
+.lede{color:var(--soft)}
+.status{display:inline-block;margin-top:12px;padding:4px 10px;border:2px solid var(--copper);font-weight:600;font-size:14px}
+.top{background:#192531;color:#efe4d0;border-bottom:6px solid var(--brass)}
+.top .lede{color:#b8c4cf}
+.mood-study{max-width:1240px;margin:0 auto}
+.mood-study img{display:block;width:100%;height:auto;border:3px solid var(--line);background:#192531}
+.mood-study figcaption{color:var(--soft);font-size:14px;margin-top:8px}
+.fig{position:relative;min-height:360px;border:3px solid var(--line);background:#2a3540}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.grid{display:grid;gap:14px;margin-top:18px}
+.sw{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.chip{background:var(--panel);border:2px solid var(--line);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.chip .c{height:64px}
+.chip .t{padding:8px 10px;font-size:14px;line-height:1.3}
+.chip b{display:block;font-size:15px}
+.bands{display:grid;grid-template-columns:1fr 1fr 1.4fr;margin-top:18px;border:2px solid var(--line)}
+.bands div{padding:14px;font-size:14px;color:#1d232a}
+.mat{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.ball{width:84px;height:84px;margin:12px auto 4px;border-radius:50%;border:3px solid #20262d}
+.gears{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.gears svg,.shapes svg{width:100%;height:auto;display:block}
+.states{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.state{padding:12px;font-size:14px}
+.state b{font-size:15px}
+.comp{grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start}
+.frame{display:grid;border:3px solid #20262d;background:#20262d;gap:3px}
+.frame div{display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:600;color:#1d232a;padding:4px}
+.port{aspect-ratio:9/16;grid-template-rows:6fr 40fr 8fr 29fr 17fr}
+.land{aspect-ratio:16/9;grid-template-columns:34fr 66fr;grid-template-rows:9fr 91fr}
+.land .strip{grid-column:1/3}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:"Saira Condensed","Arial Narrow",sans-serif;font-size:17px}
+.done{color:#2f7d49;font-weight:600}
+:root[data-theme=dark] .done{color:#7fd39a}
+.next{color:var(--copper);font-weight:600}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+.scroll{overflow-x:auto}
+@media(max-width:700px){.two,.comp{grid-template-columns:1fr}.bands{grid-template-columns:1fr}}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .done{color:#7fd39a}}
+@media(prefers-reduced-motion:no-preference){.spin{animation:spin 8s linear infinite;transform-box:fill-box;transform-origin:center}.spin.ccw{animation-direction:reverse}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header class="band top"><div class="wrap">
+<h1>Tactile Industrial Comic 2.5D: reference board v001</h1>
+<p class="lede">Working board for ART-01. Built only from GEARBOUND's own tokens, materials and layout rules (docs/VISUAL_STYLE_BIBLE.md, MATERIAL_LIBRARY.md). Diagrams, not finished artwork; no reference-game imagery.</p>
+<span class="status">Status: concept, awaiting owner review. Nothing here is approved.</span>
+</div></header>
+
+<section class="band"><figure class="mood-study">
+<h2>Illustrated mood board: exploratory concept</h2>
+<p class="lede">Original study generated for ART-01 from the project brief. Review the overall visual language only; character, gear, environment and UI details are not approved production designs.</p>
+<img src="industrial-comic-style-study_v001.png" alt="Concept board showing an original mechanic hero, wasteland crew, tactile gears, three-lane Copperwash battlefield and mechanical interface studies">
+<figcaption>Concept status · image generation prompt and provenance: prompts/industrial-comic-style-study_v001.md · No reference-game imagery or image inputs used.</figcaption>
+</figure></section>
+
+<section class="band"><div class="wrap">
+<h2>Camera: elevated side view, three logical lanes</h2>
+<p class="lede">Lane 0 is far and smallest, lane 2 is near. Scale is visual only; reach and range stay in simulation millimetres. Sort by ground contact, far to near, ties by entity ID.</p>
+<div class="fig" id="dio" role="img" aria-label="Layered battlefield diagram with sky, background layers, three receding lanes, fortress on the left and enemy gate on the right"><svg id="dioSvg"></svg></div>
+</div></section>
+
+<section class="band"><div class="wrap two">
+<div>
+<h2>Palette tokens</h2>
+<p class="lede">Proposed values. Energy Gold, Acid Lime, Enemy Crimson and Special Violet carry gameplay meaning only.</p>
+<div class="grid sw" id="pal"></div>
+</div>
+<div>
+<h2>Value bands</h2>
+<p class="lede">Background quiet, gameplay ground quieter in detail, actors carry the full range. Actors need 3:1 contrast against the lane behind them.</p>
+<div class="bands">
+<div style="background:#d9c7a8">Background<br>mid-light, low saturation, no outlines far away</div>
+<div style="background:#c2a47a">Gameplay ground<br>mid value, few details along lanes</div>
+<div style="background:#f2e6d1;border-left:6px solid #20262d">Actors and gears<br>full value range, outlines, highest saturation</div>
+</div>
+<h2 style="margin-top:28px">Light</h2>
+<p>Warm key from the upper left, cool sky fill in shadows, contact shadow under everything grounded, energy light only on powered machinery.</p>
+</div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>Material library</h2>
+<p class="lede">Each swatch shows highlight, base and one cel shadow step from MATERIAL_LIBRARY.md. The painted sheet with worn states is still to be made (style_material_library).</p>
+<div class="grid mat" id="mats"></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>Gears: tiers read by construction, not colour</h2>
+<p class="lede">Beveled teeth with a side face, reinforced rim, spokes and a visible axle. Meshed gears turn opposite ways (rotationParity); unpowered gears stand still.</p>
+<div class="grid gears" id="gears"></div>
+<div class="grid states" id="states"></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>Shape language and proportions</h2>
+<p class="lede">Silhouettes must read as solid fills at gameplay size. Head heights: hero 4.5 to 5.5, infantry 4 to 4.5, fast enemies lean forward, heavies sit low, the boss is about 2.5 hero heights.</p>
+<div class="grid shapes"><svg id="shapeSvg" viewBox="0 0 1000 300" role="img" aria-label="Silhouettes for hero, infantry, fast enemy, heavy enemy and boss"></svg></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>Screen compositions</h2>
+<p class="lede">Shares of the safe area. The board is always 5 by 5; tablets get space, never more capacity.</p>
+<div class="grid comp">
+<div class="frame port">
+<div style="background:#5d6f80;color:#efe4d0">Status 6%</div>
+<div style="background:#d8b98b">Battlefield 40%</div>
+<div style="background:#35a7b5">Hero controls 8%</div>
+<div style="background:#d6ac63">Gear board 29%</div>
+<div style="background:#c56b42">Shop and actions 17%</div>
+</div>
+<div class="frame land">
+<div class="strip" style="background:#5d6f80;color:#efe4d0">Resources and wave</div>
+<div style="background:#d6ac63">Board and shop 34%</div>
+<div style="background:#d8b98b">Battlefield and hero controls 66%</div>
+</div>
+</div>
+</div></section>
+
+<section class="band"><div class="wrap two">
+<div>
+<h2>Visual benchmark</h2>
+<p class="lede">Built and approved before any mass production, in portrait and landscape.</p>
+<div class="scroll"><table><thead><tr><th>Element</th><th>Status</th></tr></thead><tbody id="bench"></tbody></table></div>
+</div>
+<div>
+<h2>Execution order</h2>
+<p class="lede">Each step waits for the one before it to be approved.</p>
+<div class="scroll"><table><thead><tr><th>Step</th><th>Status</th></tr></thead><tbody id="order"></tbody></table></div>
+</div>
+</div></section>
+
+<script>
+{
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tokens=[["Steel Deep","#192531","UI shadows"],["Gunmetal","#344657","Mechanical panels"],["Outline","#20262D","Illustration outlines"],["Cobalt Steel","#386A97","Structures, shadow hue"],["Machine Teal","#35A7B5","Friendly technology"],["Copper Rust","#C56B42","Mechanical accents"],["Brass","#D6AC63","Gears and rewards"],["Energy Gold","#F4BF4F","Active power only"],["Acid Lime","#B9DF54","Valid connection"],["Friendly Green","#63B77B","Positive state"],["Enemy Crimson","#D65760","Threat, invalid"],["Special Violet","#9B73D0","Rare abilities"],["Desert Sand","#D8B98B","Wasteland ground"],["Neutral Light","#F2E6D1","Text, highlights"]];
+document.getElementById('pal').innerHTML=tokens.map(t=>`<div class="chip"><div class="c" style="background:${t[1]}"></div><div class="t"><b>${esc(t[0])}</b>${esc(t[1])} · ${esc(t[2])}</div></div>`).join('');
+const mats=[["mat_painted_steel","Painted steel","#4E7896","#2F4C66","#9CC0D2"],["mat_gunmetal","Gunmetal","#3F4B57","#252D36","#8A98A6"],["mat_brass","Brass","#C99A4E","#8A6430","#F1D894"],["mat_copper","Copper","#C26A3E","#7E3F25","#F0A877"],["mat_rusted_machinery","Rusted machinery","#9A5A3A","#5E3426","#C98A5E"],["mat_weathered_concrete","Weathered concrete","#B9AE9C","#8A8273","#E2D8C4"],["mat_industrial_glass","Industrial glass","#6FA9B6","#3C6E7D","#E8F4F2"],["mat_canvas","Canvas","#B49A6E","#7F6A48","#DCC79C"],["mat_leather","Leather","#7A4B32","#4C2C1E","#B07A54"],["mat_rubber","Rubber","#3A3634","#222020","#6E6864"],["mat_mechanical_energy","Mechanical energy","#F4BF4F","#D98A2B","#FFF3C4"],["mat_sand","Sand","#D8B98B","#B0916A","#F0DDB6"],["mat_rock","Rock","#A0785A","#6A4E3E","#CFA683"],["mat_vegetation","Vegetation","#6F8F4E","#44603A","#A9C46E"],["mat_water","Water","#3F8C9A","#275E6E","#BFE6E6"]];
+document.getElementById('mats').innerHTML=mats.map(m=>`<div class="chip"><div class="ball" style="background:radial-gradient(circle at 32% 28%,${m[4]} 0 14%,${m[2]} 15% 58%,${m[3]} 59%)"></div><div class="t"><b>${esc(m[1])}</b>${esc(m[0])}<br>${esc(m[2])} / ${esc(m[3])} / ${esc(m[4])}</div></div>`).join('');
+
+function gear(cx,cy,r,teeth,spokes,rim,hub,cls){
+  const pts=[];const ro=r,ri=r*0.84;
+  for(let i=0;i<teeth;i++){const a=i/teeth*Math.PI*2,w=Math.PI/teeth;
+    [[a-w*0.55,ri],[a-w*0.32,ro],[a+w*0.32,ro],[a+w*0.55,ri]].forEach(([t,rr])=>pts.push((cx+Math.cos(t)*rr).toFixed(1)+','+(cy+Math.sin(t)*rr).toFixed(1)));}
+  let s=`<g class="${cls}"><polygon points="${pts.join(' ')}" fill="#252D36" transform="translate(3 5)"/><polygon points="${pts.join(' ')}" fill="${rim}" stroke="#20262D" stroke-width="3" stroke-linejoin="round"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${ri*0.86}" fill="#3F4B57" stroke="#20262D" stroke-width="3"/>`;
+  for(let i=0;i<spokes;i++){const a=i/spokes*Math.PI*2;s+=`<line x1="${cx}" y1="${cy}" x2="${(cx+Math.cos(a)*ri*0.8).toFixed(1)}" y2="${(cy+Math.sin(a)*ri*0.8).toFixed(1)}" stroke="#8A98A6" stroke-width="${(r*0.07).toFixed(1)}" stroke-linecap="round"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="${r*0.26}" fill="${hub}" stroke="#20262D" stroke-width="3"/><circle cx="${cx-r*0.06}" cy="${cy-r*0.06}" r="${r*0.08}" fill="#F2E6D1" opacity=".8"/></g>`;
+  return s;}
+const tiers=[["Tier 1","Gunmetal rim, 6 spokes, one pip",6,"#6C7A86","#3F4B57"],["Tier 2","Brass-inlaid rim, 8 spokes, two pips",8,"#C99A4E","#3F4B57"],["Tier 3","Polished brass rim, 10 spokes, energy hub, three pips",10,"#F1D894","#F4BF4F"]];
+document.getElementById('gears').innerHTML=tiers.map((t,i)=>{
+  const pips=Array.from({length:i+1},(_,k)=>`<circle cx="${150+k*22}" cy="22" r="7" fill="#D6AC63" stroke="#20262D" stroke-width="2"/>`).join('');
+  return `<div class="chip"><svg viewBox="0 0 220 200" role="img" aria-label="${esc(t[0])} gear"><ellipse cx="110" cy="178" rx="70" ry="10" fill="#000" opacity=".25"/>${gear(110,100,72,14,t[2],t[3],t[4],'spin'+(i%2?' ccw':''))}${pips}</svg><div class="t"><b>${esc(t[0])}</b>${esc(t[1])}</div></div>`;}).join('');
+const states=[["Powered","Rotates, hub pulses Energy Gold, direction from parity","#F4BF4F"],["Unpowered","Still, no glow, socket stays readable","#8A98A6"],["Jammed (odd loop)","Shudders 2 to 3 degrees, warning icon, no rotation","#D65760"],["Conflicted (two cores)","Stutters and stops, conflict marker on each core","#9B73D0"],["Producing","Progress ring fills on the output clock","#B9DF54"],["Output blocked","Ring holds full, blocked icon","#C56B42"]];
+document.getElementById('states').innerHTML=states.map(s=>`<div class="chip state" style="border-left:8px solid ${s[2]}"><b>${esc(s[0])}</b><br>${esc(s[1])}</div>`).join('');
+
+const sh=document.getElementById('shapeSvg');
+const figs=[["Hero, 5 heads","#386A97",[[80,270],[70,150],[92,95],[128,95],[150,150],[140,270]],[110,70,26]],["Infantry, 4 heads","#35A7B5",[[250,270],[240,190],[262,160],[298,160],[320,190],[310,270]],[280,138,24]],["Fast enemy","#D65760",[[420,270],[440,180],[470,130],[500,140],[505,190],[470,270]],[492,108,20]],["Heavy enemy","#9A5A3A",[[600,270],[585,170],[615,130],[705,130],[735,170],[720,270]],[660,110,24]]];
+let g='<line x1="0" y1="272" x2="1000" y2="272" stroke="#8A8273" stroke-width="3"/>';
+figs.forEach(f=>{g+=`<ellipse cx="${(f[2][0][0]+f[2][5][0])/2}" cy="274" rx="48" ry="7" fill="#000" opacity=".2"/><polygon points="${f[2].map(p=>p.join(',')).join(' ')}" fill="#20262D"/><circle cx="${f[3][0]}" cy="${f[3][1]}" r="${f[3][2]}" fill="#20262D"/><text x="${f[3][0]}" y="296" text-anchor="middle" font-size="16" fill="currentColor">${esc(f[0])}</text>`;});
+g+=`<polygon points="800,270 790,120 830,60 900,40 960,70 985,150 975,270" fill="#20262D"/><polygon points="905,95 985,60 995,105 930,130" fill="#D65760"/><text x="890" y="296" text-anchor="middle" font-size="16" fill="currentColor">Boss, telegraph zone in red</text>`;
+sh.innerHTML=g;
+
+const bench=["Rivet (master + one rigged idle and attack)","Rivetguard","Representative enemies: Scrap Raider, Slagback Bruiser, Scrapmaw","Starter gear catalogue, 5 gears, tiers 1 to 3","Mechanical board","Fortress (Wayfarer)","Copperwash battlefield layers","Combat VFX: hit, deploy, projectile impact, boss warning","Gear shop","Gameplay HUD","Victory screen","Campaign map section","Event card (Scrapstorm)","Reward chest (star milestone)"];
+document.getElementById('bench').innerHTML=bench.map(b=>`<tr><td>${esc(b)}</td><td>Planned</td></tr>`).join('');
+const order=[["Inspect the repository","done"],["Reconcile documentation","done"],["Establish the visual direction (proposed)","done"],["Visual reference board (this page; mood board pending)","next"],["Materials and colours (proposed, approval pending)","next"],["Approve Rivet's master","waiting"],["Approve mechanical gear artwork","waiting"],["Approve Copperwash environment","waiting"],["Approve portrait and landscape compositions","waiting"],["Detailed asset inventory (337 planned records)","waiting"],["Produce individual production assets","waiting"],["Assemble character skeletons","waiting"],["Create animation sets","waiting"],["Integrate artwork into Unity","waiting"],["Integrate equivalent artwork into Flutter","waiting"],["Validate gameplay presentation","waiting"],["Measure device performance","waiting"],["Approve the visual vertical slice","waiting"],["Expand campaign and LiveOps artwork","waiting"]];
+document.getElementById('order').innerHTML=order.map((o,i)=>`<tr><td>${i+1}. ${esc(o[0])}</td><td class="${o[1]==='done'?'done':o[1]==='next'?'next':''}">${o[1]==='done'?'Done':o[1]==='next'?'Owner review':'Waiting'}</td></tr>`).join('');
+
+const svg=document.getElementById('dioSvg'),box=document.getElementById('dio');
+const draw=()=>{
+  const W=box.clientWidth,H=box.clientHeight,narrow=W<520;
+  const lanes=[{y:H*0.56,s:0.84},{y:H*0.71,s:0.92},{y:H*0.88,s:1.0}];
+  let s=`<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3C9A0"/><stop offset="1" stop-color="#F2E0BE"/></linearGradient></defs>`;
+  s+=`<rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+  s+=`<path d="M0 ${H*0.40} L${W*0.12} ${H*0.30} L${W*0.25} ${H*0.36} L${W*0.42} ${H*0.26} L${W*0.6} ${H*0.34} L${W*0.78} ${H*0.27} L${W} ${H*0.35} L${W} ${H*0.5} L0 ${H*0.5}Z" fill="#C99B7A" opacity=".55"/>`;
+  s+=`<path d="M${W*0.55} ${H*0.47} v-${H*0.17} h${W*0.02} v${H*0.06} l${W*0.12} -${H*0.05} v${H*0.02} l-${W*0.1} ${H*0.05} v${H*0.09}Z" fill="#6C4E5E" opacity=".55"/>`;
+  s+=`<rect x="0" y="${H*0.47}" width="${W}" height="${H*0.53}" fill="#C2A47A"/>`;
+  lanes.forEach((l,i)=>{const h=H*0.11*l.s;s+=`<rect x="${W*0.16}" y="${l.y-h*0.62}" width="${W*0.72}" height="${h}" fill="${i%2?'#CDB088':'#C6A87F'}" stroke="#A88A63" stroke-dasharray="6 6"/>`;});
+  s+=`<g><rect x="${W*0.02}" y="${H*0.44}" width="${W*0.13}" height="${H*0.46}" fill="#4E7896" stroke="#20262D" stroke-width="3"/><rect x="${W*0.035}" y="${H*0.5}" width="${W*0.1}" height="${H*0.05}" fill="#6FA9B6" stroke="#20262D" stroke-width="2"/><rect x="${W*0.015}" y="${H*0.88}" width="${W*0.145}" height="${H*0.05}" rx="8" fill="#3A3634" stroke="#20262D" stroke-width="3"/></g>`;
+  s+=`<polygon points="${W*0.9},${H*0.92} ${W*0.9},${H*0.48} ${W*0.95},${H*0.42} ${W},${H*0.46} ${W},${H*0.92}" fill="#9A5A3A" stroke="#20262D" stroke-width="3"/>`;
+  lanes.forEach((l,i)=>{
+    [0.3,0.5,0.72].forEach((fx,k)=>{const x=W*fx,u=H*0.16*l.s,friend=k<2;
+      s+=`<ellipse cx="${x}" cy="${l.y}" rx="${u*0.32}" ry="${u*0.07}" fill="#000" opacity=".25"/><rect x="${x-u*0.16}" y="${l.y-u*0.78}" width="${u*0.32}" height="${u*0.78}" rx="${u*0.06}" fill="${friend?'#35A7B5':'#D65760'}" stroke="#20262D" stroke-width="2.5"/><circle cx="${x}" cy="${l.y-u*0.92}" r="${u*0.15}" fill="${friend?'#35A7B5':'#D65760'}" stroke="#20262D" stroke-width="2.5"/>`;});
+    s+=`<text x="${W*0.885}" y="${l.y-H*0.012}" text-anchor="end" font-size="14" font-weight="600" fill="#1d232a" style="paint-order:stroke;stroke:#C2A47A;stroke-width:4px">Lane ${i} · scale ${l.s.toFixed(2)}</text>`;});
+  if(!narrow){
+    const tags=[["Sky 0.00",H*0.08],["Distant silhouettes 0.10",H*0.2],["Far architecture 0.25",H*0.31]];
+    tags.forEach(t=>{s+=`<text x="${W*0.985}" y="${t[1]}" text-anchor="end" font-size="14" fill="#1d232a">${t[0]}</text>`;});
+    s+=`<text x="${W*0.085}" y="${H*0.41}" text-anchor="middle" font-size="14" font-weight="600" fill="#1d232a">Fortress</text><text x="${W*0.95}" y="${H*0.39}" text-anchor="middle" font-size="14" font-weight="600" fill="#1d232a">Raider gate</text>`;
+    s+=`<text x="${W*0.17}" y="${H*0.06}" font-size="14" fill="#1d232a">Key light from the upper left</text><line x1="${W*0.17}" y1="${H*0.08}" x2="${W*0.27}" y2="${H*0.2}" stroke="#D98A2B" stroke-width="3" marker-end=""/>`;}
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=s;};
+const ro=new ResizeObserver(draw);ro.observe(box);draw();
+}
+</script>
+</body>
+</html>

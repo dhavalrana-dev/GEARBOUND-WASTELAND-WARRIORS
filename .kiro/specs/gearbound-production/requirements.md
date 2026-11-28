@@ -54,6 +54,8 @@ GEARBOUND: Wasteland Warriors is built in 19 phases (00–18, `docs/PHASE_ROADMA
 1. THE ART-01 style direction and ART-02 Rivet master SHALL be approved by the owner.
 2. THE identity, proportions, camera and lighting SHALL be locked and documented.
 3. THE project SHALL contain no proprietary reference assets.
+4. THE visual benchmark (ART-B) SHALL be approved in-engine in portrait and landscape before full-scale art production starts.
+5. THE visual identity SHALL follow Tactile Industrial Comic 2.5D (`docs/ART_DIRECTION.md` v3), with an elevated side-view camera over the unchanged three-lane simulation.
 
 ### Requirement 5: Production vertical slice
 
@@ -61,6 +63,7 @@ GEARBOUND: Wasteland Warriors is built in 19 phases (00–18, `docs/PHASE_ROADMA
 
 #### Acceptance Criteria
 1. THE ART-03, ART-04 and relevant ART-05 gates SHALL pass.
+4. WHEN a performance target is claimed, THE claim SHALL cite a measurement on a representative device.
 2. THE gear visuals SHALL match the simulation state.
 3. THE player SHALL play a full mission from preparation to reward with production art.
 

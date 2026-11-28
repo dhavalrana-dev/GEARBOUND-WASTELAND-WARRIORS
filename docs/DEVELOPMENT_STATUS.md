@@ -9,7 +9,7 @@ Updated: 2026-11-28 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
-- **In progress on `feature/unity-workshop-controller` (uncommitted):** GB-036/GB-049 Unity workshop rules with the shared `workshop_cases.json` fixture; GB-024 all 12 route nodes on shared mission data; a `flutter/windows/` desktop runner used only to review the game locally; GB-056 output labels on Flutter workshop gears.
+- **On `feature/unity-workshop-controller`:** committed in `3b5a343`: GB-036/GB-049 Unity workshop rules with the shared `workshop_cases.json` fixture; GB-024 all 12 route nodes on shared mission data; a `flutter/windows/` desktop runner used only to review the game locally; GB-056 output labels on Flutter workshop gears. Uncommitted: GB-012 Unity Android baseline build (session 20); GB-062 visual direction v3 documentation and boards; GB-040 illustrated mood-board concept (session 22).
 
 ### Merged to `main` (PRs #1–#13)
 The entries below name the branch each item was built on; all of them are merged.
@@ -20,7 +20,7 @@ The entries below name the branch each item was built on; all of them are merged
   - **Resuming after the app was killed:** an intermission checkpoint resumes into the rebuild phase. A mid-wave kill **restarts that wave, paused, with the board locked as it was**, so killing the app can't be used to rebuild against a wave already seen.
   - **Route screen:** an interrupted mission shows a Resume/Abandon card. Starting another mission abandons it (the streak resets).
   - **No double payouts:** the mission wallet's claim keys and the shop's RNG state are restored, so rewards can't be paid twice and the shop continues exactly where it stopped.
-- **GB-055 hero special on `feature/hero-special`.** Rivet gains SP from landed hits (10 per hit, max 100). With a full bar, **Wrench Quake** deals 25 damage, armor applying, to enemies within 1,200 mm in his lane. It's a validated command in both engines, applied after spawns and before the combat step. Tuning lives in `shared/heroes/heroes.json`, and tests in both engines keep the code equal to the file.
+- **GB-055 hero special on `feature/hero-special`.** Rivet gains SP from landed hits (10 per hit, max 100). With a full bar, **Wrench Quake** deals 25 damage, armor applying, to enemies within 1,200 mm in Rivet's lane. It's a validated command in both engines, applied after spawns and before the combat step. Tuning lives in `shared/heroes/heroes.json`, and tests in both engines keep the code equal to the file.
 - **GB-052 mission lifecycle on `feature/mission-lifecycle`.** Adds a gameplay pause menu (Resume; Abandon with confirmation), auto-pause when the app is hidden during combat (it never auto-resumes), system Back routed to the pause menu once a mission has started, and a 0.25 s per-frame catch-up cap.
 - **GB-025 multi-wave missions on `feature/workshop-drag-undo`** (same branch as GB-039, uncommitted). `BattleSession` supports waves with an intermission in both engines. Route node `copperwash-01` is now the 3-wave shared mission `copperwash_01`; wave 1 is identical to the old encounter. Each intermission pays the wave reward in battle scrap, rolls fresh offers and reopens the workshop.
 - **GB-039 on `feature/workshop-drag-undo`.** The workshop has drag-and-drop with a ghost and a live target preview (green powered, amber unpowered, red invalid), moving placed gears, and undo for place, move, merge and sell. Undoing a sale charges the refund back through the ledger. Buys and rerolls are not undoable. The selected gear shows its status: power, lane and spawn interval.
@@ -34,6 +34,41 @@ The entries below name the branch each item was built on; all of them are merged
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. All 12 nodes load shared missions since GB-024 (session 15); node 1 has three waves, nodes 2–12 one each until GB-051.
 
 ## Verification ledger
+### 2026-11-28 session 22 (ART-01 illustrated mood-board study)
+- Generated `assets-source/style-bible/industrial-comic-style-study_v001.png` with the built-in image generation tool from an original prompt; no reference images were supplied. The full prompt and generation ID are recorded beside the source image.
+- Embedded the study into the working HTML reference board and updated the asset manifest to **337 records: 335 planned and 2 concept**. The image and both board records remain at `concept`; owner review and commercial-use terms confirmation are required before `approved_concept`.
+- No production art, Rivet master, benchmark scene, engine integration or device visual/performance validation was completed. ART-01 and ART-B remain open.
+
+### 2026-11-28 session 21 (visual direction v3: Tactile Industrial Comic 2.5D, GB-062)
+- **Direction adopted as the official proposal.** `ART_DIRECTION.md` v3 holds the identity, references (Gear Fight!, The Last Friend, SteamWorld Build/Dig, Clash Royale, Hades, Candy Crush Saga; principles only), non-negotiables, the ART-B visual benchmark, the gates and the 19-step execution order with status.
+- **New specifications:** `VISUAL_STYLE_BIBLE`, `MATERIAL_LIBRARY` (15 materials with ramps), `CHARACTER_DESIGN`, `CHARACTER_RIGGING_GUIDE`, `ANIMATION_SPECIFICATION`, `ENVIRONMENT_PRODUCTION`, `ASSET_GENERATION_PROMPTS`, `ASSET_VALIDATION_GUIDE`, `RENDERING_ARCHITECTURE`, `VISUAL_PERFORMANCE_BUDGET`.
+- **Reconciled:**
+  - `UI_UX_SPECIFICATION` v2 (component kit, monetization visual states, gamification templates, accessibility);
+  - `REFERENCE_GAME_ANALYSIS` (v3 references and originality markers);
+  - roadmap Phases 04/05 and gate G2;
+  - backlog GB-040 and GB-045, new GB-062/063/064;
+  - risks R-02, R-04 and R-12, new R-17 to R-21;
+  - the parity visual contract;
+  - the Kiro requirements, design and checklist;
+  - `AGENTS.md` (the execution-order rule).
+- **v2 rules kept:** every v2 rule is kept or moved; the document map is in `ART_DIRECTION.md` §4. `PRODUCTION_ASSET_INVENTORY.md` is renamed `ASSET_INVENTORY.md` and now lists the 14-element benchmark set.
+- **Manifest:** 7 records added (reference board, material library sheet, two benchmark captures, HUD, gear shop and victory screen compositions), so 337 records: 336 `planned` and 1 `concept`. The validator passes.
+- **Working reference board:** `assets-source/style-bible/reference_board_v001.html`, original diagrams from repository tokens only. Rendered in the desktop browser pane with no console errors. Publishing it as a shareable artifact was blocked by the session's permission check, so it is a repository file only.
+- **Execution order at session 21:** steps 1–2 done; steps 3–5 proposed and awaiting the owner's review; steps 6 onward not started. No art had been generated in that session, and no asset or gate was approved. Session 22 adds one concept study; nothing is approved.
+- **Checklist:** Phase 04 at 4/12, Phase 05 at 0/9, overall 51/126.
+- **Mood board pre-review (PR #15 follow-up):**
+  - The agent checked `industrial-comic-style-study_v001.png` against the specs. It departs in seven ways: the weapon, Rivet drawn as a woman (gender is unspecified, ART-ID-06), ranged units and a field turret that the data doesn't have (ART-ID-07), the fortress, the gear view, the lane depth and the line weight. The findings are recorded in its prompt record and manifest notes. This is not the owner's review.
+  - Fixed: `hero.rivet` is a real data ID (the validator now reads hero IDs from `heroes.json`), and the hyphenated file name is recorded as a naming exception. Validator and phase-progress checks pass.
+
+### 2026-11-28 session 20 (Phase 01 item 1.7: Unity Android build, GB-012)
+- **New engine-free `Gearbound.Baseline` assembly:** `DeviceBaseline.Run` replays random vectors, shop rolls, the mission_001 schedule, all 7 combat traces (every field and checkpoint) and all 5 workshop cases through the C# rules. It counts 36 checks; the Dart baseline counts 51 because it splits the same fixtures differently.
+- **Editor:** new `DeviceBaselineTests` (passes from `shared/`, and a corrupted trace hash is reported as a failure, not thrown). Unity EditMode: **59/59** (`unity/artifacts/unity-editmode.xml`, fresh run; the relative results path resolves inside `unity/`, which is why session 19 saw an old report).
+- **Android build:** `AndroidBaselineBuild.Build` bundles the shared fixtures as TextAssets, generates a one-object scene and builds an **IL2CPP APK for ARM64 + x86_64** with Unity's bundled SDK, NDK and JDK (no download). Batch build succeeded in about 6 minutes; the APK is 184 MB (two architectures, unstripped baseline build, not a size measurement).
+- **On the Pixel 10 Pro XL emulator (x86_64):** installed and launched; logcat: `UNITY DEVICE BASELINE OK: 36 checks, 7 combat traces, 5 workshop cases` (1.18 s on the emulator, not a measurement). Screenshot `artifacts/unity-baseline-emulator.png` (not committed).
+- **Project settings changed on purpose:** Android scripting backend IL2CPP, target architectures ARM64 + x86_64, application ID `com.gearbound.unitybaseline`.
+- **Not verified:** the ARM64 slice on a physical phone (Phase 15.4); any Unity gameplay scene (GB-046).
+- **Phase 01: 7/9.** Left: 1.9 `cmdline-tools` for a green `flutter doctor` (owner, Android Studio SDK Manager) and 1.8 iOS (needs macOS).
+
 ### 2026-11-28 session 19 (GB-056 output gear labels)
 - Output gears now show their numeric tier, effective spawn rate per second, and target lane badge on the board. Selected-gear detail distinguishes infantry spawns from turret shots.
 - Flutter analyze: no issues. Flutter tests: **183/183**; the workshop UI suite covers both portrait and landscape label data and existing phone/tablet overflow cases.

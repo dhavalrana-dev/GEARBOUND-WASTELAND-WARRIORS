@@ -19,7 +19,7 @@ inclusion: always
 | `flutter/assets/shared` | Synced copy of runtime shared JSON (never edit by hand) |
 | `flutter/tool` | Pure-Dart tools, e.g. the workshop fixture generator |
 | `tools/` | Validator, Python reference rules, asset sync, combat trace generator, phase progress check |
-| `docs/` | Design, roadmap, backlog, status, parity, art direction |
+| `docs/` | Design, roadmap, backlog, status, parity, art direction (v3 plus its specifications: style bible, materials, characters, rigging, animation, environment, rendering, performance budget, inventory, prompts, validation) |
 | `.kiro/specs/gearbound-production` | Requirements, design and the phase checklist |
 
 ## Conventions
