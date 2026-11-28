@@ -32,6 +32,22 @@ namespace Gearbound.Core
             return x;
         }
 
+        /// <summary>
+        /// murmur3 <c>fmix32</c> finalizer: the shared seed-derivation rule (flutter/lib/core/seeded_random.dart
+        /// <c>mixSeed32</c>). Derive generator seeds from small or sequential integers with it; xorshift32's first
+        /// outputs for small seeds are tiny and would always map to index 0. Vectors: shared/test-fixtures/workshop_cases.json.
+        /// </summary>
+        public static uint MixSeed32(uint seed)
+        {
+            var h = seed;
+            h ^= h >> 16;
+            h *= 0x85EBCA6Bu;
+            h ^= h >> 13;
+            h *= 0xC2B2AE35u;
+            h ^= h >> 16;
+            return h;
+        }
+
         /// <summary>Multiply-shift mapping into [0, exclusiveMax). One draw, no rejection loop.</summary>
         public int NextInt(int exclusiveMax)
         {

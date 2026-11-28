@@ -7,7 +7,9 @@ unity/Builds/
 flutter/.dart_tool/
 flutter/build/
 flutter/.packages
+flutter/integration_test/*.g.dart
 artifacts/
+__pycache__/
 .pub-cache/
 .gradle/
 .idea/

@@ -51,4 +51,4 @@ No Ads disables interstitials only; opt-in rewarded ads stay available. This mus
 - Google Play Console and App Store Connect products, with sandbox testers.
 - A backend for purchase verification and premium balances (Firebase was evaluated in the spec; nothing is provisioned).
 - Target-audience and age-rating decisions, which determine ad personalization and consent behavior.
-- The Android NDK license acceptance needed for device builds.
+- A physical test phone (Android builds already run on the emulator since 2026-11-28).

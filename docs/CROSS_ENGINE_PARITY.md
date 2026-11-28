@@ -10,7 +10,11 @@ Shared JSON under `shared/` is the source of truth. Both engines load the same `
 - `shared/test-fixtures/shop_cases.json`: seeded shop rolls (locks, unlock filters, connectivity guarantee) and reroll costs.
 - `shared/test-fixtures/mission_001_spawns.json`: the expanded spawn schedule for `waves/mission_001.json`.
 
-Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures match the current data. C# (`SharedRulesTests`) and Dart (`test/data/shared_rules_test.dart`) each replay the fixtures.
+Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures match the current data.
+
+`flutter/tool/baseline_check.dart` replays the random, shop, wave, combat-trace and workshop fixtures outside the test runner, so they can also be checked in an ahead-of-time compiled binary (`dart compile exe`). That is how release and phone builds run Dart. Verified on the VM and as AOT on Windows x64 (2026-11-28); ARM64 on a phone is still to do (Phase 01).
+
+`flutter/tool/workshop_cases.dart` writes `shared/test-fixtures/workshop_cases.json`: `mixSeed32` vectors and five scripted workshop sessions (ops plus the full state after each op: result, battle scrap, offers, hand, selection, rerolls, lock and every board gear with its ID, tier, lane and interval). Unlike the Python fixtures, the expected values come from the Dart controller, and Unity's `WorkshopFixtureTests` replays them step for step through the independent C# port. Check with `dart run tool/workshop_cases.dart --check` from `flutter/`; `workshop_fixture_test.dart` fails too when it is stale. C# (`SharedRulesTests`) and Dart (`test/data/shared_rules_test.dart`) each replay the fixtures.
 
 ## Shared algorithms
 
@@ -27,16 +31,17 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Output clocks and lane unit cap | Yes | Yes | — |
 | Lane combat and battle session | Yes | Yes | combat_traces ✔ both |
 | Seeded random | Yes | Yes | random_vectors ✔ both |
-| Shop roll / reroll cost / sell value | Yes | Yes (no UI yet) | shop_cases ✔ both |
-| Wave director from shared JSON | Yes | Yes (runtime assets; route node 1 migrated) | mission_001_spawns ✔ both |
+| Shop roll / reroll cost / sell value | Yes | Yes (workshop shop UI) | shop_cases ✔ both |
+| Wave director from shared JSON | Yes | Yes (runtime assets) | mission_001_spawns ✔ both |
+| Campaign route missions (all 12 nodes) | Yes (loads and builds every node; no route UI) | Yes | `RouteMissionTests` (C#), `route_migration_test.dart` (equivalence to the old scripts) |
 | Campaign route, stars, contracts, weekly event | No | Yes | — |
 | Streak, star chests, Supply Log, boosters | No | Yes | progression_rewards.json ↔ Dart constants |
 | Wallet ledger (idempotency, premium verification, caps) | Yes | Yes | reward_transaction_cases ✔ both |
 | Ad placement policy | Yes | Yes | ad_policy_cases ✔ both |
 | Save migration v1/v2 → v3 | n/a (no Unity save yet) | Yes | save_migration_cases (Dart) |
-| Workshop shop/placement/merge controller (merge curve, lane by row) | No | Yes | — (GB-036) |
+| Workshop controller (buy, place, merge, move, sell, undo, reroll, lock, intermission, preview) | Yes (rules only, no UI; no checkpoint restore) | Yes | workshop_cases ✔ both |
 | Multi-wave BattleSession (intermission, soldier withdrawal, hero reset, reward totals) | Yes | Yes | Mirrored unit tests (no shared trace yet) |
-| Workshop seed derivation `mixSeed32` (fmix32) | No | Yes | Dart vectors only (GB-049) |
+| Workshop seed derivation `mixSeed32` (fmix32) | Yes | Yes | workshop_cases `mixSeed32` vectors ✔ both |
 | Hero SP and special (Wrench Quake) | Yes | Yes | combat_traces `boss-wave-hero-special` ✔ both; heroes.json parity tests |
 | Attack wind-up and cleave (boss telegraphs) | Yes | Yes | combat_traces (boss scenarios + `boss-cleave-crowded-lane`) ✔ both |
 | Turret projectiles (lane shots, cap 24) | Yes | Yes | combat_traces `turret-side-lanes` ✔ both |

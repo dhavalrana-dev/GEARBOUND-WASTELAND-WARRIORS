@@ -1,5 +1,29 @@
 # Toolchain report (Phase 01, GB-038)
 
+## Current state (2026-11-28, session 18)
+
+| Tool | Status | Evidence |
+|---|---|---|
+| Flutter | 3.47.7 stable, Dart 3.13.5 | `flutter --version` |
+| Android SDK | **Usable:** the owner's Android Studio SDK at `F:\Android\Sdk` (license accepted by the owner) | `flutter config --android-sdk F:\Android\Sdk`; `flutter/android/local.properties` `sdk.dir` |
+| Android build | **Debug APK built**, plus a profile APK (29.1 MB) | `flutter build apk --debug` (log `artifacts/android-debug-build.log`) |
+| Emulator | Pixel 10 Pro XL AVD, Android 17 (API 37), x86_64 | `adb devices` → `emulator-5554` |
+| On-device checks | App launches to the campaign route; `baseline_device_test.dart` passes in debug and profile (AOT) | `artifacts/device-baseline-debug.log`, `artifacts/device-baseline-profile.log` |
+| `flutter doctor` Android | Warnings remain: `cmdline-tools` missing, license status unknown | `flutter doctor` |
+| Physical phone | Not tested (no ARM64 device connected) | — |
+| Unity Android build | Not attempted (GB-012) | — |
+| iOS | Not possible on Windows | Needs macOS and Xcode |
+
+**What the first build installed (the owner approved the downloads):** Gradle 9.3.1, the Android Gradle plugin 9.1.0 and Kotlin 2.4.0 with their libraries, NDK 28.2.13676358, and Android SDK Platform 35, all into `F:\Android\Sdk` and the user Gradle cache.
+
+**Fix applied:** `flutter/android/gradle.properties` sets `kotlin.incremental=false`. Plugins live in the pub cache on drive C: while the project builds on F:, and Kotlin's incremental caches cannot span drive roots on Windows; the build failed with "Could not close incremental caches" until this was set.
+
+**Owner follow-ups:** install the Android SDK Command-line Tools from Android Studio's SDK Manager to clear the `flutter doctor` warnings, and connect a physical ARM64 phone with USB debugging for the Phase 15 device check.
+
+## Earlier diagnosis (2026-11-27)
+
+The section below records the state before the owner's Android Studio SDK was found; it is kept for history.
+
 Checked 2026-11-27 on the development machine (Windows 11, build 26300).
 
 | Tool | Status | Evidence |

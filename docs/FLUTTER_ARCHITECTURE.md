@@ -1,6 +1,6 @@
 # Flutter and Flame architecture
 
-Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
+Updated 2026-11-28 to match the code on `feature/unity-workshop-controller`.
 
 ## Toolchain
 - Flutter 3.47.7 stable, Dart 3.13.5.
@@ -24,6 +24,8 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 | `game/` | Flame rendering and board tap mapping | Flame |
 | `design_system/` | Color tokens: prototype palette plus the specification palette | Flutter |
 | `app/` | App shell; re-exports the screens | Flutter |
+| `tool/` (outside `lib`) | `workshop_cases.dart` fixture generator; `simulation_smoke.dart` | Pure Dart |
+| `windows/` (outside `lib`) | Desktop runner for local review only | Platform scaffold |
 
 ## Workshop flow
 1. `WorkshopController` places the starter gears from `gear_rules.json` `workshop.starterGears` and grants `shop.startingScrap` battle scrap through a mission-scoped wallet that is never saved. It then rolls seeded offers from the categories in `workshop.shopCategories`.
@@ -53,9 +55,9 @@ Updated 2026-11-27 to match the code on `feature/workshop-shop-ui`.
 
 ## Not yet built
 - A gear details sheet, and rotation (not needed until gears with partial ports exist).
-- Multi-wave missions with inter-wave preparation (GB-025).
+- Multi-wave tuning for route nodes 2–12; they are single-wave today (GB-051). Node 1 has three waves.
 - Production art, animation and audio.
 - Mortar and other output behaviors beyond infantry and turrets; the shop sells only gears whose behavior is implemented (`workshop.shopCategories`).
 - Real ad or purchase SDKs.
 
-Android compilation is still blocked on the NDK license; see `DEVELOPMENT_STATUS.md`.
+Android debug and profile APKs build with the Android Studio SDK and run on the Pixel 10 Pro XL emulator; `integration_test/baseline_device_test.dart` replays the shared fixtures there and checks the app opens on the campaign route. See `TOOLCHAIN_REPORT.md`. A Windows desktop debug build also runs for review (needs Windows Developer Mode).

@@ -286,7 +286,7 @@ Gear art is a primary gameplay asset. Each gear needs:
 - Restrained metallic highlights.
 - A category indicator, tier variants and functional ports.
 
-The source of truth is `shared/gears/starter_gears.json`: `core.wayfarer`, `drive.coupler`, `boost.ratchet`, `unit.rivetguard`, `turret.spark`. The turret is not sold until GB-037.
+The source of truth is `shared/gears/starter_gears.json`: `core.wayfarer`, `drive.coupler`, `boost.ratchet`, `unit.rivetguard`, `turret.spark`. All five are in the vertical slice; the turret has been sold since GB-037.
 
 **Runtime layers:**
 - Stationary base/socket

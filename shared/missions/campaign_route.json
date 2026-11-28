@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Route nodes whose encounters come from shared mission data, in wave order. Nodes not listed still use flutter/lib/progression/encounters.dart (single wave) until they are migrated (GB-024).",
+  "description": "Every campaign route node and the shared mission waves it plays, in order. Nodes 2-12 are single-wave until GB-051 tunes them as multi-wave missions.",
   "nodes": [
     {
       "id": "copperwash-01",
@@ -9,6 +9,83 @@
         "wave.1",
         "wave.2",
         "wave.3"
+      ]
+    },
+    {
+      "id": "copperwash-02",
+      "mission": "waves/copperwash_02.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "copperwash-03",
+      "mission": "waves/copperwash_03.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "copperwash-04",
+      "mission": "waves/copperwash_04.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "copperwash-05",
+      "mission": "waves/copperwash_05.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "ironwood-01",
+      "mission": "waves/ironwood_01.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "ironwood-02",
+      "mission": "waves/ironwood_02.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "ironwood-03",
+      "mission": "waves/ironwood_03.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "ironwood-04",
+      "mission": "waves/ironwood_04.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "ironwood-05",
+      "mission": "waves/ironwood_05.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "sunken-01",
+      "mission": "waves/sunken_01.json",
+      "waveIds": [
+        "wave.1"
+      ]
+    },
+    {
+      "id": "sunken-02",
+      "mission": "waves/sunken_02.json",
+      "waveIds": [
+        "wave.1"
       ]
     }
   ]

@@ -2,6 +2,8 @@
 
 Audited 2026-11-27 at `main` = `931f875` (PRs #1 and #2 merged), on branch `feature/progression-economy-foundation`. Every finding below comes from files that were read or commands that were run in this session; nothing is inferred from file names alone.
 
+> **Snapshot.** This audit records the repository as of PRs #1 and #2 and is not kept current. Several findings have since been resolved (for example, all 12 route nodes now load shared data, GB-024). For the current state see `DEVELOPMENT_STATUS.md`, `PHASE_ROADMAP.md` §2 and `TASK_BACKLOG.md`.
+
 ## Baseline re-run (this session)
 
 | Check | Result |

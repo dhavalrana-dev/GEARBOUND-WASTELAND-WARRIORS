@@ -1,0 +1,1740 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "flutter/tool/workshop_cases.dart",
+  "rules": "Replay ops on a fresh WorkshopController (shared gear_rules, shop, starter_gears). steps[0] is the state after construction; steps[i] after ops[i-1]. Board entries: id|definition|tier|x,y|lane|interval, sorted by row then column.",
+  "mixSeed32": [
+    {
+      "seed": 0,
+      "mixed": 0
+    },
+    {
+      "seed": 1,
+      "mixed": 1364076727
+    },
+    {
+      "seed": 2,
+      "mixed": 821347078
+    },
+    {
+      "seed": 42,
+      "mixed": 142593372
+    },
+    {
+      "seed": 2147483647,
+      "mixed": 4190899880
+    },
+    {
+      "seed": 4294967295,
+      "mixed": 2180083513
+    }
+  ],
+  "cases": [
+    {
+      "id": "place-merge-sell-undo",
+      "seed": 1,
+      "ops": [
+        {
+          "op": "buyId",
+          "id": "unit.rivetguard"
+        },
+        {
+          "op": "preview",
+          "x": 1,
+          "y": 3
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 3
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 3
+        },
+        {
+          "op": "sell"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "cancel"
+        },
+        {
+          "op": "tap",
+          "x": 0,
+          "y": 2
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "op": "buy",
+          "slot": 0
+        },
+        {
+          "op": "tap",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "op": "tap",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "cancel"
+        },
+        {
+          "op": "undo"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "valid=true;state=powered;interval=90;lane=2",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard:t2@1,2|unit.rivetguard|t2|1,2|lane1|63"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 11,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard:t2@1,2|unit.rivetguard|t2|1,2|lane1|63"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": "boost.ratchet",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "boost.ratchet#4|boost.ratchet|t1|2,2|lane1|0"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "boost.ratchet#4|boost.ratchet|t1|2,2|lane1|0"
+          ]
+        },
+        {
+          "result": "notMergeable",
+          "scrap": 8,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            2,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "boost.ratchet#4|boost.ratchet|t1|2,2|lane1|0"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 8,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": "boost.ratchet",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "nothingToUndo",
+          "scrap": 8,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": "boost.ratchet",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 12,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "nothingToUndo",
+          "scrap": 12,
+          "offers": [
+            null,
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drag-move-and-merge",
+      "seed": 1,
+      "ops": [
+        {
+          "op": "buyId",
+          "id": "unit.rivetguard"
+        },
+        {
+          "op": "drop",
+          "from": [
+            1,
+            2
+          ],
+          "to": [
+            3,
+            3
+          ]
+        },
+        {
+          "op": "tap",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "op": "preview",
+          "x": 2,
+          "y": 0,
+          "from": [
+            1,
+            2
+          ]
+        },
+        {
+          "op": "drop",
+          "from": [
+            1,
+            2
+          ],
+          "to": [
+            0,
+            2
+          ]
+        },
+        {
+          "op": "drop",
+          "from": [
+            1,
+            2
+          ],
+          "to": [
+            2,
+            2
+          ]
+        },
+        {
+          "op": "preview",
+          "x": 1,
+          "y": 0,
+          "from": [
+            2,
+            2
+          ]
+        },
+        {
+          "op": "drop",
+          "from": [
+            2,
+            2
+          ],
+          "to": [
+            1,
+            0
+          ]
+        },
+        {
+          "op": "drop",
+          "from": [
+            1,
+            0
+          ],
+          "to": [
+            9,
+            9
+          ]
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "sell"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "handFull",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "valid=true;state=unpowered;interval=0;lane=0",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "occupied",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            2,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|2,2|lane1|90"
+          ]
+        },
+        {
+          "result": "valid=true;state=null;interval=0;lane=null",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            2,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|2,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            0
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard:t2@1,0|unit.rivetguard|t2|1,0|lane0|63",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0"
+          ]
+        },
+        {
+          "result": "occupied",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            0
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard:t2@1,0|unit.rivetguard|t2|1,0|lane0|63",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|2,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "nothingSelected",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "unit.rivetguard#3|unit.rivetguard|t1|1,0|lane0|90",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reroll-escalation-and-poverty",
+      "seed": 1,
+      "ops": [
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "buy",
+          "slot": 0
+        },
+        {
+          "op": "tap",
+          "x": 4,
+          "y": 4
+        },
+        {
+          "op": "buy",
+          "slot": 0
+        },
+        {
+          "op": "buy",
+          "slot": 1
+        },
+        {
+          "op": "tap",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "op": "buy",
+          "slot": 2
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "reroll"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 11,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            "drive.coupler",
+            "drive.coupler",
+            "unit.rivetguard"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "noOffer",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "insufficientScrap",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "nothingSelected",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "insufficientScrap",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "insufficientScrap",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "insufficientScrap",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        },
+        {
+          "result": "insufficientScrap",
+          "scrap": 1,
+          "offers": [
+            null,
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 3,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|4,4|lane2|90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lock-and-intermission",
+      "seed": 1,
+      "ops": [
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "buy",
+          "slot": 1
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "tap",
+          "x": 3,
+          "y": 3
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "intermission",
+          "wave": 1,
+          "reward": 9
+        },
+        {
+          "op": "intermission",
+          "wave": 1,
+          "reward": 9
+        },
+        {
+          "op": "buy",
+          "slot": 2
+        },
+        {
+          "op": "tap",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "intermission",
+          "wave": 1,
+          "reward": 9
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "intermission",
+          "wave": 2,
+          "reward": 7
+        },
+        {
+          "op": "reroll"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 11,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            null,
+            "drive.coupler"
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 11,
+          "offers": [
+            "unit.rivetguard",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "locked",
+          "scrap": 11,
+          "offers": [
+            "unit.rivetguard",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "locked",
+          "scrap": 11,
+          "offers": [
+            "unit.rivetguard",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "locked",
+          "scrap": 11,
+          "offers": [
+            "unit.rivetguard",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 20,
+          "offers": [
+            "drive.coupler",
+            "drive.coupler",
+            "unit.rivetguard"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 20,
+          "offers": [
+            "drive.coupler",
+            "drive.coupler",
+            "unit.rivetguard"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 15,
+          "offers": [
+            "drive.coupler",
+            "drive.coupler",
+            null
+          ],
+          "hand": "unit.rivetguard",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 15,
+          "offers": [
+            "drive.coupler",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 15,
+          "offers": [
+            "drive.coupler",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 15,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 15,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 22,
+          "offers": [
+            "drive.coupler",
+            "boost.ratchet",
+            "boost.ratchet"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 21,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "unit.rivetguard"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "turret-lanes-and-sale",
+      "seed": 5,
+      "ops": [
+        {
+          "op": "buyId",
+          "id": "turret.spark"
+        },
+        {
+          "op": "preview",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "op": "tap",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "op": "tap",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "op": "sell"
+        },
+        {
+          "op": "undo"
+        },
+        {
+          "op": "drop",
+          "from": [
+            2,
+            1
+          ],
+          "to": [
+            2,
+            2
+          ]
+        },
+        {
+          "op": "preview",
+          "x": 1,
+          "y": 4,
+          "from": [
+            2,
+            2
+          ]
+        },
+        {
+          "op": "drop",
+          "from": [
+            2,
+            2
+          ],
+          "to": [
+            1,
+            4
+          ]
+        },
+        {
+          "op": "reroll"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            "turret.spark"
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": "turret.spark",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "valid=true;state=powered;interval=45;lane=1",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": "turret.spark",
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "turret.spark#3|turret.spark|t1|2,1|lane0|45",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": [
+            2,
+            1
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "turret.spark#3|turret.spark|t1|2,1|lane0|45",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": null,
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "turret.spark#3|turret.spark|t1|2,1|lane0|45",
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": [
+            2,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "turret.spark#3|turret.spark|t1|2,2|lane1|45"
+          ]
+        },
+        {
+          "result": "valid=true;state=unpowered;interval=0;lane=2",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": [
+            2,
+            2
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "turret.spark#3|turret.spark|t1|2,2|lane1|45"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 6,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            null
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            4
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "turret.spark#3|turret.spark|t1|1,4|lane2|45"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 5,
+          "offers": [
+            "unit.rivetguard",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            4
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "turret.spark#3|turret.spark|t1|1,4|lane2|45"
+          ]
+        }
+      ]
+    }
+  ]
+}

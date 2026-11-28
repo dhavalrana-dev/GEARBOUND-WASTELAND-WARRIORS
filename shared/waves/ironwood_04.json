@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "missionId": "route.ironwood.04",
+  "waves": [
+    {"id": "wave.1", "rewardScrap": 3, "groups": [{"enemyId": "ironwood.lancer", "count": 4, "firstSpawnTick": 0, "intervalTicks": 45, "lanePattern": [0, 1, 2]}, {"enemyId": "raider.bruiser", "count": 1, "firstSpawnTick": 180, "intervalTicks": 1, "lanePattern": [0]}]}
+  ]
+}
