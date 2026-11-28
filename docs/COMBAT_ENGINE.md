@@ -1,6 +1,6 @@
 # Combat engine (implemented rules)
 
-Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSimulation.cs` + `BattleSession.cs` and `flutter/lib/combat/`. Proven by the cross-engine combat traces in `shared/test-fixtures/combat_traces.json` (7 scenarios).
+Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSimulation.cs` + `BattleSession.cs` and `flutter/lib/combat/`. Proven by the cross-engine combat traces in `shared/test-fixtures/combat_traces.json` (8 scenarios). Updated 2026-11-28 for hero recovery.
 
 ## Space and time
 - **Space:** lanes 0–2 and integer millimeters. Friendlies start at 0 (the fortress line) and enemies at the world length, approaching from the right.
@@ -27,7 +27,13 @@ Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSim
 ## Hero
 - **Lane commands:** move between lanes.
 - **Special:** SP charge and the Wrench Quake special (`shared/heroes/heroes.json`; see the hero special in `DEVELOPMENT_STATUS.md`).
-- **Knockout:** a knocked-out hero stays out for the rest of the mission. There is **no recovery timer yet**.
+- **Knockout and recovery:** when the hero is knocked out, a timer starts at `recovery.ticks` (`shared/heroes/heroes.json`: 300 ticks, 10 s).
+  - **Order within a tick:** the timer counts down **after spawns and before the special and combat**. When it reaches 0, the hero returns at the fortress line (x = 0) in the same lane, with `healthPercent` of maximum health (50%, at least 1), a ready attack and no wind-up. So the hero is out for exactly `ticks` ticks.
+  - **SP** is kept, but the special cannot be used while the hero is down.
+  - **Between waves:** a hero who is down when a wave ends recovers at once, at the intermission.
+  - **Checkpoints:** a checkpoint restored with the hero at 0 health restarts the timer.
+  - **Traces:** sessions created with no recovery (`recovery: null`, C# `heroRecovers: false`) keep the old rule, staying out for the wave. The seven older trace scenarios run that way, so their hashes are unchanged.
+  - **Balance note (2026-11-28):** with current content the hero is never knocked out. A probe of every route mission's waves with the hero alone in a lane found no knockout, because the hero's 900 mm range outreaches every enemy. Recovery is a safety net until content puts real pressure on the hero.
 
 ## Outputs and waves
 - **Unit cap:** gear outputs spawn soldiers up to **4 friendlies per lane**. A blocked output holds one pending spawn.
@@ -43,5 +49,4 @@ Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSim
 ## Not implemented yet
 - Critical hits and other random combat rolls (they must use the shared `SeededRandom`, in a documented order, with new trace scenarios).
 - Status effects, knockback and stun. Arcing or splash projectiles (mortars).
-- Hero recovery.
 - Ranged enemy behavior beyond attack range.

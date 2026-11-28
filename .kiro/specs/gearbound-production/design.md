@@ -33,7 +33,7 @@ Economy, Workshop (C#)    economy, features/workshop (Dart)
 | Gear network | `GearNetwork.cs` | `gear_network.dart` | `network_cases.json` |
 | Shop | `GearShop.cs` | `shared_rules.dart` | `shop_cases.json` |
 | Waves | `WaveDirector.cs` | `scheduleWave` / `buildWave` | `mission_001_spawns.json` |
-| Combat | `CombatSimulation.cs`, `BattleSession.cs` | `combat/` | `combat_traces.json` (7 scenarios) |
+| Combat | `CombatSimulation.cs`, `BattleSession.cs` | `combat/` | `combat_traces.json` (8 scenarios) |
 | Workshop | `WorkshopController.cs` | `workshop_controller.dart` | `workshop_cases.json` |
 | Wallet | `Wallet.cs` | `wallet.dart` | `reward_transaction_cases.json` |
 | Ad policy | `AdPolicy.cs` | `ad_policy.dart` | `ad_policy_cases.json` |

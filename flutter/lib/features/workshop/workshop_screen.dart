@@ -560,6 +560,7 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
         heroSp: _session.heroSp,
         spMax: _session.special.spMax,
         specialReady: _session.specialReady,
+        recoverySeconds: (_session.heroRecoveryRemaining + 29) ~/ 30,
         onSpecial: () {
           if (_session.useHeroSpecial()) setState(() {});
         },
@@ -746,7 +747,11 @@ class _Actions extends StatelessWidget {
     required this.spMax,
     required this.specialReady,
     required this.onSpecial,
+    this.recoverySeconds = 0,
   });
+
+  /// Whole seconds until a knocked-out hero returns; 0 while the hero is up.
+  final int recoverySeconds;
   final int heroSp;
   final int spMax;
   final bool specialReady;
@@ -779,6 +784,23 @@ class _Actions extends StatelessWidget {
       ),
       if (isCombat) ...[
         const SizedBox(height: 6),
+        if (recoverySeconds > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              children: [
+                const Icon(Icons.healing, size: 16, color: GbColors.amber),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Rivet is down: back at the fortress in ${recoverySeconds}s',
+                    key: const ValueKey('hero-recovery'),
+                    style: const TextStyle(color: GbColors.amber, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
         Row(
           children: [
             const Text(

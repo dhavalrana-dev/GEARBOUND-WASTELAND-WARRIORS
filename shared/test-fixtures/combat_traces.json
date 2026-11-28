@@ -16,6 +16,8 @@
     { "id": "boss-cleave-crowded-lane", "phase": "defeat", "elapsedTicks": 422, "fortressHealth": 0, "friendlyUnitsProduced": 3, "friendlyAlive": 4, "enemiesAlive": 2, "traceHash": 1568370982,
       "checkpoints": [1277336860, 2864905790, 2285293226, 3218059933, 1376627640, 3376286736, 1807932881, 1998537316, 4205879093, 1253448865, 2702857661, 3669973543, 4218424974, 1465567232] },
     { "id": "turret-side-lanes", "phase": "victory", "elapsedTicks": 288, "fortressHealth": 78, "friendlyUnitsProduced": 3, "friendlyAlive": 4, "enemiesAlive": 0, "traceHash": 993997455,
-      "checkpoints": [3091044517, 650769436, 860167370, 498531732, 117521421, 666112704, 1877718016, 3285482375, 1311958313] }
+      "checkpoints": [3091044517, 650769436, 860167370, 498531732, 117521421, 666112704, 1877718016, 3285482375, 1311958313] },
+    { "id": "hero-knockout-recovery", "phase": "victory", "elapsedTicks": 656, "fortressHealth": 70, "friendlyUnitsProduced": 8, "friendlyAlive": 9, "enemiesAlive": 0, "traceHash": 198299423,
+      "checkpoints": [2563988684, 4143000580, 2321332624, 1888537717, 257129314, 1322209375, 1620458962, 1304230941, 744040898, 3218401522, 2269600168, 3235103680, 2807513925, 2059907182, 3266033586, 1741321317, 3534088048, 1479875267, 3310466078, 2182015865, 613193490] }
   ]
 }

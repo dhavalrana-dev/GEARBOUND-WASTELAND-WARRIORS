@@ -100,6 +100,26 @@ class HeroSpecial {
   final int radiusMm;
 }
 
+/// How a knocked-out hero comes back, from shared/heroes/heroes.json
+/// (`recovery`).
+class HeroRecovery {
+  const HeroRecovery({required this.ticks, required this.healthPercent});
+
+  /// Rivet's recovery. The parity test keeps this equal to heroes.json.
+  static const rivet = HeroRecovery(ticks: 300, healthPercent: 50);
+
+  /// Combat ticks the hero stays out after a knockout.
+  final int ticks;
+
+  /// Share of maximum health the hero returns with (at least 1).
+  final int healthPercent;
+
+  int healthFor(int maxHealth) {
+    final health = maxHealth * healthPercent ~/ 100;
+    return health < 1 ? 1 : health;
+  }
+}
+
 class BattleSession {
   BattleSession({
     required this.board,
@@ -108,6 +128,7 @@ class BattleSession {
     List<WaveDefinition> laterWaves = const [],
     int heroId = 1,
     this.special = HeroSpecial.rivet,
+    this.recovery = HeroRecovery.rivet,
     CombatSimulation? combat,
     GearOutputSystem? outputs,
   }) : waves = List.unmodifiable([wave, ...laterWaves]),
@@ -144,6 +165,13 @@ class BattleSession {
   final GearOutputSystem outputs;
   final int heroId;
   final HeroSpecial special;
+
+  /// Null means a knocked-out hero stays out for the rest of the wave (the
+  /// behavior the original combat traces were recorded with).
+  final HeroRecovery? recovery;
+
+  /// Combat ticks until a knocked-out hero returns; 0 while the hero is up.
+  int heroRecoveryRemaining = 0;
 
   /// Special points. Gained when the hero's attacks land; spent in full by
   /// [useHeroSpecial]. Carries across waves.
@@ -215,6 +243,10 @@ class BattleSession {
       ..health = heroHealth
       ..positionMm = 0
       ..state = heroHealth == 0 ? CombatState.dead : CombatState.idle;
+    // A checkpoint saved with the hero down restarts the recovery timer.
+    heroRecoveryRemaining = heroHealth == 0 && recovery != null
+        ? recovery!.ticks
+        : 0;
     this.heroSp = heroSp.clamp(0, special.spMax).toInt();
     this.scrapReward = scrapReward < 0 ? 0 : scrapReward;
     return true;
@@ -261,6 +293,13 @@ class BattleSession {
       );
     }
 
+    // Recovery comes after spawns and before the special and combat, in both
+    // engines; the hero is out for exactly `recovery.ticks` ticks.
+    if (heroRecoveryRemaining > 0) {
+      heroRecoveryRemaining--;
+      if (heroRecoveryRemaining == 0) _reviveHero();
+    }
+
     if (_specialQueued) {
       _specialQueued = false;
       for (final hero in combat.combatants) {
@@ -284,6 +323,11 @@ class BattleSession {
             : heroSp + special.spPerHit;
       }
     }
+    if (recovery != null &&
+        heroRecoveryRemaining == 0 &&
+        combat.combatants.any((u) => u.id == heroId && !u.isAlive)) {
+      heroRecoveryRemaining = recovery!.ticks;
+    }
     outputs.tick(board, network, combat);
     elapsedTicks++;
 
@@ -303,11 +347,26 @@ class BattleSession {
           (unit) => unit.faction == CombatFaction.friendly && unit.id != heroId,
         );
         // The hero returns to the fortress line (health and lane are kept),
-        // so every wave starts from the same position.
+        // so every wave starts from the same position. A hero who is down
+        // recovers now rather than missing the next wave.
         for (final unit in combat.combatants) {
           if (unit.id == heroId) unit.positionMm = 0;
         }
+        if (heroRecoveryRemaining > 0) _reviveHero();
       }
+    }
+  }
+
+  void _reviveHero() {
+    heroRecoveryRemaining = 0;
+    for (final hero in combat.combatants) {
+      if (hero.id != heroId || hero.isAlive) continue;
+      hero
+        ..health = recovery!.healthFor(hero.maxHealth)
+        ..positionMm = 0
+        ..attackCooldownTicks = 0
+        ..windupRemaining = 0
+        ..state = CombatState.idle;
     }
   }
 }

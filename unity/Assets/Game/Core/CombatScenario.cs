@@ -61,8 +61,13 @@ namespace Gearbound.Core
             var commands = SharedJson.Arr(s, "heroCommands").Select(c => SharedJson.Obj(c, "command"))
                 .Select(c => (tick: SharedJson.Int(c, "tick"), lane: SharedJson.Int(c, "lane"))).ToArray();
 
+            // Optional: the hero recovers after a knockout (scenarios recorded before recovery leave it off).
+            var heroRecovers = SharedJson.Bool(s, "heroRecovers");
             var session = new BattleSession(board, GearNetwork.Rebuild(board), WaveDirector.Build(wave, enemies),
-                combat: new CombatSimulation(worldLengthMm: SharedJson.Int(s, "worldLengthMm")));
+                combat: new CombatSimulation(worldLengthMm: SharedJson.Int(s, "worldLengthMm")), heroRecovers: heroRecovers);
+            // Optional: the hero starts the wave hurt, as after a checkpoint that carried its health.
+            if (s.ContainsKey("heroStartHealth"))
+                session.Combat.Combatants.First(u => u.Id == session.HeroId).Health = SharedJson.Int(s, "heroStartHealth");
             session.Start();
             var maxTicks = SharedJson.Int(s, "maxTicks");
             // Optional: the hero uses the special as soon as it is ready (checked before each tick).
@@ -81,6 +86,7 @@ namespace Gearbound.Core
                     line.Append(u.Id).Append(':').Append(u.Lane).Append(':').Append(u.PositionMm).Append(':').Append(u.Health).Append(':')
                         .Append(u.Shield).Append(':').Append(u.State.ToString().ToLowerInvariant()).Append(';');
                 if (autoSpecial) line.Append("sp:").Append(session.HeroSp);
+                if (heroRecovers) line.Append("rc:").Append(session.HeroRecoveryRemaining).Append(';');
                 // Projectiles join the hash only when present, so older scenarios keep their hashes.
                 foreach (var p in session.Combat.Projectiles) line.Append('P').Append(p.Id).Append(':').Append(p.Lane).Append(':').Append(p.PositionMm).Append(';');
                 for (var i = 0; i < line.Length; i++) { hash ^= line[i]; hash *= FnvPrime; }

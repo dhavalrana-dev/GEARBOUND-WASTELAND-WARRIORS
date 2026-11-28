@@ -14,7 +14,7 @@ After changing any box, update the progress table and run `python -I tools/build
 | 00 | Repository and simulation foundation | 10/10 | 100% |
 | 01 | Toolchain and build readiness | 7/9 | 77% |
 | 02 | Complete mechanical workshop | 10/13 | 76% |
-| 03 | Combat and multi-wave mission flow | 6/12 | 50% |
+| 03 | Combat and multi-wave mission flow | 7/12 | 58% |
 | 04 | Visual preproduction | 4/12 | 33% |
 | 05 | Production vertical slice | 0/9 | 0% |
 | 06 | Unity and Flutter playable parity | 4/9 | 44% |
@@ -30,7 +30,7 @@ After changing any box, update the progress table and run `python -I tools/build
 | 16 | Closed testing and soft launch | 0/3 | 0% |
 | 17 | Commercial release | 0/3 | 0% |
 | 18 | Post-launch operations | 0/2 | 0% |
-| **All** | | **53/126** | **42%** |
+| **All** | | **54/126** | **42%** |
 <!-- progress:end -->
 
 Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every shared check clean; Unity EditMode previous report 57/57.
@@ -102,7 +102,8 @@ Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every share
   - [x] 3.5 Pause, background auto-pause, Back to the pause menu, rotation and a catch-up cap (GB-052)
   - [x] 3.6 Wave-boundary mission checkpoints that survive an app kill (GB-053)
   - [ ] 3.7 Status effects, knockback and stun
-  - [ ] 3.8 Hero recovery after a knockout
+  - [x] 3.8 Hero recovery after a knockout (GB-067)
+    - Evidence: `heroes.json` `recovery` (300 ticks, 50% health) in schema and both engines with parity tests; revive after exactly `ticks`, intermission revive, checkpoint restart; new trace `hero-knockout-recovery` (down at 248, back at 548, victory at 656) matches in C# and Dart, older 7 hashes unchanged; HUD countdown. Flutter 193/193, Unity EditMode 67/67, baseline 55 checks on VM and AOT (session 25). Current content never knocks the hero out (probe noted in COMBAT_ENGINE.md)
   - [ ] 3.9 Evaluate further hero actions: dash, heavy attack, auto-attack
   - [ ] 3.10 Critical hits and other random rolls through `SeededRandom`, with new traces
   - [ ] 3.11 Complete combat feedback HUD (03.4) with final visuals
