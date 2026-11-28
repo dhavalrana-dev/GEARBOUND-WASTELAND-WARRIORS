@@ -13,7 +13,7 @@ After changing any box, update the progress table and run `python -I tools/build
 |---|---|---|---|
 | 00 | Repository and simulation foundation | 10/10 | 100% |
 | 01 | Toolchain and build readiness | 7/9 | 77% |
-| 02 | Complete mechanical workshop | 8/13 | 61% |
+| 02 | Complete mechanical workshop | 9/13 | 69% |
 | 03 | Combat and multi-wave mission flow | 6/12 | 50% |
 | 04 | Visual preproduction | 4/12 | 33% |
 | 05 | Production vertical slice | 0/9 | 0% |
@@ -30,7 +30,7 @@ After changing any box, update the progress table and run `python -I tools/build
 | 16 | Closed testing and soft launch | 0/3 | 0% |
 | 17 | Commercial release | 0/3 | 0% |
 | 18 | Post-launch operations | 0/2 | 0% |
-| **All** | | **51/126** | **40%** |
+| **All** | | **52/126** | **41%** |
 <!-- progress:end -->
 
 Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every shared check clean; Unity EditMode previous report 57/57.
@@ -82,7 +82,8 @@ Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every share
   - [x] 2.7 Spark Turret sold and placeable (GB-037)
   - [x] 2.8 Numeric tier, spawn rate and lane marker on output gears (GB-056)
     - Evidence: Flutter workshop UI tests verify tier/rate and lane labels in portrait and landscape board layouts; full suite 183/183 (session 19)
-  - [ ] 2.9 Offer locking UI (the rule exists in `rollShop`)
+  - [x] 2.9 Offer locking UI (GB-065)
+    - Evidence: hold/release toggle on each shop card (lock icon + HOLD/HELD label, tooltip); held offers survive rerolls and the next wave's shop, clear when bought, and a reroll with every slot held is refused without charge (`allHeld`). Same rule in Dart and C#; new `offer-holds` case in `workshop_cases.json` replayed by both; checkpoints carry `held` and older ones restore with none. Flutter 187/187, Unity EditMode 61/61, baseline 52 checks on VM and AOT (session 23). Not checked on a device
   - [ ] 2.10 Rotation and a conflict explanation
     - Needed only once gears with partial ports exist
   - [ ] 2.11 Port workshop checkpoint save and restore to Unity

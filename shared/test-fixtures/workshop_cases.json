@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedBy": "flutter/tool/workshop_cases.dart",
-  "rules": "Replay ops on a fresh WorkshopController (shared gear_rules, shop, starter_gears). steps[0] is the state after construction; steps[i] after ops[i-1]. Board entries: id|definition|tier|x,y|lane|interval, sorted by row then column.",
+  "rules": "Replay ops on a fresh WorkshopController (shared gear_rules, shop, starter_gears). steps[0] is the state after construction; steps[i] after ops[i-1]. held[i] is true while offer slot i is held. Board entries: id|definition|tier|x,y|lane|interval, sorted by row then column.",
   "mixSeed32": [
     {
       "seed": 0,
@@ -125,6 +125,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -142,6 +147,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -159,6 +169,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -176,26 +191,10 @@
           ],
           "hand": null,
           "selected": null,
-          "rerollsTaken": 0,
-          "locked": false,
-          "board": [
-            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
-            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
-            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
-          ]
-        },
-        {
-          "result": "ok",
-          "scrap": 7,
-          "offers": [
-            "boost.ratchet",
-            null,
-            "drive.coupler"
-          ],
-          "hand": null,
-          "selected": [
-            1,
-            2
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 0,
           "locked": false,
@@ -217,6 +216,37 @@
           "selected": [
             1,
             2
+          ],
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
+            "unit.rivetguard#3|unit.rivetguard|t1|1,3|lane2|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 7,
+          "offers": [
+            "boost.ratchet",
+            null,
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": [
+            1,
+            2
+          ],
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 0,
           "locked": false,
@@ -235,6 +265,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -251,6 +286,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -268,6 +308,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -286,6 +331,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -303,6 +353,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -320,6 +375,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -340,6 +400,11 @@
             1,
             2
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -357,6 +422,11 @@
           ],
           "hand": "boost.ratchet",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -374,6 +444,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -394,6 +469,11 @@
           "selected": [
             1,
             2
+          ],
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 0,
           "locked": false,
@@ -416,6 +496,11 @@
             2,
             2
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -434,6 +519,11 @@
           ],
           "hand": "boost.ratchet",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -451,6 +541,11 @@
           ],
           "hand": "boost.ratchet",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -468,6 +563,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -485,6 +585,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -601,6 +706,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -618,6 +728,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -635,6 +750,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -652,6 +772,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -670,6 +795,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -688,6 +818,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -708,6 +843,11 @@
           "selected": [
             2,
             2
+          ],
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 0,
           "locked": false,
@@ -730,6 +870,11 @@
             2,
             2
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -750,6 +895,11 @@
           "selected": [
             1,
             0
+          ],
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 0,
           "locked": false,
@@ -771,6 +921,11 @@
             1,
             0
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -788,6 +943,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -806,6 +966,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -824,6 +989,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -894,6 +1064,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -911,6 +1086,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": false,
           "board": [
@@ -928,6 +1108,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 2,
           "locked": false,
           "board": [
@@ -945,6 +1130,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -962,6 +1152,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -979,6 +1174,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -997,6 +1197,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1015,6 +1220,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1033,6 +1243,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1051,6 +1266,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1069,6 +1289,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1087,6 +1312,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1105,6 +1335,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 3,
           "locked": false,
           "board": [
@@ -1190,6 +1425,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1207,6 +1447,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": false,
           "board": [
@@ -1224,6 +1469,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": false,
           "board": [
@@ -1241,6 +1491,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": true,
           "board": [
@@ -1258,6 +1513,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": true,
           "board": [
@@ -1275,6 +1535,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": true,
           "board": [
@@ -1292,6 +1557,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": true,
           "board": [
@@ -1309,6 +1579,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1326,6 +1601,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1343,6 +1623,11 @@
           ],
           "hand": "unit.rivetguard",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1360,6 +1645,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1378,6 +1668,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": true,
           "board": [
@@ -1396,6 +1691,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1414,6 +1714,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": true,
           "board": [
@@ -1432,6 +1737,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1450,12 +1760,457 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 1,
           "locked": false,
           "board": [
             "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
             "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90",
             "unit.rivetguard#3|unit.rivetguard|t1|2,4|lane2|90"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "offer-holds",
+      "seed": 1,
+      "ops": [
+        {
+          "op": "hold",
+          "slot": 0
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "hold",
+          "slot": 2
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "hold",
+          "slot": 1
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "hold",
+          "slot": 1
+        },
+        {
+          "op": "buy",
+          "slot": 0
+        },
+        {
+          "op": "hold",
+          "slot": 0
+        },
+        {
+          "op": "cancel"
+        },
+        {
+          "op": "lock"
+        },
+        {
+          "op": "hold",
+          "slot": 1
+        },
+        {
+          "op": "intermission",
+          "wave": 1,
+          "reward": 6
+        },
+        {
+          "op": "reroll"
+        },
+        {
+          "op": "hold",
+          "slot": 2
+        },
+        {
+          "op": "reroll"
+        }
+      ],
+      "steps": [
+        {
+          "result": "start",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 12,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            false,
+            false
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 11,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            false,
+            false
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 11,
+          "offers": [
+            "boost.ratchet",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            "boost.ratchet",
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            "boost.ratchet",
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            true,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "allHeld",
+          "scrap": 9,
+          "offers": [
+            "boost.ratchet",
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            true,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            "boost.ratchet",
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            true,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 5,
+          "offers": [
+            null,
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": "boost.ratchet",
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "noOffer",
+          "scrap": 5,
+          "offers": [
+            null,
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": "boost.ratchet",
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            null,
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 9,
+          "offers": [
+            null,
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "locked",
+          "scrap": 9,
+          "offers": [
+            null,
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 2,
+          "locked": true,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 15,
+          "offers": [
+            "drive.coupler",
+            "boost.ratchet",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 0,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 14,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            true
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 14,
+          "offers": [
+            "drive.coupler",
+            "unit.rivetguard",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 1,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
+          ]
+        },
+        {
+          "result": "ok",
+          "scrap": 12,
+          "offers": [
+            "unit.rivetguard",
+            "drive.coupler",
+            "drive.coupler"
+          ],
+          "hand": null,
+          "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
+          "rerollsTaken": 2,
+          "locked": false,
+          "board": [
+            "core.wayfarer#1|core.wayfarer|t1|0,2|lane1|0",
+            "unit.rivetguard#2|unit.rivetguard|t1|1,2|lane1|90"
           ]
         }
       ]
@@ -1535,6 +2290,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1552,6 +2312,11 @@
           ],
           "hand": "turret.spark",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1569,6 +2334,11 @@
           ],
           "hand": "turret.spark",
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1586,6 +2356,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1607,6 +2382,11 @@
             2,
             1
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1625,6 +2405,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1642,6 +2427,11 @@
           ],
           "hand": null,
           "selected": null,
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1662,6 +2452,11 @@
           "selected": [
             2,
             2
+          ],
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 0,
           "locked": false,
@@ -1684,6 +2479,11 @@
             2,
             2
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1705,6 +2505,11 @@
             1,
             4
           ],
+          "held": [
+            false,
+            false,
+            false
+          ],
           "rerollsTaken": 0,
           "locked": false,
           "board": [
@@ -1725,6 +2530,11 @@
           "selected": [
             1,
             4
+          ],
+          "held": [
+            false,
+            false,
+            false
           ],
           "rerollsTaken": 1,
           "locked": false,

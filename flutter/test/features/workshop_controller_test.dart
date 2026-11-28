@@ -50,6 +50,62 @@ void main() {
     }
   });
 
+  test('a held offer survives rerolls and the next wave, until bought', () {
+    for (var seed = 1; seed < 60; seed++) {
+      final c = make(seed: seed);
+      final kept = c.offers[1];
+      expect(c.toggleHold(1), WorkshopAction.ok);
+      expect(c.held, [false, true, false]);
+      expect(c.reroll(), WorkshopAction.ok);
+      expect(c.offers[1], kept, reason: 'seed $seed reroll');
+      c.lock();
+      expect(c.toggleHold(0), WorkshopAction.locked);
+      c.beginIntermission(clearedWave: 1, rewardScrap: 5);
+      expect(c.offers[1], kept, reason: 'seed $seed next wave');
+      expect(c.held[1], isTrue);
+      if (c.buy(1) == WorkshopAction.ok) {
+        expect(c.held[1], isFalse);
+        expect(c.toggleHold(1), WorkshopAction.noOffer);
+      }
+    }
+  });
+
+  test('holding every offer refuses a reroll and charges nothing', () {
+    final c = make(seed: 7);
+    for (var slot = 0; slot < 3; slot++) {
+      expect(c.toggleHold(slot), WorkshopAction.ok);
+    }
+    final scrap = c.battleScrap;
+    expect(c.reroll(), WorkshopAction.allHeld);
+    expect(c.battleScrap, scrap);
+    expect(c.rerollsTaken, 0);
+    expect(c.toggleHold(2), WorkshopAction.ok);
+    expect(c.reroll(), WorkshopAction.ok);
+  });
+
+  test('holds round-trip through a checkpoint; old checkpoints have none', () {
+    final c = make(seed: 9)..toggleHold(2);
+    final json = c.toJson();
+    final restored = WorkshopController.restore(
+      board: GearBoard(),
+      catalog: catalog,
+      shop: shop,
+      rules: rules,
+      json: json,
+    );
+    expect(restored.held, [false, false, true]);
+    final legacy = Map<String, Object?>.of(json)..remove('held');
+    final old = WorkshopController.restore(
+      board: GearBoard(),
+      catalog: catalog,
+      shop: shop,
+      rules: rules,
+      json: legacy,
+    );
+    expect(old.held, [false, false, false]);
+    expect(old.reroll(), WorkshopAction.ok);
+  });
+
   test('offers are deterministic for a seed', () {
     expect(make(seed: 42).offers, make(seed: 42).offers);
   });

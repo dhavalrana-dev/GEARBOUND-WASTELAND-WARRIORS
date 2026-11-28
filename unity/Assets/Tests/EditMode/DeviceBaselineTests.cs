@@ -21,7 +21,7 @@ namespace Gearbound.Tests
             var result = DeviceBaseline.Run(Read);
             Assert.IsEmpty(result.Failures, result.Summary);
             Assert.AreEqual(7, result.CombatTraces);
-            Assert.AreEqual(5, result.WorkshopCases);
+            Assert.AreEqual(6, result.WorkshopCases);
             TestContext.WriteLine(result.Summary);
         }
 

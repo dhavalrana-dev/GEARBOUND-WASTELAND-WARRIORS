@@ -50,7 +50,8 @@ namespace Gearbound.Tests
                 .Select(n => $"{n.Id}|{n.DefinitionId}|t{n.Tier}|{n.X},{n.Y}|lane{n.TargetLane}|{n.BaseIntervalTicks}");
             var sel = w.Selected.HasValue ? $"{w.Selected.Value.X},{w.Selected.Value.Y}" : "null";
             return $"result={result} scrap={w.BattleScrapBalance} offers=[{string.Join(",", w.Offers.Select(o => o ?? "null"))}] " +
-                   $"hand={w.Hand?.Id ?? "null"} selected={sel} rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
+                   $"hand={w.Hand?.Id ?? "null"} selected={sel} held=[{string.Join(",", w.Held.Select(h => h ? "true" : "false"))}] " +
+                   $"rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
         }
 
         private static string Expected(Dictionary<string, object> s)
@@ -59,7 +60,8 @@ namespace Gearbound.Tests
             var sel = s["selected"] is List<object> l ? $"{l[0]},{l[1]}" : "null";
             var board = ((List<object>)s["board"]).Cast<string>();
             return $"result={s["result"]} scrap={SharedJson.Int(s, "scrap")} offers=[{string.Join(",", offers)}] " +
-                   $"hand={(string)s["hand"] ?? "null"} selected={sel} rerolls={SharedJson.Int(s, "rerollsTaken")} " +
+                   $"hand={(string)s["hand"] ?? "null"} selected={sel} held=[{string.Join(",", ((List<object>)s["held"]).Select(h => (bool)h ? "true" : "false"))}] " +
+                   $"rerolls={SharedJson.Int(s, "rerollsTaken")} " +
                    $"locked={((bool)s["locked"] ? "True" : "False")} board=[{string.Join(";", board)}]";
         }
 
@@ -75,6 +77,7 @@ namespace Gearbound.Tests
                 case "undo": return Camel(w.Undo());
                 case "cancel": return Camel(w.CancelHand());
                 case "reroll": return Camel(w.Reroll());
+                case "hold": return Camel(w.ToggleHold(SharedJson.Int(op, "slot")));
                 case "lock": w.Lock(); return "ok";
                 case "intermission": return Camel(w.BeginIntermission(SharedJson.Int(op, "wave"), SharedJson.Int(op, "reward")));
                 case "preview":
@@ -145,6 +148,40 @@ namespace Gearbound.Tests
             Assert.IsNull(w.Selected);
             Assert.AreEqual(WorkshopAction.Occupied, w.Drop((1, 2), (0, 2)));
             Assert.AreEqual(2, w.Board.Nodes.Count);
+        }
+
+        [Test]
+        public void HeldOfferSurvivesRerollAndNextWaveUntilBought()
+        {
+            for (uint seed = 1; seed < 40; seed++)
+            {
+                var w = NewController(seed);
+                var kept = w.Offers[1];
+                Assert.AreEqual(WorkshopAction.Ok, w.ToggleHold(1));
+                Assert.AreEqual(WorkshopAction.Ok, w.Reroll());
+                Assert.AreEqual(kept, w.Offers[1], "seed " + seed);
+                w.Lock();
+                Assert.AreEqual(WorkshopAction.Locked, w.ToggleHold(0));
+                w.BeginIntermission(1, 5);
+                Assert.AreEqual(kept, w.Offers[1], "seed " + seed + " next wave");
+                Assert.IsTrue(w.Held[1]);
+                if (w.Buy(1) == WorkshopAction.Ok)
+                {
+                    Assert.IsFalse(w.Held[1]);
+                    Assert.AreEqual(WorkshopAction.NoOffer, w.ToggleHold(1));
+                }
+            }
+        }
+
+        [Test]
+        public void HoldingEveryOfferRefusesRerollWithoutCharging()
+        {
+            var w = NewController(7);
+            for (var slot = 0; slot < 3; slot++) Assert.AreEqual(WorkshopAction.Ok, w.ToggleHold(slot));
+            var scrap = w.BattleScrapBalance;
+            Assert.AreEqual(WorkshopAction.AllHeld, w.Reroll());
+            Assert.AreEqual(scrap, w.BattleScrapBalance);
+            Assert.AreEqual(0, w.RerollsTaken);
         }
 
         [Test]
