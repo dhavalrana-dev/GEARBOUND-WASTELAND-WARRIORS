@@ -1,0 +1,6 @@
+{
+  "name": "Gearbound.Baseline.Editor",
+  "rootNamespace": "Gearbound.Baseline.Editor",
+  "references": ["Gearbound.Baseline", "Gearbound.Baseline.Runtime"],
+  "includePlatforms": ["Editor"]
+}

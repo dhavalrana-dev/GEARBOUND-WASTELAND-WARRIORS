@@ -45,7 +45,8 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Hero SP and special (Wrench Quake) | Yes | Yes | combat_traces `boss-wave-hero-special` ✔ both; heroes.json parity tests |
 | Attack wind-up and cleave (boss telegraphs) | Yes | Yes | combat_traces (boss scenarios + `boss-cleave-crowded-lane`) ✔ both |
 | Turret projectiles (lane shots, cap 24) | Yes | Yes | combat_traces `turret-side-lanes` ✔ both |
-| Presentation / input | No | Prototype | — |
+| Presentation / input | No (device-baseline scene only) | Prototype (canvas primitives) | — |
+| On-device fixture baseline | Yes (`DeviceBaseline`, IL2CPP on the Android emulator) | Yes (`baseline_device_test.dart`, debug and AOT on the emulator) | random, shop, wave, combat-trace and workshop fixtures ✔ both |
 
 ## Combat trace parity (spec scenario 4)
 
@@ -54,3 +55,17 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 Each tick, both runners hash `tick|phase|fortress|` plus `id:lane:pos:hp:shield:state;` for every combatant in ID order, then `P{id}:{lane}:{pos};` for every live projectile (empty without turrets, so older hashes are unchanged), using 32-bit FNV-1a. A checkpoint hash every 30 ticks locates the first point of divergence.
 
 **Status:** all 7 scenarios match exactly in Dart and in the Unity editor (verified 2026-11-27). Combat currently uses no randomness. When critical hits or other random effects arrive, they must draw from `SeededRandom` in a documented order, and new scenarios must cover them.
+
+## Visual parity (planned, `RENDERING_ARCHITECTURE.md` §7)
+
+The engines share **metadata and images, not rendering internals**: Unity shaders, rigs and prefabs are never assumed to work in Flutter.
+
+| Visual contract | Shared source | Proof (planned) |
+|---|---|---|
+| Lane projection, scale and sort order | `shared/art/projection.json` | `projection_cases.json` evaluated by C# and Dart (GB-064) |
+| Character parts, bones, sockets, draw order | `shared/art/character_rigs.json` | Pose snapshots at fixed clip times compared across engines |
+| Animation timing and events | `shared/art/animation_catalog.json` | Event ticks match the simulation events in both engines |
+| UI tokens and kit | `shared/art/ui_tokens.json` and the nine-slice images | Paired screenshots of the benchmark screens |
+| Gear states | `GearNetwork` state + gear layers | Paired captures of the same board in both engines |
+
+**Status:** none of these exist yet. Unity has no presentation layer, and Flutter draws canvas primitives. The first proof comes with the benchmark (GB-063) and GB-064.

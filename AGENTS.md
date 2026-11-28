@@ -8,6 +8,7 @@
 
 ## Repository rules
 - Keep source art under `assets-source/`; runtime exports under each engine's asset folder.
+- Visual identity is Tactile Industrial Comic 2.5D (`docs/ART_DIRECTION.md` v3). Follow its execution order: no full-scale art production before the visual benchmark (ART-B) is approved, and no asset is production-ready until it reaches `approved` in `shared/art/asset_manifest.json` after visual, technical and in-engine validation.
 - Never use proprietary reference assets. Offline campaign play must never require a network connection.
 - Use stable IDs, seeded randomness, fixed integer ticks (30 Hz), and explicit event order for gameplay.
 - Never mark unexecuted builds, tests, or device profiles as passed. Do not claim performance targets without measurements.

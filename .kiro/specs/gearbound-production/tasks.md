@@ -12,11 +12,11 @@ After changing any box, update the progress table and run `python -I tools/build
 | Phase | Name | Done | Progress |
 |---|---|---|---|
 | 00 | Repository and simulation foundation | 10/10 | 100% |
-| 01 | Toolchain and build readiness | 6/9 | 66% |
+| 01 | Toolchain and build readiness | 7/9 | 77% |
 | 02 | Complete mechanical workshop | 8/13 | 61% |
 | 03 | Combat and multi-wave mission flow | 6/12 | 50% |
-| 04 | Visual preproduction | 2/7 | 28% |
-| 05 | Production vertical slice | 0/7 | 0% |
+| 04 | Visual preproduction | 4/12 | 33% |
+| 05 | Production vertical slice | 0/9 | 0% |
 | 06 | Unity and Flutter playable parity | 4/9 | 44% |
 | 07 | Campaign content | 3/8 | 37% |
 | 08 | Expanded gamification | 2/7 | 28% |
@@ -30,7 +30,7 @@ After changing any box, update the progress table and run `python -I tools/build
 | 16 | Closed testing and soft launch | 0/3 | 0% |
 | 17 | Commercial release | 0/3 | 0% |
 | 18 | Post-launch operations | 0/2 | 0% |
-| **All** | | **48/119** | **40%** |
+| **All** | | **51/126** | **40%** |
 <!-- progress:end -->
 
 Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every shared check clean; Unity EditMode previous report 57/57.
@@ -66,7 +66,8 @@ Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every share
     - Evidence: `flutter build apk --debug` succeeded; installed and launched on the Pixel 10 Pro XL emulator to the campaign route, no errors in logcat (session 18)
   - [ ] 1.9 `flutter doctor` fully green for Android
     - Remaining warnings: `cmdline-tools` missing and license status unknown; install the command-line tools from Android Studio's SDK Manager (owner)
-  - [ ] 1.7 Unity Android build target set and a test scene running on a device (GB-012)
+  - [x] 1.7 Unity Android build target set and a test scene running on a device (GB-012)
+    - Evidence: `AndroidBaselineBuild.Build` builds an IL2CPP APK (ARM64 + x86_64) from a generated baseline scene; on the Pixel 10 Pro XL emulator (x86_64) it logs "UNITY DEVICE BASELINE OK: 36 checks, 7 combat traces, 5 workshop cases" (session 20). A physical ARM64 phone stays with 15.4
   - [ ] 1.8 iOS build on a macOS host with signing
     - Needs macOS and Xcode; Windows cannot build iOS
   - _Requirements: 1_
@@ -109,14 +110,22 @@ Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every share
 
 - [ ] 4. Phase 04 — Visual preproduction
   - [x] 4.1 Art direction v2 style bible (`docs/ART_DIRECTION.md`)
-  - [x] 4.2 Asset manifest, schema and validator rules: 330 records, all `planned` (GB-048)
+  - [x] 4.2 Asset manifest, schema and validator rules: 337 records, 335 `planned` and 2 `concept` (GB-048, GB-040)
+  - [x] 4.8 Visual direction v3, Tactile Industrial Comic 2.5D: docs reconciled and the supporting specifications written (GB-062)
+    - Evidence: `ART_DIRECTION.md` v3 (decisions, 19-step execution order, gates incl. ART-B) plus `VISUAL_STYLE_BIBLE`, `MATERIAL_LIBRARY`, `CHARACTER_DESIGN`, `CHARACTER_RIGGING_GUIDE`, `ANIMATION_SPECIFICATION`, `ENVIRONMENT_PRODUCTION`, `ASSET_GENERATION_PROMPTS`, `ASSET_VALIDATION_GUIDE`, `RENDERING_ARCHITECTURE`, `VISUAL_PERFORMANCE_BUDGET`, `UI_UX_SPECIFICATION` v2; inventory renamed `ASSET_INVENTORY.md` with the benchmark set; manifest 337 records, validator clean (session 21). Documentation only: nothing is approved
+  - [x] 4.9 Working visual reference board (GB-040)
+    - Evidence: `assets-source/style-bible/reference_board_v001.html` plus `industrial-comic-style-study_v001.png`; manifest records `style_reference_board` and `style_mood_board` at `concept`. The image is an unapproved ART-01 study; it does not complete approval or production gates (sessions 21–22)
+  - [ ] 4.10 Painted material library sheet approved (`style_material_library`, `MATERIAL_LIBRARY.md`)
   - [ ] 4.3 ART-01 visual direction approved (GB-040)
-    - Needs art production and owner review
+    - Mood-board and diagram-board concepts exist; owner review, painted material sheet and illustrated screen compositions remain
   - [ ] 4.4 ART-02 Rivet master approved (GB-041)
   - [ ] 4.5 Concepts for enemies, starter gears, the Copperwash environment and the fortress
   - [ ] 4.6 Portrait and landscape compositions
   - [ ] 4.7 Scrapjaw/Scrapmaw boss name decided (GB-047)
     - Owner decision
+  - [ ] 4.11 Gear masters for the 5 starter gears, tiers 1–3 and state layers approved
+  - [ ] 4.12 Visual benchmark ART-B approved in-engine in portrait and landscape, with a first device reading (GB-063)
+    - Gates Phase 05: no full-scale production before this box is ticked
   - _Requirements: 4_
 
 - [ ] 5. Phase 05 — Production vertical slice
@@ -127,6 +136,8 @@ Last verified 2026-11-28 session 19: Flutter 183/183, analyze clean, every share
   - [ ] 5.5 Combat visuals: animation playback, shadows, projectiles, hits, defeat
   - [ ] 5.6 Final workshop, HUD, result and reward screens
   - [ ] 5.7 Review captures: portrait, landscape, compact phone, tablet
+  - [ ] 5.8 Shared art metadata: `projection.json` with cross-engine golden cases, then `ui_tokens.json` (GB-064)
+  - [ ] 5.9 Slice performance measured on representative devices against `VISUAL_PERFORMANCE_BUDGET.md`
   - _Requirements: 5_
 
 - [ ] 6. Phase 06 — Unity and Flutter playable parity

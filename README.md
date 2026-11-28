@@ -10,6 +10,7 @@ Early playable prototype with placeholder graphics.
 
 - **Shared rules, both engines:** the mechanical network, lane combat with multi-wave missions, hero special, boss telegraphs, turret projectiles, the seeded shop and workshop rules, and an idempotent wallet ledger. Cross-engine fixtures and seven combat traces prove Unity and Flutter agree.
 - **Flutter/Flame client:** a 12-node campaign route loading shared mission data, the workshop (shop, drag and drop, merge, undo), stars, daily contracts, a weekly offline event, streaks, chests and boosters, pause and checkpoints.
+- **Visual direction:** Tactile Industrial Comic 2.5D ([art direction v3](docs/ART_DIRECTION.md)), proposed and awaiting owner approval; a working reference board is in `assets-source/style-bible/`.
 - **Not yet:** production art, a Unity playable client, multi-wave tuning for nodes 2–12, a physical-phone test and performance numbers (Android builds run on the emulator so far), and any ad or purchase SDK. Ad placement rules are built and tested only. See the [phase checklist](.kiro/specs/gearbound-production/tasks.md), [development status](docs/DEVELOPMENT_STATUS.md), [phase roadmap](docs/PHASE_ROADMAP.md), and [backlog](docs/TASK_BACKLOG.md).
 
 ## Structure
@@ -18,7 +19,7 @@ Early playable prototype with placeholder graphics.
 - `unity/`: Unity 6.3 reference implementation.
 - `flutter/`: Flutter/Flame workshop and Dart mechanical-network implementation.
 - `docs/`: design, technical decisions, reference analysis, risks, and production tracking.
-- `assets-source/`: original source art and asset inventory.
+- `assets-source/`: original source art (the inventory is `docs/ASSET_INVENTORY.md` and `shared/art/asset_manifest.json`).
 - `.kiro/`: Kiro steering files and the production spec (`requirements.md`, `design.md`, phase-wise `tasks.md`).
 
 ## First prototype rules

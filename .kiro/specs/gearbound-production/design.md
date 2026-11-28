@@ -60,4 +60,6 @@ The schemas live in `shared/schemas/`. The main documents are `gear_rules.json`,
 
 ## Visual Direction
 
-`docs/ART_DIRECTION.md` is the style bible. `shared/art/asset_manifest.json` (330 records, all `planned`) tracks every vertical-slice asset through its approval gates.
+The official identity is **Tactile Industrial Comic 2.5D**: `docs/ART_DIRECTION.md` v3 holds the decisions, gates (ART-01 to ART-06, plus the ART-B visual benchmark) and the 19-step execution order. It maps every topic to a specification: `VISUAL_STYLE_BIBLE`, `MATERIAL_LIBRARY`, `CHARACTER_DESIGN`, `CHARACTER_RIGGING_GUIDE`, `ANIMATION_SPECIFICATION`, `ENVIRONMENT_PRODUCTION`, `UI_UX_SPECIFICATION`, `RENDERING_ARCHITECTURE`, `VISUAL_PERFORMANCE_BUDGET`, `ASSET_GENERATION_PROMPTS`, `ASSET_VALIDATION_GUIDE` and `ASSET_INVENTORY`.
+
+Rendering shares metadata and images between the engines, not internals (`RENDERING_ARCHITECTURE.md`). `shared/art/asset_manifest.json` (337 records; one working concept, nothing approved) tracks every vertical-slice asset through its approval gates.

@@ -1,0 +1,6 @@
+{
+  "name": "Gearbound.Baseline.Runtime",
+  "rootNamespace": "Gearbound.Baseline",
+  "references": ["Gearbound.Baseline"],
+  "autoReferenced": true
+}

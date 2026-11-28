@@ -74,10 +74,10 @@ Updated 2026-11-28.
 | Phase | Focus | Status |
 |---|---|---|
 | 00 | Repository and simulation foundation | **Complete** (2026-11-28): schemas enforced; baseline identical on the Dart VM, Windows AOT, and the Android emulator in debug and AOT |
-| 01 | Toolchain and build readiness | Partial: Android debug and profile APKs build and run on the emulator; Windows runner (GB-059); `cmdline-tools`, a physical phone, the Unity Android build and iOS remain |
+| 01 | Toolchain and build readiness | Partial (7/9): Flutter debug and profile APKs and the Unity IL2CPP baseline APK run on the emulator; Windows runner (GB-059); `cmdline-tools` (owner) and iOS (macOS) remain; a physical phone is Phase 15 |
 | 02 | Complete mechanical workshop | **Implemented in Flutter** (shop, drag, move, undo, previews); workshop rules ported to Unity C# with a shared fixture (GB-036); device test and Unity UI pending |
 | 03 | Combat and multi-wave mission flow | In progress: multi-wave, intermission, lifecycle, checkpoints, hero special, boss telegraphs (wind-up and cleave) and turret projectiles done; status effects and hero recovery pending |
-| 04 | Visual preproduction | Planned (asset manifest created, all `planned`) |
+| 04 | Visual preproduction | In progress: v3 specifications, diagram board and illustrated mood-board study at concept; ART-01 approval, painted material sheet and illustrated compositions pending |
 | 05 | Production vertical slice | Planned |
 | 06 | Unity and Flutter playable parity | Partial: simulation, workshop rules, economy and ad-policy parity; no Unity client (GB-046) |
 | 07 | Campaign content | Partial: all 12 nodes on shared mission data (GB-024); nodes 2–12 single-wave until GB-051 |
@@ -109,9 +109,9 @@ Updated 2026-11-28.
 **Status (2026-11-28): complete.** Every runtime data file has an enforced schema. The shared fixtures replay identically on the Dart VM, as a Windows AOT binary, and on the Android emulator in debug and AOT (profile) builds. A physical ARM64 phone is part of the Phase 15 device matrix.
 
 ## Phase 01 — Toolchain and mobile build readiness
-**P0 · Blocked** · GB-012, GB-038, GB-059
+**P0 · Partly blocked (owner and macOS items)** · GB-012, GB-038, GB-059
 
-**Status (2026-11-28):** Android works with the owner's SDK at `F:\Android\Sdk`: debug and profile APKs build and run on the Pixel 10 Pro XL emulator (`TOOLCHAIN_REPORT.md`). Remaining: `cmdline-tools` for a green `flutter doctor`, a physical phone, the Unity Android build and iOS. Unity EditMode runs in batch mode. A Windows desktop debug runner (`flutter run -d windows`, needs Windows Developer Mode) is in place for reviewing the game on the development PC; it is not a release target and proves nothing about phone performance.
+**Status (2026-11-28):** Android works with the owner's SDK at `F:\Android\Sdk`: debug and profile APKs build and run on the Pixel 10 Pro XL emulator (`TOOLCHAIN_REPORT.md`). The Unity Android build (IL2CPP, ARM64 + x86_64) runs the shared-fixture baseline scene on the emulator (session 20). Remaining: `cmdline-tools` for a green `flutter doctor` (owner), a physical phone (Phase 15) and iOS (needs macOS). Unity EditMode runs in batch mode. A Windows desktop debug runner (`flutter run -d windows`, needs Windows Developer Mode) is in place for reviewing the game on the development PC; it is not a release target and proves nothing about phone performance.
 
 **Unity:**
 - Editor, Android Build Support, SDK/NDK/JDK and modules.
@@ -196,18 +196,26 @@ Updated 2026-11-28.
 ## Phase 04 — Visual preproduction
 **P0** · GB-009, GB-040–041 · See `ART_DIRECTION.md` · Depends on stable 02/03 contracts
 
+**Visual direction v3 (2026-11-28):** the official identity is **Tactile Industrial Comic 2.5D**. Phase 04 covers execution steps 1–10 of `ART_DIRECTION.md` §7 and ends with the visual benchmark (ART-B).
+
 **Tasks:**
-- Style references: palette, shape language, proportions, projection, readability targets and UI style.
-- Rivet: concept, turnaround and weapon.
-- Concepts for enemies, starter gears, the Copperwash environment and the fortress.
-- Portrait and landscape compositions.
+1. Inspect the repository and reconcile the documentation. **Done** (session 21).
+2. Establish the visual direction. **Documented:** `ART_DIRECTION.md` v3, `VISUAL_STYLE_BIBLE.md`, `CHARACTER_DESIGN.md`, `CHARACTER_RIGGING_GUIDE.md`, `MATERIAL_LIBRARY.md`, `ANIMATION_SPECIFICATION.md`, `ENVIRONMENT_PRODUCTION.md`, `ASSET_GENERATION_PROMPTS.md`, `ASSET_VALIDATION_GUIDE.md`, `RENDERING_ARCHITECTURE.md`, `VISUAL_PERFORMANCE_BUDGET.md`, `UI_UX_SPECIFICATION.md` v2.
+3. Visual reference boards. The diagrammatic board and illustrated mood-board study are both at `concept` (`assets-source/style-bible/reference_board_v001.html`, `industrial-comic-style-study_v001.png`); neither is approved.
+4. Materials and colors. **Proposed** (15-material library, palette tokens); the painted material sheet is still to be made.
+5. Rivet master: turnaround, near/far limb sheet, expressions, weapon (ART-02).
+6. Mechanical gear artwork: all 5 starter gears, tiers 1–3, state layers.
+7. Copperwash environment and fortress concepts.
+8. Illustrated portrait and landscape gameplay compositions.
+9. **Visual benchmark (ART-B):** the 14-element scene, in-engine (Flutter), in portrait and landscape, with a first device reading.
+10. Refine the detailed asset inventory from the benchmark (337 records now: 335 planned, 2 concept).
 
-**Deliverables:** approved style bible, character master, environment master, board design, UI examples, asset inventory (**created: `PRODUCTION_ASSET_INVENTORY.md`, `shared/art/asset_manifest.json`**), prompts.
+**Deliverables:** an approved style bible and material library, Rivet's master, gear masters, the Copperwash master, compositions, the approved benchmark, an asset inventory (**`ASSET_INVENTORY.md`, formerly `PRODUCTION_ASSET_INVENTORY.md`; `shared/art/asset_manifest.json`**) and prompts.
 
-**Exit:** ART-01 and ART-02 approved; one coherent style; identity and proportions locked; camera and lighting documented; no proprietary assets; no production assets before concept approval.
+**Exit:** ART-01, ART-02 and ART-B approved; one coherent style; identity and proportions locked; camera and lighting documented; no proprietary assets; **no full-scale production before the benchmark is approved.**
 
 ## Phase 05 — Production vertical slice
-**P0** · GB-042–045 · Depends on 03 and 04
+**P0** · GB-042–045 · Depends on 03 and 04 (ART-B approved) · Execution steps 11–13, 15–18 (`ART_DIRECTION.md` §7)
 
 | Step | Scope |
 |---|---|
@@ -217,6 +225,7 @@ Updated 2026-11-28.
 | 05.4 Combat visuals | Animation playback, depth sorting, shadows, projectiles, hits, damage, shields, defeat, boss arrival |
 | 05.5 UI | Workshop, shop, HUD, wave complete, victory, defeat, rewards, return |
 | 05.6 Review | Capture portrait, landscape, compact phone and tablet |
+| 05.7 Performance | Measure the slice on representative devices against `VISUAL_PERFORMANCE_BUDGET.md` (60 FPS target, stable 30 FPS fallback) |
 
 **Exit:**
 - ART-03, ART-04 and the relevant ART-05 pass.
@@ -388,7 +397,7 @@ For a solo developer, keep only a few feature branches active at once.
 |---|---|---|
 | G0 Foundation | Baseline tests, fixtures, save compatibility | **Met** (local; re-verify per merge) |
 | G1 Playable prototype | Gear buy/place, full mission flow, Android install or documented blocker | **Met in Flutter** with a documented Android blocker: workshop, multi-wave flow, lifecycle and checkpoints done; reviewable as a Windows debug build |
-| G2 Visual direction | `ART_DIRECTION.md` approved, Rivet master, battlefield composition | Not started |
+| G2 Visual direction | `ART_DIRECTION.md` v3 approved (ART-01), Rivet master (ART-02), visual benchmark (ART-B) | In progress: v3 specs, diagram board and illustrated mood-board study at concept; no art gate passed |
 | G3 Vertical slice | Final character, environment, board, animations, responsive UI | Not started |
 | G4 Cross-engine client | Unity and Flutter playable, parity, visual consistency | Not started |
 | G5 Engagement | Campaign, contracts, achievements, events, reliable rewards | Partial: campaign, contracts, Scrapstorm and rewards done; achievements and the event engine pending |
@@ -403,7 +412,7 @@ Never skip a gate without a documented reason, risk and approval.
 |---|---|---|
 | 01 | Finish the workshop: GB-030 remainder → **GB-039** (drag, move, undo, previews) | Done in Flutter; device check pending |
 | 02 | Mission loop: GB-025 (multi-wave, inter-wave prep, results, persistence, lifecycle) | Done in Flutter (GB-025, GB-052, GB-053); combat depth GB-055, GB-058, GB-037 added |
-| 03 | Visual preproduction: Rivet master, proportions, gear concepts, Copperwash concept, wireframes, manifest (GB-040, GB-041) | Manifest done; art not started (needs art production and owner approval) |
+| 03 | Visual preproduction: v3 direction, reference board, materials, Rivet master, gear and Copperwash masters, compositions, benchmark (GB-040, GB-041, GB-062, GB-063) | v3 docs and diagram board done; illustrated mood-board study at concept; ART-01 owner review and the material sheet/compositions remain |
 | 04 | First production art: Rivet parts and rig, animations, enemies, gears, environment layers (GB-042–044) | Not started (needs Sprint 03) |
 | 05 | Playable production slice: rendering, VFX, HUD, audio (GB-045) | Not started (needs approved art) |
 | 06 | Unity playable presentation and parity (GB-046, GB-036) | GB-036 and GB-049 done (rules); client not started |

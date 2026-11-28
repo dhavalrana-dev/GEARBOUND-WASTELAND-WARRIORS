@@ -18,7 +18,8 @@ inclusion: always
 ## Commands
 - Flutter (from `flutter/`): `flutter pub get`, `flutter analyze`, `flutter test`.
 - Review build on Windows: `flutter run -d windows` (needs Windows Developer Mode; debug only).
-- Unity EditMode (PowerShell): `"C:\Program Files\Unity\Hub\Editor\6000.3.27f1\Editor\Unity.exe" -batchmode -nographics -projectPath unity -runTests -testPlatform EditMode -testResults artifacts/unity-editmode.xml -logFile artifacts/unity-test.log`
+- Unity EditMode (PowerShell): `"C:\Program Files\Unity\Hub\Editor\6000.3.27f1\Editor\Unity.exe" -batchmode -nographics -projectPath unity -runTests -testPlatform EditMode -testResults artifacts/unity-editmode.xml -logFile artifacts/unity-test.log` (Unity resolves the relative `-testResults` path inside `unity/`, so the report lands in `unity/artifacts/unity-editmode.xml`)
+- Unity Android baseline: `-batchmode -nographics -quit -projectPath unity -buildTarget Android -executeMethod Gearbound.Baseline.Editor.AndroidBaselineBuild.Build -logFile artifacts/unity-android-build.log`, then install `unity/Builds/android/gearbound-unity-baseline.apk` and read `adb logcat -s Unity` (see `docs/TOOLCHAIN_REPORT.md`)
 - Shared data checks:
   - `python -I tools/data-validation/validate_shared.py`
   - `python -I tools/simulation/reference_rules.py --check`
