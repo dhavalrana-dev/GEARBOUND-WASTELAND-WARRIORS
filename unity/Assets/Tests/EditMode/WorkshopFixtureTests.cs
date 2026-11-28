@@ -35,6 +35,21 @@ namespace Gearbound.Tests
             SharedDataLoader.LoadGears(Shared("gears/starter_gears.json")), SharedDataLoader.LoadShop(Shared("economy/shop.json")),
             WorkshopRules.Load(Shared("configs/gear_rules.json")), seed, () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
+        private static WorkshopController RestoreController(GearBoard board, Dictionary<string, object> json) =>
+            WorkshopController.Restore(board, SharedDataLoader.LoadGears(Shared("gears/starter_gears.json")),
+                SharedDataLoader.LoadShop(Shared("economy/shop.json")), WorkshopRules.Load(Shared("configs/gear_rules.json")), json,
+                () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        /// <summary>Structural equality of parsed JSON (object key order ignored).</summary>
+        internal static bool JsonEquals(object a, object b)
+        {
+            if (a is Dictionary<string, object> da && b is Dictionary<string, object> db)
+                return da.Count == db.Count && da.All(p => db.TryGetValue(p.Key, out var v) && JsonEquals(p.Value, v));
+            if (a is List<object> la && b is List<object> lb)
+                return la.Count == lb.Count && la.Zip(lb, JsonEquals).All(x => x);
+            return Equals(a, b);
+        }
+
         private static string Camel(WorkshopAction a) { var s = a.ToString(); return char.ToLowerInvariant(s[0]) + s.Substring(1); }
         private static string Camel(NetworkState s) { var t = s.ToString(); return char.ToLowerInvariant(t[0]) + t.Substring(1); }
 
@@ -50,7 +65,8 @@ namespace Gearbound.Tests
                 .Select(n => $"{n.Id}|{n.DefinitionId}|t{n.Tier}|{n.X},{n.Y}|lane{n.TargetLane}|{n.BaseIntervalTicks}");
             var sel = w.Selected.HasValue ? $"{w.Selected.Value.X},{w.Selected.Value.Y}" : "null";
             return $"result={result} scrap={w.BattleScrapBalance} offers=[{string.Join(",", w.Offers.Select(o => o ?? "null"))}] " +
-                   $"hand={w.Hand?.Id ?? "null"} selected={sel} rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
+                   $"hand={w.Hand?.Id ?? "null"} selected={sel} held=[{string.Join(",", w.Held.Select(h => h ? "true" : "false"))}] " +
+                   $"rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
         }
 
         private static string Expected(Dictionary<string, object> s)
@@ -59,7 +75,8 @@ namespace Gearbound.Tests
             var sel = s["selected"] is List<object> l ? $"{l[0]},{l[1]}" : "null";
             var board = ((List<object>)s["board"]).Cast<string>();
             return $"result={s["result"]} scrap={SharedJson.Int(s, "scrap")} offers=[{string.Join(",", offers)}] " +
-                   $"hand={(string)s["hand"] ?? "null"} selected={sel} rerolls={SharedJson.Int(s, "rerollsTaken")} " +
+                   $"hand={(string)s["hand"] ?? "null"} selected={sel} held=[{string.Join(",", ((List<object>)s["held"]).Select(h => (bool)h ? "true" : "false"))}] " +
+                   $"rerolls={SharedJson.Int(s, "rerollsTaken")} " +
                    $"locked={((bool)s["locked"] ? "True" : "False")} board=[{string.Join(";", board)}]";
         }
 
@@ -75,6 +92,7 @@ namespace Gearbound.Tests
                 case "undo": return Camel(w.Undo());
                 case "cancel": return Camel(w.CancelHand());
                 case "reroll": return Camel(w.Reroll());
+                case "hold": return Camel(w.ToggleHold(SharedJson.Int(op, "slot")));
                 case "lock": w.Lock(); return "ok";
                 case "intermission": return Camel(w.BeginIntermission(SharedJson.Int(op, "wave"), SharedJson.Int(op, "reward")));
                 case "preview":
@@ -112,8 +130,20 @@ namespace Gearbound.Tests
                 Assert.AreEqual(Expected(SharedJson.Obj(steps[0], "step")), Snapshot(w, "start"), id + " start");
                 for (var i = 0; i < ops.Count; i++)
                 {
-                    var result = Apply(w, SharedJson.Obj(ops[i], "op"));
-                    Assert.AreEqual(Expected(SharedJson.Obj(steps[i + 1], "step")), Snapshot(w, result), $"{id} step {i + 1} ({ops[i]})");
+                    var op = SharedJson.Obj(ops[i], "op");
+                    var step = SharedJson.Obj(steps[i + 1], "step");
+                    string result;
+                    if ((string)op["op"] == "checkpoint")
+                    {
+                        // C# must save exactly what Dart saved, survive a text round trip, then resume from Dart's JSON.
+                        var dart = SharedJson.Obj(step["checkpoint"], "checkpoint");
+                        var mine = SharedJson.Parse(SharedJson.Write(w.ToJson()));
+                        Assert.IsTrue(JsonEquals(dart, mine), $"{id} step {i + 1}: C# checkpoint differs: {SharedJson.Write(w.ToJson())}");
+                        w = RestoreController(w.Board, dart);
+                        result = "checkpoint";
+                    }
+                    else result = Apply(w, op);
+                    Assert.AreEqual(Expected(step), Snapshot(w, result), $"{id} step {i + 1} ({ops[i]})");
                 }
             }
         }
@@ -145,6 +175,59 @@ namespace Gearbound.Tests
             Assert.IsNull(w.Selected);
             Assert.AreEqual(WorkshopAction.Occupied, w.Drop((1, 2), (0, 2)));
             Assert.AreEqual(2, w.Board.Nodes.Count);
+        }
+
+        [Test]
+        public void HeldOfferSurvivesRerollAndNextWaveUntilBought()
+        {
+            for (uint seed = 1; seed < 40; seed++)
+            {
+                var w = NewController(seed);
+                var kept = w.Offers[1];
+                Assert.AreEqual(WorkshopAction.Ok, w.ToggleHold(1));
+                Assert.AreEqual(WorkshopAction.Ok, w.Reroll());
+                Assert.AreEqual(kept, w.Offers[1], "seed " + seed);
+                w.Lock();
+                Assert.AreEqual(WorkshopAction.Locked, w.ToggleHold(0));
+                w.BeginIntermission(1, 5);
+                Assert.AreEqual(kept, w.Offers[1], "seed " + seed + " next wave");
+                Assert.IsTrue(w.Held[1]);
+                if (w.Buy(1) == WorkshopAction.Ok)
+                {
+                    Assert.IsFalse(w.Held[1]);
+                    Assert.AreEqual(WorkshopAction.NoOffer, w.ToggleHold(1));
+                }
+            }
+        }
+
+        [Test]
+        public void HoldingEveryOfferRefusesRerollWithoutCharging()
+        {
+            var w = NewController(7);
+            for (var slot = 0; slot < 3; slot++) Assert.AreEqual(WorkshopAction.Ok, w.ToggleHold(slot));
+            var scrap = w.BattleScrapBalance;
+            Assert.AreEqual(WorkshopAction.AllHeld, w.Reroll());
+            Assert.AreEqual(scrap, w.BattleScrapBalance);
+            Assert.AreEqual(0, w.RerollsTaken);
+        }
+
+        [Test]
+        public void CheckpointWithoutHoldsRestoresWithNone()
+        {
+            var w = NewController(9);
+            w.ToggleHold(2);
+            var json = w.ToJson();
+            json.Remove("held");
+            var restored = RestoreController(w.Board, json);
+            CollectionAssert.AreEqual(new[] { false, false, false }, restored.Held);
+            Assert.AreEqual(WorkshopAction.Ok, restored.Reroll());
+        }
+
+        [Test]
+        public void SharedJsonWriterEscapesAndRoundTrips()
+        {
+            var value = new Dictionary<string, object> { ["a"] = "q\"b\\c\n", ["n"] = 4294967295L, ["l"] = new List<object> { true, null, -3L } };
+            Assert.IsTrue(JsonEquals(value, SharedJson.Parse(SharedJson.Write(value))));
         }
 
         [Test]

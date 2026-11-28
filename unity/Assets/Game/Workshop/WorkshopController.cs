@@ -51,7 +51,7 @@ namespace Gearbound.Workshop
     public enum WorkshopAction
     {
         Ok, Locked, NoOffer, HandFull, InsufficientScrap, Occupied, NothingToPlace,
-        NotMergeable, MaxTier, CannotSellCore, NothingSelected, NothingToUndo,
+        NotMergeable, MaxTier, CannotSellCore, NothingSelected, NothingToUndo, AllHeld,
     }
 
     /// <summary>What would happen if a gear were placed or moved to a cell.</summary>
@@ -72,7 +72,8 @@ namespace Gearbound.Workshop
     /// flutter/lib/features/workshop/workshop_controller.dart, checked by shared/test-fixtures/workshop_cases.json.
     /// Battle scrap is a mission-scoped wallet that is never saved; every spend and refund goes through the ledger.
     /// Buys and rerolls are not undoable: Cancel refunds an unplaced buy, and undoing a reroll would preview offers for free.
-    /// Not ported yet: checkpoint save/restore (Flutter <c>toJson</c>/<c>restore</c>).
+    /// Checkpoints: <see cref="ToJson"/> and <see cref="Restore"/> use the same JSON as Flutter <c>toJson</c>/<c>restore</c>,
+    /// so either engine can resume the other's checkpoint (proved by the checkpoint steps in workshop_cases.json).
     /// </summary>
     public sealed class WorkshopController
     {
@@ -85,7 +86,7 @@ namespace Gearbound.Workshop
             public int ScrapGained;
         }
 
-        private readonly SeededRandom rng;
+        private SeededRandom rng;
         private readonly Func<DateTime> clock;
         private readonly List<UndoEntry> undo = new List<UndoEntry>();
         private int nextGearNumber = 1;
@@ -100,6 +101,8 @@ namespace Gearbound.Workshop
         public SeededRandom Random => rng;
 
         public string[] Offers { get; private set; } = Array.Empty<string>();
+        /// <summary>Offers the player is holding: a reroll and a new wave's shop keep them.</summary>
+        public bool[] Held { get; private set; } = Array.Empty<bool>();
         public int RerollsTaken { get; private set; }
         public bool Locked { get; private set; }
         /// <summary>Definition bought but not yet placed.</summary>
@@ -112,8 +115,8 @@ namespace Gearbound.Workshop
             CurrencyMax = new Dictionary<string, long>(StringComparer.Ordinal) { [BattleScrap] = 100000 },
         };
 
-        public WorkshopController(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop, WorkshopRules rules,
-            uint seed, Func<DateTime> clock = null)
+        private WorkshopController(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop, WorkshopRules rules,
+            uint seed, Func<DateTime> clock, Wallet wallet)
         {
             Board = board ?? throw new ArgumentNullException(nameof(board));
             Catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
@@ -121,8 +124,14 @@ namespace Gearbound.Workshop
             Rules = rules ?? throw new ArgumentNullException(nameof(rules));
             Seed = seed;
             this.clock = clock ?? (() => DateTime.UtcNow);
+            Wallet = wallet;
+        }
+
+        public WorkshopController(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop, WorkshopRules rules,
+            uint seed, Func<DateTime> clock = null)
+            : this(board, catalog, shop, rules, seed, clock, new Wallet(MissionAssetRules(), "mission"))
+        {
             rng = new SeededRandom(SeededRandom.MixSeed32(seed));
-            Wallet = new Wallet(MissionAssetRules(), "mission");
             foreach (var starter in rules.StarterGears)
             {
                 if (!board.TryPlace(NewNode(Definition(starter.DefinitionId), starter.X, starter.Y, 1), out var error))
@@ -135,6 +144,47 @@ namespace Gearbound.Workshop
             }, this.clock());
             RollOffers();
         }
+
+        /// <summary>
+        /// Rebuilds a controller from <see cref="ToJson"/> output (or Flutter's <c>toJson</c>) at a wave boundary: the mission
+        /// wallet with its processed claim keys, offers, holds, reroll count, ID counters and RNG state. Starter gears are
+        /// not placed again; the board comes from the checkpoint. Selection and undo history are not saved.
+        /// A checkpoint without <c>held</c> (written before offer holds) restores with no holds.
+        /// </summary>
+        public static WorkshopController Restore(GearBoard board, IReadOnlyList<GearDefinition> catalog, ShopConfig shop,
+            WorkshopRules rules, Dictionary<string, object> json, Func<DateTime> clock = null)
+        {
+            if (json == null) throw new ArgumentNullException(nameof(json));
+            var w = new WorkshopController(board, catalog, shop, rules, (uint)SharedJson.Long(json, "seed"), clock,
+                Wallet.FromJson(SharedJson.Obj(json["wallet"], "wallet"), MissionAssetRules()));
+            w.rng = SeededRandom.FromState((uint)SharedJson.Long(json, "rngState"), SharedJson.Int(json, "rngDraws"));
+            w.Offers = SharedJson.Arr(json, "offers").Select(o => o as string).ToArray();
+            w.Held = json.TryGetValue("held", out var held) && held is List<object> list
+                ? list.Select(h => h is bool flag && flag).ToArray()
+                : new bool[w.Offers.Length];
+            w.RerollsTaken = SharedJson.Int(json, "rerollsTaken");
+            w.Locked = SharedJson.Bool(json, "locked");
+            w.Hand = json.TryGetValue("hand", out var hand) && hand is string handId ? w.Definition(handId) : null;
+            w.nextGearNumber = SharedJson.Int(json, "nextGearNumber");
+            w.nextTxn = SharedJson.Int(json, "nextTxn");
+            return w;
+        }
+
+        /// <summary>Checkpoint state in the Flutter <c>toJson</c> format; integers are boxed as <c>long</c>.</summary>
+        public Dictionary<string, object> ToJson() => new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["seed"] = (long)Seed,
+            ["rngState"] = (long)rng.State,
+            ["rngDraws"] = (long)rng.Draws,
+            ["wallet"] = Wallet.ToJson(),
+            ["offers"] = Offers.Cast<object>().ToList(),
+            ["held"] = Held.Cast<object>().ToList(),
+            ["rerollsTaken"] = (long)RerollsTaken,
+            ["locked"] = Locked,
+            ["hand"] = Hand?.Id,
+            ["nextGearNumber"] = (long)nextGearNumber,
+            ["nextTxn"] = (long)nextTxn,
+        };
 
         public bool CanUndo => !Locked && undo.Count > 0;
         public int BattleScrapBalance => (int)Wallet.Balance(BattleScrap);
@@ -166,8 +216,25 @@ namespace Gearbound.Workshop
             var next = (string[])Offers.Clone();
             next[slot] = null;
             Offers = next;
+            var held = (bool[])Held.Clone();
+            held[slot] = false;
+            Held = held;
             return WorkshopAction.Ok;
         }
+
+        /// <summary>Holds or releases an offer. Free; a held offer survives rerolls and the next wave's shop until bought or released.</summary>
+        public WorkshopAction ToggleHold(int slot)
+        {
+            if (Locked) return WorkshopAction.Locked;
+            if (slot < 0 || slot >= Offers.Length || Offers[slot] == null) return WorkshopAction.NoOffer;
+            var held = (bool[])Held.Clone();
+            held[slot] = !held[slot];
+            Held = held;
+            return WorkshopAction.Ok;
+        }
+
+        /// <summary>True when every slot is held, so a reroll could not change anything.</summary>
+        public bool AllHeld => Held.Length > 0 && Held.All(h => h);
 
         /// <summary>Undo an unplaced purchase for a full refund.</summary>
         public WorkshopAction CancelHand()
@@ -181,6 +248,7 @@ namespace Gearbound.Workshop
         public WorkshopAction Reroll()
         {
             if (Locked) return WorkshopAction.Locked;
+            if (AllHeld) return WorkshopAction.AllHeld;
             if (!Spend(RerollPrice, "reroll", "shop")) return WorkshopAction.InsufficientScrap;
             RerollsTaken++;
             RollOffers();
@@ -258,7 +326,7 @@ namespace Gearbound.Workshop
 
         /// <summary>
         /// Reopens the workshop between waves: pays the cleared wave's reward once per wave number through the ledger,
-        /// resets the reroll price and rolls fresh offers. The board is kept as built.
+        /// resets the reroll price and rolls fresh offers around any held ones. The board is kept as built.
         /// </summary>
         public WorkshopAction BeginIntermission(int clearedWave, int rewardScrap)
         {
@@ -370,7 +438,14 @@ namespace Gearbound.Workshop
         private void RollOffers()
         {
             var pool = new HashSet<string>(Catalog.Where(g => Rules.ShopCategories.Contains(g.Category)).Select(g => g.Id), StringComparer.Ordinal);
-            Offers = GearShop.Roll(rng, Catalog, Shop, pool, null, Board.Nodes.Any(n => n.Kind == GearKind.Transmission));
+            if (Held.Length != Shop.OfferCount) Held = new bool[Shop.OfferCount];
+            string[] keep = null;
+            if (Held.Any(h => h))
+            {
+                keep = new string[Held.Length];
+                for (var i = 0; i < Held.Length; i++) keep[i] = Held[i] ? Offers[i] : null;
+            }
+            Offers = GearShop.Roll(rng, Catalog, Shop, pool, keep, Board.Nodes.Any(n => n.Kind == GearKind.Transmission));
         }
 
         private bool Spend(int amount, string type, string reference)

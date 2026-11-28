@@ -162,10 +162,33 @@ namespace Gearbound.Baseline
                 if (ops.Count + 1 != steps.Count) failure = "step count";
                 else if (Expected(SharedJson.Obj(steps[0], "step")) != Snapshot(w, "start")) failure = "start";
                 for (var i = 0; failure == null && i < ops.Count; i++)
-                    if (Expected(SharedJson.Obj(steps[i + 1], "step")) != Snapshot(w, Apply(w, SharedJson.Obj(ops[i], "op")))) failure = "step " + (i + 1);
+                {
+                    var op = SharedJson.Obj(ops[i], "op");
+                    var step = SharedJson.Obj(steps[i + 1], "step");
+                    string opResult;
+                    if ((string)op["op"] == "checkpoint")
+                    {
+                        var dart = SharedJson.Obj(step["checkpoint"], "checkpoint");
+                        if (!JsonEquals(dart, SharedJson.Parse(SharedJson.Write(w.ToJson())))) { failure = "step " + (i + 1) + " checkpoint"; break; }
+                        w = WorkshopController.Restore(w.Board, gears, shop, rules, dart, () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+                        opResult = "checkpoint";
+                    }
+                    else opResult = Apply(w, op);
+                    if (Expected(step) != Snapshot(w, opResult)) failure = "step " + (i + 1);
+                }
                 Check(result, failure == null, $"workshop case {id}{(failure == null ? "" : " at " + failure)}");
                 result.WorkshopCases++;
             }
+        }
+
+        /// <summary>Structural equality of parsed JSON (object key order ignored).</summary>
+        private static bool JsonEquals(object a, object b)
+        {
+            if (a is Dictionary<string, object> da && b is Dictionary<string, object> db)
+                return da.Count == db.Count && da.All(p => db.TryGetValue(p.Key, out var v) && JsonEquals(p.Value, v));
+            if (a is List<object> la && b is List<object> lb)
+                return la.Count == lb.Count && la.Zip(lb, JsonEquals).All(x => x);
+            return Equals(a, b);
         }
 
         private static string Camel(string s) => char.ToLowerInvariant(s[0]) + s.Substring(1);
@@ -182,7 +205,8 @@ namespace Gearbound.Baseline
                 .Select(n => $"{n.Id}|{n.DefinitionId}|t{n.Tier}|{n.X},{n.Y}|lane{n.TargetLane}|{n.BaseIntervalTicks}");
             var sel = w.Selected.HasValue ? $"{w.Selected.Value.X},{w.Selected.Value.Y}" : "null";
             return $"result={result} scrap={w.BattleScrapBalance} offers=[{string.Join(",", w.Offers.Select(o => o ?? "null"))}] " +
-                   $"hand={w.Hand?.Id ?? "null"} selected={sel} rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
+                   $"hand={w.Hand?.Id ?? "null"} selected={sel} held=[{string.Join(",", w.Held.Select(h => h ? "true" : "false"))}] " +
+                   $"rerolls={w.RerollsTaken} locked={w.Locked} board=[{string.Join(";", board)}]";
         }
 
         private static string Expected(Dictionary<string, object> s)
@@ -191,7 +215,8 @@ namespace Gearbound.Baseline
             var sel = s["selected"] is List<object> l ? $"{l[0]},{l[1]}" : "null";
             var board = ((List<object>)s["board"]).Cast<string>();
             return $"result={s["result"]} scrap={SharedJson.Int(s, "scrap")} offers=[{string.Join(",", offers)}] " +
-                   $"hand={(string)s["hand"] ?? "null"} selected={sel} rerolls={SharedJson.Int(s, "rerollsTaken")} " +
+                   $"hand={(string)s["hand"] ?? "null"} selected={sel} held=[{string.Join(",", ((List<object>)s["held"]).Select(h => (bool)h ? "true" : "false"))}] " +
+                   $"rerolls={SharedJson.Int(s, "rerollsTaken")} " +
                    $"locked={((bool)s["locked"] ? "True" : "False")} board=[{string.Join(";", board)}]";
         }
 
@@ -207,6 +232,7 @@ namespace Gearbound.Baseline
                 case "undo": return Camel(w.Undo().ToString());
                 case "cancel": return Camel(w.CancelHand().ToString());
                 case "reroll": return Camel(w.Reroll().ToString());
+                case "hold": return Camel(w.ToggleHold(SharedJson.Int(op, "slot")).ToString());
                 case "lock": w.Lock(); return "ok";
                 case "intermission": return Camel(w.BeginIntermission(SharedJson.Int(op, "wave"), SharedJson.Int(op, "reward")).ToString());
                 case "preview":

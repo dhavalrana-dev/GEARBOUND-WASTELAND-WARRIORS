@@ -68,6 +68,7 @@ enum WorkshopAction {
   cannotSellCore,
   nothingSelected,
   nothingToUndo,
+  allHeld,
 }
 
 /// What would happen if a gear were placed or moved to a cell.
@@ -114,7 +115,9 @@ class WorkshopController {
     required this.shop,
     required this.rules,
     required int seed,
-  }) : _rng = SeededRandom(mixSeed32(seed)),
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now,
+       _rng = SeededRandom(mixSeed32(seed)),
        seed = seed,
        wallet = Wallet(rules: defaultAssetRules(), profileId: 'mission') {
     for (final starter in rules.starterGears) {
@@ -123,6 +126,7 @@ class WorkshopController {
       );
     }
     wallet.apply(
+      at: _clock(),
       TxnRequest(
         idempotencyKey: 'mission_start',
         type: 'grant',
@@ -144,7 +148,9 @@ class WorkshopController {
     required this.shop,
     required this.rules,
     required Map<String, Object?> json,
-  }) : seed = json['seed'] as int,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now,
+       seed = json['seed'] as int,
        _rng = SeededRandom(json['rngState'] as int)
          ..draws = json['rngDraws'] as int,
        wallet = Wallet.fromJson(
@@ -152,6 +158,11 @@ class WorkshopController {
          defaultAssetRules(),
        ) {
     offers = (json['offers'] as List).cast<String?>();
+    // Checkpoints written before offer holds existed have no 'held' list.
+    final heldJson = json['held'] as List?;
+    held = heldJson == null
+        ? List<bool>.filled(offers.length, false)
+        : heldJson.cast<bool>().toList();
     rerollsTaken = json['rerollsTaken'] as int;
     locked = json['locked'] as bool;
     final handId = json['hand'] as String?;
@@ -166,6 +177,7 @@ class WorkshopController {
     'rngDraws': _rng.draws,
     'wallet': wallet.toJson(),
     'offers': offers,
+    'held': held,
     'rerollsTaken': rerollsTaken,
     'locked': locked,
     'hand': hand?.id,
@@ -181,7 +193,13 @@ class WorkshopController {
   final Wallet wallet;
   final SeededRandom _rng;
 
+  /// Ledger timestamps; injectable so shared fixtures are deterministic.
+  final DateTime Function() _clock;
+
   List<String?> offers = const [];
+
+  /// Offers the player is holding: a reroll and a new wave's shop keep them.
+  List<bool> held = const [];
   int rerollsTaken = 0;
   bool locked = false;
 
@@ -230,8 +248,23 @@ class WorkshopController {
     hand = gear;
     selected = null;
     offers = [...offers]..[slot] = null;
+    held = [...held]..[slot] = false;
     return WorkshopAction.ok;
   }
+
+  /// Holds or releases an offer. Free; a held offer survives rerolls and the
+  /// next wave's shop until it is bought or released.
+  WorkshopAction toggleHold(int slot) {
+    if (locked) return WorkshopAction.locked;
+    if (slot < 0 || slot >= offers.length || offers[slot] == null) {
+      return WorkshopAction.noOffer;
+    }
+    held = [...held]..[slot] = !held[slot];
+    return WorkshopAction.ok;
+  }
+
+  /// True when every slot is held, so a reroll could not change anything.
+  bool get allHeld => held.isNotEmpty && held.every((h) => h);
 
   /// Undo an unplaced purchase for a full refund.
   WorkshopAction cancelHand() {
@@ -244,6 +277,7 @@ class WorkshopController {
 
   WorkshopAction reroll() {
     if (locked) return WorkshopAction.locked;
+    if (allHeld) return WorkshopAction.allHeld;
     if (!_spend(rerollPrice, 'reroll', 'shop')) {
       return WorkshopAction.insufficientScrap;
     }
@@ -328,7 +362,8 @@ class WorkshopController {
 
   /// Reopens the workshop between waves: pays the cleared wave's reward in
   /// battle scrap (once per wave number, through the ledger), resets the
-  /// reroll price and rolls fresh offers. The board is kept as built.
+  /// reroll price and rolls fresh offers around any held ones. The board is
+  /// kept as built.
   WorkshopAction beginIntermission({
     required int clearedWave,
     required int rewardScrap,
@@ -336,6 +371,7 @@ class WorkshopController {
     if (!locked) return WorkshopAction.ok;
     if (rewardScrap > 0) {
       wallet.apply(
+        at: _clock(),
         TxnRequest(
           idempotencyKey: 'wave_reward:$clearedWave',
           type: 'grant',
@@ -498,11 +534,17 @@ class WorkshopController {
     final boardHasTransmission = board.nodes.any(
       (n) => n.kind == GearKind.transmission,
     );
+    if (held.length != shop.offerCount) {
+      held = List<bool>.filled(shop.offerCount, false);
+    }
     offers = rollShop(
       _rng,
       catalog,
       shop,
       unlockedIds: _shopPool,
+      lockedOffers: held.contains(true)
+          ? [for (var i = 0; i < held.length; i++) held[i] ? offers[i] : null]
+          : null,
       boardHasGuaranteedCategory: boardHasTransmission,
     );
   }
@@ -511,6 +553,7 @@ class WorkshopController {
     if (amount <= 0) return true;
     return wallet
         .apply(
+          at: _clock(),
           TxnRequest(
             idempotencyKey: '$type:${_nextTxn++}',
             type: 'spend',
@@ -523,6 +566,7 @@ class WorkshopController {
   }
 
   void _grant(int amount, String type, String ref) => wallet.apply(
+    at: _clock(),
     TxnRequest(
       idempotencyKey: '$type:${_nextTxn++}',
       type: 'refund',
