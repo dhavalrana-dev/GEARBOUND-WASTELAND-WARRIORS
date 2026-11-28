@@ -82,6 +82,8 @@ class HeroSpecial {
     required this.spPerHit,
     required this.damage,
     required this.radiusMm,
+    required this.knockbackMm,
+    required this.stunTicks,
   });
 
   /// Rivet's Wrench Quake. The parity test keeps this equal to heroes.json.
@@ -91,6 +93,8 @@ class HeroSpecial {
     spPerHit: 10,
     damage: 25,
     radiusMm: 1200,
+    knockbackMm: 350,
+    stunTicks: 15,
   );
 
   final String id;
@@ -98,6 +102,8 @@ class HeroSpecial {
   final int spPerHit;
   final int damage;
   final int radiusMm;
+  final int knockbackMm;
+  final int stunTicks;
 }
 
 /// How a knocked-out hero comes back, from shared/heroes/heroes.json
@@ -310,6 +316,8 @@ class BattleSession {
           centerMm: hero.positionMm,
           radiusMm: special.radiusMm,
           damage: special.damage,
+          knockbackMm: special.knockbackMm,
+          stunTicks: special.stunTicks,
         );
         heroSp = 0;
       }

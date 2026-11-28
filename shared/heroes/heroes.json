@@ -16,7 +16,9 @@
         "spMax": 100,
         "spPerHit": 10,
         "damage": 25,
-        "radiusMm": 1200
+        "radiusMm": 1200,
+        "knockbackMm": 350,
+        "stunTicks": 15
       },
       "recovery": {
         "ticks": 300,

@@ -1,14 +1,14 @@
 # Combat engine (implemented rules)
 
-Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSimulation.cs` + `BattleSession.cs` and `flutter/lib/combat/`. Proven by the cross-engine combat traces in `shared/test-fixtures/combat_traces.json` (8 scenarios). Updated 2026-11-28 for hero recovery.
+Updated 2026-11-28. Implemented identically in `unity/Assets/Game/Core/CombatSimulation.cs` + `BattleSession.cs` and `flutter/lib/combat/`. The C# trace generator has refreshed `shared/test-fixtures/combat_traces.json` for the Wrench Quake control effect; Dart parity and the full suites remain to be verified.
 
 ## Space and time
 - **Space:** lanes 0–2 and integer millimeters. Friendlies start at 0 (the fortress line) and enemies at the world length, approaching from the right.
 - **Time:** 30 fixed ticks per second. Each entity has a stable ID; ties are always broken by ID.
-- **States:** `Idle`, `Moving`, `Attacking`, `Recovering` and `Dead` are in use. `AcquiringTarget`, `Stunned`, `KnockedBack` and `Dying` are reserved for future mechanics.
+- **States:** `Idle`, `Moving`, `Attacking`, `Recovering`, `Stunned`, `KnockedBack` and `Dead` are in use. `AcquiringTarget` and `Dying` remain reserved.
 
 ## Tick order
-1. **Movement.** A unit moves only when no opponent is within its range in its lane, it is not at the fortress or enemy boundary, and **it isn't winding up an attack**.
+1. **Movement.** A unit moves only when no opponent is within its range in its lane, it is not at the fortress or enemy boundary, it isn't winding up an attack, and it isn't stunned. Stun ticks suppress movement and attacks without advancing attack cooldowns.
 2. **Attacks**, in ID order:
    - A unit **winding up** counts down. When the wind-up reaches 0, the attack resolves (below).
    - Otherwise, with an opponent in range and the cooldown at 0, the unit attacks. With `windupTicks = 0` the hit is scheduled immediately. With `windupTicks > 0` the unit **commits**: the wind-up starts, the cooldown resets, and the hit lands `windupTicks` ticks later.
@@ -26,7 +26,7 @@ Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSim
 
 ## Hero
 - **Lane commands:** move between lanes.
-- **Special:** SP charge and the Wrench Quake special (`shared/heroes/heroes.json`; see the hero special in `DEVELOPMENT_STATUS.md`).
+- **Special:** SP charge and the Wrench Quake special (`shared/heroes/heroes.json`). Wrench Quake applies damage, then pushes surviving enemies 350 mm away from Rivet and stuns them for 15 combat ticks. Displacement is clamped to the battlefield; simultaneous outcomes still follow stable combat order.
 - **Knockout and recovery:** when the hero is knocked out, a timer starts at `recovery.ticks` (`shared/heroes/heroes.json`: 300 ticks, 10 s).
   - **Order within a tick:** the timer counts down **after spawns and before the special and combat**. When it reaches 0, the hero returns at the fortress line (x = 0) in the same lane, with `healthPercent` of maximum health (50%, at least 1), a ready attack and no wind-up. So the hero is out for exactly `ticks` ticks.
   - **SP** is kept, but the special cannot be used while the hero is down.
@@ -48,5 +48,5 @@ Updated 2026-11-27. Implemented identically in `unity/Assets/Game/Core/CombatSim
 
 ## Not implemented yet
 - Critical hits and other random combat rolls (they must use the shared `SeededRandom`, in a documented order, with new trace scenarios).
-- Status effects, knockback and stun. Arcing or splash projectiles (mortars).
+- General status-effect sources beyond Wrench Quake; effect duration and push behavior still need cross-engine tests and an in-game feedback treatment. Arcing or splash projectiles (mortars).
 - Ranged enemy behavior beyond attack range.

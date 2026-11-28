@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Phase 03 task 3.7 started: Wrench Quake now applies a 350 mm push and 15-tick stun to surviving enemies, with the same deterministic rules in Dart and C#. Refreshed the C#-generated `boss-wave-hero-special` trace. Cross-engine tests and broader status-effect sources remain pending.
 - Hero recovery (GB-067, Phase 03 task 3.8): a knocked-out hero returns at the fortress line after 300 ticks with 50% health (data in `heroes.json`), and recovers at once if a wave ends while down; HUD countdown. New combat trace `hero-knockout-recovery` matches in both engines; older traces unchanged.
 - Unity workshop checkpoints (GB-066, Phase 02 task 2.11): C# `WorkshopController.ToJson`/`Restore` and `Wallet.ToJson`/`FromJson` read and write the Flutter checkpoint format; the new `checkpoint-resume` fixture case makes Unity resume from Dart-written checkpoints step for step.
 - Offer holds in the workshop shop (GB-065, Phase 02 task 2.9): hold an offer to keep it through rerolls and the next wave's shop; a reroll with every offer held is refused without charge. Dart and C# rules match through the new `offer-holds` case in `workshop_cases.json`.

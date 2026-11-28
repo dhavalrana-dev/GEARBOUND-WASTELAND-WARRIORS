@@ -9,7 +9,7 @@ Updated: 2026-11-28 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
-- **On `feature/unity-workshop-controller`:** committed in `3b5a343`: GB-036/GB-049 Unity workshop rules with the shared `workshop_cases.json` fixture; GB-024 all 12 route nodes on shared mission data; a `flutter/windows/` desktop runner used only to review the game locally; GB-056 output labels on Flutter workshop gears. GB-012 Unity Android baseline (session 20), GB-062 visual direction v3 and the GB-040 mood-board concept (session 22) are on PR #15. GB-065 offer holds (session 23) is PR #16, stacked on PR #15. GB-065 offer holds and GB-066 Unity workshop checkpoints (session 24) are merged to `main` (PR #17). GB-067 hero recovery (session 25) is on `feature/hero-recovery`.
+- **Current checkout:** `feature/hero-recovery` at `ea6384e` (Phase 03 task 3.7 follow-up). PR #15 merged GB-012/GB-062; PR #17 merged GB-065/GB-066; PR #18 merged GB-067. This checkout is ahead of the last observed `origin/main` by the Phase 03 task 3.7 follow-up (PR #19, draft). The visual ART-01 approval gate remains open.
 
 ### Merged to `main` (PRs #1–#13)
 The entries below name the branch each item was built on; all of them are merged.
@@ -34,6 +34,11 @@ The entries below name the branch each item was built on; all of them are merged
 - Flutter/Flame now has a route hub, twelve progressive nodes, health-based stars, local save data, daily contracts, a weekly best-score event, and a playable workshop/battle screen. All 12 nodes load shared missions since GB-024 (session 15); node 1 has three waves, nodes 2–12 one each until GB-051.
 
 ## Verification ledger
+### 2026-11-28 session 26 (Phase 03 task 3.7, initial status-effect support)
+- Shared Wrench Quake tuning adds 350 mm knockback and 15 stun ticks; Dart and C# combat apply it after damage to surviving targets. A stunned unit does not move or attack during its stun ticks, and its attack cooldown does not advance. Knockback is clamped to battlefield bounds.
+- Regenerated `combat_traces.json` with the Unity-bundled C# generator; `boss-wave-hero-special` now resolves at tick 385 with 11 friendly units produced.
+- **Not complete:** no test suites or Dart trace parity run this session. Only Wrench Quake currently produces these effects; broader sources and combat feedback remain open. Phase 03 task 3.7 stays unchecked.
+
 ### 2026-11-28 session 25 (Phase 03 task 3.8: hero recovery, GB-067)
 - **Rule (both engines):**
   - `shared/heroes/heroes.json` gains `recovery` (`ticks` 300, `healthPercent` 50); the hero schema requires it.

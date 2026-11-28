@@ -72,6 +72,7 @@ class Combatant {
   final int movementMmPerTick;
   final int attackIntervalTicks;
   int attackCooldownTicks = 0;
+  int stunRemaining = 0;
 
   /// Ticks between committing to an attack and the hit landing (0 = instant).
   final int windupTicks;
@@ -190,7 +191,12 @@ class CombatSimulation {
     required int centerMm,
     required int radiusMm,
     required int damage,
+    int knockbackMm = 0,
+    int stunTicks = 0,
   }) {
+    if (knockbackMm < 0 || stunTicks < 0) {
+      throw ArgumentError('Control effects cannot be negative.');
+    }
     final targets =
         _combatants
             .where(
@@ -204,7 +210,16 @@ class CombatSimulation {
           ..sort((a, b) => a.id.compareTo(b.id));
     for (final target in targets) {
       _applyDamage(target, damage);
-      if (target.health <= 0) target.state = CombatState.dead;
+      if (target.health <= 0) {
+        target.state = CombatState.dead;
+      } else {
+        _applyControlEffect(
+          target,
+          centerMm: centerMm,
+          knockbackMm: knockbackMm,
+          stunTicks: stunTicks,
+        );
+      }
     }
     return targets.length;
   }
@@ -222,6 +237,12 @@ class CombatSimulation {
     };
     final nextPositions = <int, int>{};
     for (final unit in living) {
+      if (unit.stunRemaining > 0) {
+        unit.stunRemaining--;
+        nextPositions[unit.id] = startPositions[unit.id]!;
+        unit.state = CombatState.stunned;
+        continue;
+      }
       if (unit.attackCooldownTicks > 0) unit.attackCooldownTicks--;
       final start = startPositions[unit.id]!;
       final hasNearbyTarget = living.any(
@@ -293,6 +314,7 @@ class CombatSimulation {
       }
     }
     for (final unit in living) {
+      if (unit.stunRemaining > 0 || unit.state == CombatState.stunned) continue;
       if (unit.windupRemaining > 0) {
         // Telegraphed attack: lands when the wind-up ends, on whoever is in
         // range then.
@@ -429,5 +451,21 @@ class CombatSimulation {
     target.health = (target.health - (remaining - absorbed))
         .clamp(0, target.maxHealth)
         .toInt();
+  }
+
+  void _applyControlEffect(
+    Combatant target, {
+    required int centerMm,
+    required int knockbackMm,
+    required int stunTicks,
+  }) {
+    if (knockbackMm > 0) {
+      final direction = target.positionMm >= centerMm ? 1 : -1;
+      target.positionMm = (target.positionMm + direction * knockbackMm)
+          .clamp(0, worldLengthMm)
+          .toInt();
+      target.state = CombatState.knockedBack;
+    }
+    if (stunTicks > target.stunRemaining) target.stunRemaining = stunTicks;
   }
 }
