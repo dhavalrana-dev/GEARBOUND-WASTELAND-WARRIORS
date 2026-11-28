@@ -9,7 +9,7 @@ Updated: 2026-11-28 (Asia/Calcutta)
 - `dotnet` CLI is unavailable in PATH. Unity's bundled compiler is used for Unity builds.
 
 ## Current milestone
-- **Current checkout:** `feature/hero-recovery` at `e72cb76` (GB-067); clean before this Phase 03 task 3.7 work. `origin/main` has PR #17 merged (GB-065/GB-066). GB-012/GB-062 and GB-067 have not been confirmed merged. The visual ART-01 approval gate remains open.
+- **Current checkout:** `feature/hero-recovery` at `ea6384e` (Phase 03 task 3.7 follow-up). PR #15 merged GB-012/GB-062; PR #17 merged GB-065/GB-066; PR #18 merged GB-067. This checkout is ahead of the last observed `origin/main` by the Phase 03 task 3.7 follow-up (PR #19, draft). The visual ART-01 approval gate remains open.
 
 ### Merged to `main` (PRs #1–#13)
 The entries below name the branch each item was built on; all of them are merged.
