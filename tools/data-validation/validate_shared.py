@@ -56,15 +56,111 @@ def unique_ids(rel, items):
     return seen
 
 
+# Shared data file -> schema that describes it. Every runtime file must have one.
+SCHEMA_FOR = {
+    "configs/gear_rules.json": "gear-rules.schema.json",
+    "gears/starter_gears.json": "gear-definition.schema.json",
+    "enemies/enemies.json": "enemy-definition.schema.json",
+    "heroes/heroes.json": "hero.schema.json",
+    "economy/shop.json": "shop.schema.json",
+    "economy/currencies.json": "currencies.schema.json",
+    "monetization/ad_policy.json": "ad-policy.schema.json",
+    "events/progression_rewards.json": "progression-rewards.schema.json",
+    "missions/campaign_route.json": "campaign-route.schema.json",
+    "art/asset_manifest.json": "asset-manifest.schema.json",
+}
+WAVE_SCHEMA = "wave.schema.json"
+
+_TYPES = {
+    "object": dict, "array": list, "string": str, "boolean": bool, "null": type(None),
+}
+
+
+def schema_errors(value, schema, path="$"):
+    """Checks the JSON Schema subset these schemas use: type, const, enum, required,
+    properties, additionalProperties, items, minItems, minLength, pattern, minimum, maximum."""
+    found = []
+    expected = schema.get("type")
+    if expected is not None:
+        kinds = expected if isinstance(expected, list) else [expected]
+        def matches(kind):
+            if kind == "integer":
+                return isinstance(value, int) and not isinstance(value, bool)
+            if kind == "number":
+                return isinstance(value, (int, float)) and not isinstance(value, bool)
+            return isinstance(value, _TYPES[kind])
+        if not any(matches(k) for k in kinds):
+            return [f"{path}: expected {expected}, got {type(value).__name__}"]
+    if "const" in schema and value != schema["const"]:
+        found.append(f"{path}: must equal {schema['const']!r}")
+    if "enum" in schema and value not in schema["enum"]:
+        found.append(f"{path}: {value!r} is not one of {schema['enum']}")
+    if isinstance(value, dict):
+        for key in schema.get("required", []):
+            if key not in value:
+                found.append(f"{path}: missing required {key!r}")
+        props = schema.get("properties", {})
+        extra = schema.get("additionalProperties", True)
+        for key, item in value.items():
+            if key in props:
+                found += schema_errors(item, props[key], f"{path}.{key}")
+            elif extra is False:
+                found.append(f"{path}: unexpected property {key!r}")
+            elif isinstance(extra, dict):
+                found += schema_errors(item, extra, f"{path}.{key}")
+    if isinstance(value, list):
+        if len(value) < schema.get("minItems", 0):
+            found.append(f"{path}: needs at least {schema['minItems']} items")
+        if "items" in schema:
+            for i, item in enumerate(value):
+                found += schema_errors(item, schema["items"], f"{path}[{i}]")
+    if isinstance(value, str):
+        if len(value) < schema.get("minLength", 0):
+            found.append(f"{path}: shorter than {schema['minLength']}")
+        if "pattern" in schema and not re.search(schema["pattern"], value):
+            found.append(f"{path}: {value!r} does not match {schema['pattern']}")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if "minimum" in schema and value < schema["minimum"]:
+            found.append(f"{path}: {value} is below {schema['minimum']}")
+        if "maximum" in schema and value > schema["maximum"]:
+            found.append(f"{path}: {value} is above {schema['maximum']}")
+    return found
+
+
+def check_schemas() -> None:
+    targets = dict(SCHEMA_FOR)
+    for path in sorted((SHARED / "waves").glob("*.json")):
+        targets[f"waves/{path.name}"] = WAVE_SCHEMA
+    for rel, schema_name in targets.items():
+        schema_path = SHARED / "schemas" / schema_name
+        if not schema_path.is_file():
+            fail(rel, f"schema {schema_name} is missing")
+            continue
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        doc = json.loads((SHARED / rel).read_text(encoding="utf-8"))
+        for problem in schema_errors(doc, schema)[:20]:
+            fail(f"{rel} vs {schema_name}", problem)
+    described = set(targets.values())
+    for path in (SHARED / "schemas").glob("*.json"):
+        if path.name not in described:
+            fail(f"schemas/{path.name}", "schema describes no shared data file")
+
+
 def main() -> int:
     rules = load("configs/gear_rules.json")
     gears_doc = load("gears/starter_gears.json")
     enemies_doc = load("enemies/enemies.json")
     shop = load("economy/shop.json")
     mission = load("waves/mission_001.json")
-    extra_missions = [load("waves/copperwash_01.json")]
+    extra_missions = {
+        f"waves/{path.name}": load(f"waves/{path.name}")
+        for path in sorted((SHARED / "waves").glob("*.json"))
+        if path.name != "mission_001.json"
+    }
     if None in (rules, gears_doc, enemies_doc, shop, mission):
         return report()
+
+    check_schemas()
 
     if rules["simulation"].get("ticksPerSecond") != 30:
         fail("configs/gear_rules.json", "ticksPerSecond must be 30 per AGENTS.md")
@@ -152,7 +248,7 @@ def main() -> int:
     if cheapest_useful is None or shop["startingScrap"] < cheapest_useful:
         fail("economy/shop.json", "startingScrap cannot buy any transmission or infantry gear")
 
-    for rel, doc in [("waves/mission_001.json", mission), ("waves/copperwash_01.json", extra_missions[0])]:
+    for rel, doc in [("waves/mission_001.json", mission), *extra_missions.items()]:
         if doc is None:
             continue
         unique_ids(rel, doc["waves"])
@@ -173,6 +269,13 @@ def main() -> int:
 
     route = load("missions/campaign_route.json")
     if route is not None:
+        node_ids = [node.get("id") for node in route.get("nodes", [])]
+        if len(node_ids) != 12 or len(set(node_ids)) != len(node_ids):
+            fail("missions/campaign_route.json", "route must list the 12 campaign nodes once each")
+        routed = {node.get("mission") for node in route.get("nodes", [])}
+        for rel in extra_missions:
+            if rel not in routed:
+                fail(rel, "mission file is not used by any route node")
         for node in route.get("nodes", []):
             where = f"missions/campaign_route.json[{node.get('id')}]"
             target = SHARED / node.get("mission", "")

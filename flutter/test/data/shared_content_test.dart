@@ -41,8 +41,9 @@ void main() {
     expect(content.gears.map((g) => g.id), contains('drive.coupler'));
     expect(content.enemies.map((e) => e.id), contains('boss.scrapmaw'));
     expect(content.shop.offerCount, 3);
-    expect(content.hasEncounter('copperwash-01'), isTrue);
-    expect(content.hasEncounter('copperwash-02'), isFalse);
+    for (final id in campaignEncounterIds) {
+      expect(content.hasEncounter(id), isTrue, reason: id);
+    }
   });
 
   test(
@@ -54,10 +55,15 @@ void main() {
       expect(shared.id, legacy.id);
       expect(shared.rewardScrap, legacy.rewardScrap);
       expect(shared.spawns.map(_spawnKey), legacy.spawns.map(_spawnKey));
-      // Unmigrated nodes still use the scripted encounters.
+      // Every node now comes from shared data (GB-024); node 2 kept its
+      // scripted spawns exactly.
       expect(
         encounterForLevel(1, content: content).spawns.map(_spawnKey),
         encounterForLevel(1).spawns.map(_spawnKey),
+      );
+      expect(
+        encounterForLevel(5, content: content).id,
+        'wave-${campaignEncounterIds[5]}',
       );
     },
   );

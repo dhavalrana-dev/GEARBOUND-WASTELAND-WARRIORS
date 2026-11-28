@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "missionId": "route.copperwash.03",
+  "waves": [
+    {"id": "wave.1", "rewardScrap": 3, "groups": [{"enemyId": "raider.bruiser", "count": 2, "firstSpawnTick": 0, "intervalTicks": 54, "lanePattern": [1, 2]}, {"enemyId": "raider.skirmisher", "count": 2, "firstSpawnTick": 24, "intervalTicks": 52, "lanePattern": [0, 1]}]}
+  ]
+}

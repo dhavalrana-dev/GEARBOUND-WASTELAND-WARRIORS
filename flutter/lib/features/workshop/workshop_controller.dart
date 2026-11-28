@@ -296,7 +296,10 @@ class WorkshopController {
           : rules.intervalFor(definition.baseIntervalTicks, node.tier + 1),
     );
     // The merged gear keeps the top-left cell, so its lane still follows its row.
-    if (merged == null) return WorkshopAction.notMergeable;
+    if (merged == null) {
+      _undo.removeLast();
+      return WorkshopAction.notMergeable;
+    }
     selected = (x: merged.x, y: merged.y);
     return WorkshopAction.ok;
   }

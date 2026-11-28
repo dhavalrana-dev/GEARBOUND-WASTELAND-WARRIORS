@@ -3,7 +3,8 @@
   "rootNamespace": "Gearbound.Tests",
   "references": [
     "Gearbound.Core",
-    "Gearbound.Economy"
+    "Gearbound.Economy",
+    "Gearbound.Workshop"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

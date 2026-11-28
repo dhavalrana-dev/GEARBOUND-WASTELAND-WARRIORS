@@ -19,44 +19,45 @@ The goal is a finished game, not an oversized unfinished prototype.
 
 ## 2. Current baseline (verified in this repository)
 
+Updated 2026-11-28.
+
 **Branches:**
-- `main` = `4f50218` (PRs #1–#3 merged).
-- **PR #4 (`feature/workshop-shop-ui`, `bc269a4`) is open and not merged.** It holds GB-030 and GB-031.
-- This roadmap's branch is stacked on PR #4.
+- `main` = `a34f9ed` (PRs #1–#13 merged, the last being GB-037 turret projectiles).
+- `feature/unity-workshop-controller` holds uncommitted work: GB-036/GB-049 (Unity workshop rules and `mixSeed32`), GB-024 (all route nodes on shared data) and a `flutter/windows/` desktop runner for local review.
 
-**Technical foundation (implemented):**
+**Technical foundation (implemented, both engines):**
 - Fixed 30 Hz simulation on a 5×5 board with reciprocal ports, graph traversal, rotation parity, merge, output clocks and lane combat.
-- Wave director, seeded shop, shared JSON with validator, and an independent Python fixture generator.
-- Four cross-engine combat trace scenarios that match exactly.
+- Multi-wave `BattleSession` with intermission, hero special (Wrench Quake), boss wind-up and cleave, and turret projectiles.
+- Wave director, seeded shop, workshop controller rules, shared JSON with validator, an independent Python fixture generator, and the Dart-generated workshop fixture.
+- Seven cross-engine combat trace scenarios that match exactly.
 
-**Flutter progression (implemented):** 12 nodes across Copperwash Pass, Ironwood Frontier and The Sunken Yard, with best-result stars, daily contracts, Scrapstorm, Overclock Streak, Supply Log, star chests and Vanguard Drop.
+**Flutter (implemented):**
+- 12 route nodes across Copperwash Pass, Ironwood Frontier and The Sunken Yard, all loading shared mission data. Node 1 has 3 waves; nodes 2–12 have one.
+- Workshop: shop, tap and drag placement, moves, merges, sell, undo, previews; turrets in the shop.
+- Mission lifecycle (pause, background, Back, rotation) and wave-boundary checkpoints.
+- Progression: best-result stars, daily contracts, Scrapstorm, Overclock Streak, Supply Log, star chests and Vanguard Drop.
 
 **Commercial foundation (implemented, local only):**
 - Ledger wallet in Dart and C#, with separated currencies and idempotent claims.
 - Save v3 with v1/v2 migration, two-slot recovery and a clock-rollback guard.
 - Shared ad policy in Dart and C#, plus a mock rewarded provider. Ads are disabled.
 
-**Workshop (PR #4):**
-- Shop with buy, tap-to-place, merge, sell, reroll and cancel, paid in mission-scoped battle scrap through the ledger.
-- Board taps, and controls that scroll at every size.
-
-**Recorded verification** (re-run before every merge):
+**Recorded verification** (latest run in `DEVELOPMENT_STATUS.md`; re-run before every merge):
 
 | Check | Result |
 |---|---|
-| Unity EditMode | 30/30 |
-| Flutter tests | 106/106 on PR #4 (88/88 on `main`) |
+| Unity EditMode | 57/57 |
+| Flutter tests | 182/182 |
 | Flutter analyze | Clean |
-| Validator, reference fixtures, asset sync, combat traces | Clean |
+| Validator, reference fixtures, asset sync, combat traces, workshop cases | Clean |
 
 **Limitations:**
 - No production art.
-- Unity is a simulation library only, with no playable client.
-- Workshop: no drag-and-drop, gear moves, or undo after placement.
-- 1 of 12 route nodes uses shared data.
-- Single-wave missions only.
+- Unity is a simulation and rules library only, with no playable client or UI.
+- Route nodes 2–12 are single-wave (GB-051).
+- No status effects, knockback or hero recovery.
 - No ad SDK, consent, IAP or backend.
-- Android build blocked on the NDK license (re-checked this session, see `DEVELOPMENT_STATUS.md`).
+- Android debug and profile builds run on the emulator only; no physical phone yet and no performance data (see `TOOLCHAIN_REPORT.md`). A Windows desktop debug build is also available for review.
 - iOS needs macOS and Xcode.
 - No device performance data.
 
@@ -72,15 +73,15 @@ The goal is a finished game, not an oversized unfinished prototype.
 
 | Phase | Focus | Status |
 |---|---|---|
-| 00 | Repository and simulation foundation | Implemented; device verification pending |
-| 01 | Toolchain and build readiness | **Blocked** (Android NDK license, user action) |
-| 02 | Complete mechanical workshop | **Implemented in Flutter** (shop, drag, move, undo, previews); device test and Unity port (GB-036) pending |
+| 00 | Repository and simulation foundation | **Complete** (2026-11-28): schemas enforced; baseline identical on the Dart VM, Windows AOT, and the Android emulator in debug and AOT |
+| 01 | Toolchain and build readiness | Partial: Android debug and profile APKs build and run on the emulator; Windows runner (GB-059); `cmdline-tools`, a physical phone, the Unity Android build and iOS remain |
+| 02 | Complete mechanical workshop | **Implemented in Flutter** (shop, drag, move, undo, previews); workshop rules ported to Unity C# with a shared fixture (GB-036); device test and Unity UI pending |
 | 03 | Combat and multi-wave mission flow | In progress: multi-wave, intermission, lifecycle, checkpoints, hero special, boss telegraphs (wind-up and cleave) and turret projectiles done; status effects and hero recovery pending |
 | 04 | Visual preproduction | Planned (asset manifest created, all `planned`) |
 | 05 | Production vertical slice | Planned |
-| 06 | Unity and Flutter playable parity | Partial (simulation, economy and ad-policy parity only) |
-| 07 | Campaign content | Partial (1/12 nodes on shared data) |
-| 08 | Expanded gamification | Partial (existing systems) |
+| 06 | Unity and Flutter playable parity | Partial: simulation, workshop rules, economy and ad-policy parity; no Unity client (GB-046) |
+| 07 | Campaign content | Partial: all 12 nodes on shared mission data (GB-024); nodes 2–12 single-wave until GB-051 |
+| 08 | Expanded gamification | Partial: streak, star chests, Supply Log, Vanguard Drop, daily contracts; data-driven pools pending (GB-032) |
 | 09 | LiveOps events | Partial (Scrapstorm offline) |
 | 10 | Economy and persistence hardening | Local foundation implemented |
 | 11 | Advertising integration | Policy and mock implemented; SDK pending |
@@ -105,8 +106,12 @@ The goal is a finished game, not an oversized unfinished prototype.
 
 **Exit:** behavior is unchanged unless approved; fixtures, validator and analyze pass; Unity tests pass; any gaps are documented.
 
+**Status (2026-11-28): complete.** Every runtime data file has an enforced schema. The shared fixtures replay identically on the Dart VM, as a Windows AOT binary, and on the Android emulator in debug and AOT (profile) builds. A physical ARM64 phone is part of the Phase 15 device matrix.
+
 ## Phase 01 — Toolchain and mobile build readiness
-**P0 · Blocked** · GB-012, GB-038
+**P0 · Blocked** · GB-012, GB-038, GB-059
+
+**Status (2026-11-28):** Android works with the owner's SDK at `F:\Android\Sdk`: debug and profile APKs build and run on the Pixel 10 Pro XL emulator (`TOOLCHAIN_REPORT.md`). Remaining: `cmdline-tools` for a green `flutter doctor`, a physical phone, the Unity Android build and iOS. Unity EditMode runs in batch mode. A Windows desktop debug runner (`flutter run -d windows`, needs Windows Developer Mode) is in place for reviewing the game on the development PC; it is not a release target and proves nothing about phone performance.
 
 **Unity:**
 - Editor, Android Build Support, SDK/NDK/JDK and modules.
@@ -132,22 +137,24 @@ The goal is a finished game, not an oversized unfinished prototype.
 
 **02.1 Shop UI**
 - *Done (PR #4):* three offers with name, category, price and buy; reroll; insufficient-funds and sold-out states.
-- *Remaining:* gear art (or labeled temporary art), tier display, output preview.
+- *Remaining:* gear art (or labeled temporary art) and a numeric tier and spawn-rate display (GB-056). Merged gears show a tier badge; the selected gear shows its interval.
 - Offer locking: the rule exists in `rollShop`, but there is no UI.
 - Pricing must come from the shared shop rules, never the UI.
 
 **02.2 Placement**
 - *Done:* tap-to-select, tap-to-place, valid-cell highlight, occupancy validation.
-- *Remaining (GB-039):* drag-and-drop, drag ghost and snapping, invalid-cell preview, port/connection and power preview, touch cancel, and orientation-aware input mapping. Tap mapping is already tested in both orientations.
+- *Done (GB-039):* drag-and-drop with a ghost, target-cell preview (powered, unpowered, invalid), drop onto a gear to merge, and orientation-aware input, tested in both orientations.
+- *Remaining:* device touch check.
 
 **02.3 Manipulation**
 - *Done:* merge, sell, cancel unplaced purchase, and power state shown through the indicators.
-- *Remaining (GB-039):* moving placed gears, rotation (meaningful only once gears with partial ports exist), undo after placement, a conflict explanation, and an interval preview.
+- *Done (GB-039):* moving placed gears, undo for place, move, merge and sell, and an interval preview.
+- *Remaining:* rotation (meaningful only once gears with partial ports exist) and a conflict explanation.
 - Define atomic transaction boundaries for each action.
 
 **02.4 Battle economy**
 - *Done:* battle scrap in a mission wallet, separate from permanent currency; ledger-checked spends and refunds; no negative balances.
-- *Remaining:* recovery if the app is interrupted mid-mission (Phase 03.5).
+- *Done (GB-053):* wave-boundary checkpoints restore the mission wallet, offers and RNG after the app is killed.
 
 **02.5 Refactoring**
 - *Done:* `features/campaign`, `features/workshop`, `design_system`.
@@ -157,7 +164,7 @@ The goal is a finished game, not an oversized unfinished prototype.
 - Purchase, place, (rotate,) merge and sell all work, and power updates immediately.
 - All costs go through the ledger; invalid actions change nothing.
 - Edits are blocked outside preparation, and the shop fixtures stay valid.
-- The Unity workshop follows once a Unity UI exists (GB-036).
+- The Unity workshop rules (`Gearbound.Workshop.WorkshopController`) match Flutter through `workshop_cases.json` (GB-036). The Unity workshop UI follows with the playable client (GB-046).
 
 ## Phase 03 — Complete combat and mission flow
 **P0** · GB-006, 007, 011, 015, 025 · Depends on Phase 02
@@ -169,6 +176,14 @@ The goal is a finished game, not an oversized unfinished prototype.
 | 03.3 Combat depth | Targeting, anticipation and recovery, projectiles, armor, shields, status effects, knockback, boss telegraphs, prioritized by authored encounters |
 | 03.4 Feedback | Fortress, hero, enemy count, wave number, production state, deployment, damage, status, results. Temporary visuals are labeled. |
 | 03.5 Lifecycle | Pause, background/resume, rotation, interruption, return to workshop, reward claim |
+
+**Status (2026-11-28):**
+- 03.1 done in both engines (GB-025): init, prep, wave, intermission with rewards, victory or defeat, result.
+- 03.2 partial: lane commands and the Wrench Quake special (GB-055). Other hero actions not evaluated yet.
+- 03.3 partial: armor, shields, wind-up and cleave (GB-058) and turret projectiles (GB-037). Status effects, knockback and hero recovery pending.
+- 03.4 partial: fortress, wave, SP and telegraph feedback with temporary visuals.
+- 03.5 done in Flutter (GB-052, GB-053); not device-tested.
+- Playable builds: the Android debug APK on the emulator and the Windows desktop debug runner. Not yet on a physical phone.
 
 **Deliverables:** a multi-wave mission, deterministic scenarios, updated fixtures, lifecycle tests, a playable build.
 
@@ -217,12 +232,14 @@ The goal is a finished game, not an oversized unfinished prototype.
 - **Shared:** same rules, IDs, configuration, missions, rewards and visual metadata, with equivalent outcomes. Rendering internals may differ.
 - **Exit:** both clients complete the same mission with equivalent simulation outcomes, in both orientations, with consistent visual identity. ART-06 passes on real runtimes.
 
+**Status (2026-11-28):** simulation, combat traces, wallet, ad policy and workshop rules match (GB-036, GB-049). Unity has no client; Flutter still draws canvas primitives.
+
 ## Phase 07 — Campaign content
 **P1** · GB-013, 015, 021, 024
 
 | Step | Scope |
 |---|---|
-| 07.1 | Move all 12 nodes to shared data, keeping IDs and unlocks; remove hard-coded encounters only after equivalence tests; mission schema; validator |
+| 07.1 | Move all 12 nodes to shared data, keeping IDs and unlocks; remove hard-coded encounters only after equivalence tests; mission schema; validator. **Done (GB-024):** every node loads shared data, equivalence pinned by `route_migration_test.dart`; the old scripts remain only as that test's baseline |
 | 07.2 | Copperwash: The First Link, Rivet Ridge, The Split Gear, Dust Devil Run, Scrapjaw, each teaching a distinct concept |
 | 07.3 | Ironwood and Sunken after Copperwash passes review |
 | 07.4 | Illustrated map: nodes, path, stars, bosses, checkpoints, region transitions, lock states |
@@ -370,11 +387,11 @@ For a solo developer, keep only a few feature branches active at once.
 | Gate | Requires | Status |
 |---|---|---|
 | G0 Foundation | Baseline tests, fixtures, save compatibility | **Met** (local; re-verify per merge) |
-| G1 Playable prototype | Gear buy/place, full mission flow, Android install or documented blocker | Partial: shop in PR #4; multi-wave missing; Android blocked |
+| G1 Playable prototype | Gear buy/place, full mission flow, Android install or documented blocker | **Met in Flutter** with a documented Android blocker: workshop, multi-wave flow, lifecycle and checkpoints done; reviewable as a Windows debug build |
 | G2 Visual direction | `ART_DIRECTION.md` approved, Rivet master, battlefield composition | Not started |
 | G3 Vertical slice | Final character, environment, board, animations, responsive UI | Not started |
 | G4 Cross-engine client | Unity and Flutter playable, parity, visual consistency | Not started |
-| G5 Engagement | Campaign, contracts, achievements, events, reliable rewards | Partial |
+| G5 Engagement | Campaign, contracts, achievements, events, reliable rewards | Partial: campaign, contracts, Scrapstorm and rewards done; achievements and the event engine pending |
 | G6 Commercial | Consent, ads, verified purchases, entitlements, offline fallback | Not started (policy and mock only) |
 | G7 Release candidate | Devices, profiling, privacy, store validation, closed test | Not started |
 
@@ -382,25 +399,28 @@ Never skip a gate without a documented reason, risk and approval.
 
 ## 21. Sprint order (work packages, not dates)
 
-| Sprint | Focus |
-|---|---|
-| 01 | Finish the workshop: GB-030 remainder → **GB-039** (drag, move, undo, previews) |
-| 02 | Mission loop: GB-025 (multi-wave, inter-wave prep, results, persistence, lifecycle) |
-| 03 | Visual preproduction: Rivet master, proportions, gear concepts, Copperwash concept, wireframes, manifest (GB-040, GB-041) |
-| 04 | First production art: Rivet parts and rig, animations, enemies, gears, environment layers (GB-042–044) |
-| 05 | Playable production slice: rendering, VFX, HUD, audio (GB-045) |
-| 06 | Unity playable presentation and parity (GB-046, GB-036) |
-| 07 | Campaign migration and progression (GB-024, GB-032) |
-| 08 | First LiveOps events (GB-033) |
-| 09 | Ad adapters and consent (GB-034) |
-| 10 | Backend and verified purchases (GB-035) |
-| 11 | Device profiling and release quality |
+| Sprint | Focus | Status (2026-11-28) |
+|---|---|---|
+| 01 | Finish the workshop: GB-030 remainder → **GB-039** (drag, move, undo, previews) | Done in Flutter; device check pending |
+| 02 | Mission loop: GB-025 (multi-wave, inter-wave prep, results, persistence, lifecycle) | Done in Flutter (GB-025, GB-052, GB-053); combat depth GB-055, GB-058, GB-037 added |
+| 03 | Visual preproduction: Rivet master, proportions, gear concepts, Copperwash concept, wireframes, manifest (GB-040, GB-041) | Manifest done; art not started (needs art production and owner approval) |
+| 04 | First production art: Rivet parts and rig, animations, enemies, gears, environment layers (GB-042–044) | Not started (needs Sprint 03) |
+| 05 | Playable production slice: rendering, VFX, HUD, audio (GB-045) | Not started (needs approved art) |
+| 06 | Unity playable presentation and parity (GB-046, GB-036) | GB-036 and GB-049 done (rules); client not started |
+| 07 | Campaign migration and progression (GB-024, GB-032) | GB-024 done; GB-051 and GB-032 next |
+| 08 | First LiveOps events (GB-033) | Not started |
+| 09 | Ad adapters and consent (GB-034) | Blocked (AdMob account, device build) |
+| 10 | Backend and verified purchases (GB-035) | Blocked (store accounts, backend) |
+| 11 | Device profiling and release quality | Not started (Android emulator builds work; a physical phone is needed for real measurements) |
+
+Work that needs no art or accounts has been pulled forward while Sprints 03–05 wait on art production.
 
 Resolve Phase 01 blockers in parallel throughout.
 
 ## 22. Documentation and evidence rules
 
 - After every milestone, update `DEVELOPMENT_STATUS.md`, `TASK_BACKLOG.md`, `CROSS_ENGINE_PARITY.md`, `RISK_REGISTER.md`, `CHANGELOG.md` and the relevant technical docs.
+- Tick the matching boxes in `.kiro/specs/gearbound-production/tasks.md`, the phase-wise checklist, and refresh its progress table with `python -I tools/build/phase_progress.py`.
 - **Art:** manifest, concept approval, rig and animation metadata, integration status, screenshots.
 - **Tests:** command, environment, date, commit, and passed/failed/skipped/blocked counts.
 - Never report unexecuted verification as passing.
@@ -413,7 +433,8 @@ Resolve Phase 01 blockers in parallel throughout.
 flutter pub get
 flutter analyze
 flutter test
-flutter build apk --debug    # blocked: Android NDK license (Phase 01)
+flutter build apk --debug    # works with the Android Studio SDK (F:\Android\Sdk)
+flutter test integration_test/baseline_device_test.dart -d emulator-5554
 ```
 
 **Shared data and fixtures:**
@@ -423,6 +444,9 @@ python -I tools/data-validation/validate_shared.py
 python -I tools/simulation/reference_rules.py --check
 python -I tools/build/sync_flutter_shared.py --check
 tools/simulation/generate_combat_traces.ps1 -Check
+python -I tools/build/phase_progress.py --check
+cd flutter; dart run tool/workshop_cases.dart --check
+cd flutter; dart run tool/baseline_check.dart   # also as an AOT binary via dart compile exe
 ```
 
 **Unity:** EditMode tests per `AGENTS.md`.
@@ -436,7 +460,7 @@ See `RISK_REGISTER.md`. Main risks:
 - **Inconsistent AI art:** approve masters and individual assets.
 - **Rig anatomy errors:** validate assembly and extreme poses.
 - **Placeholder graphics persisting:** the visual slice is a mandatory gate.
-- **Android build blocked:** prioritize the toolchain.
+- **Android verified only on the emulator:** get a physical phone for device and performance checks (Phase 15).
 - **Campaign scope:** Copperwash first.
 - **Disruptive ads:** shared policy and measurement.
 - **Purchase fraud or duplication:** server verification and idempotency.

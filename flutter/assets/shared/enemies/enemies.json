@@ -4,6 +4,13 @@
     { "id": "raider.basic", "name": "Scrap Raider", "role": "basic", "health": 32, "armor": 0, "damage": 6, "attackRangeMm": 250, "movementMmPerTick": 60, "attackIntervalTicks": 30, "rewardScrap": 1 },
     { "id": "raider.runner", "name": "Rustrunner", "role": "fast", "health": 22, "armor": 0, "damage": 4, "attackRangeMm": 250, "movementMmPerTick": 95, "attackIntervalTicks": 38, "rewardScrap": 1 },
     { "id": "raider.bruiser", "name": "Slagback Bruiser", "role": "heavy", "health": 56, "armor": 2, "damage": 8, "attackRangeMm": 250, "movementMmPerTick": 38, "attackIntervalTicks": 40, "rewardScrap": 2 },
+    { "id": "raider.skirmisher", "name": "Cinder Skirmisher", "role": "fast", "health": 24, "armor": 0, "damage": 5, "attackRangeMm": 250, "movementMmPerTick": 76, "attackIntervalTicks": 35, "rewardScrap": 1 },
+    { "id": "raider.dasher", "name": "Spoke Dasher", "role": "fast", "health": 24, "armor": 0, "damage": 5, "attackRangeMm": 250, "movementMmPerTick": 100, "attackIntervalTicks": 36, "rewardScrap": 1 },
+    { "id": "ironwood.raider", "name": "Ironwood Cutter", "role": "basic", "health": 54, "armor": 1, "damage": 7, "attackRangeMm": 300, "movementMmPerTick": 70, "attackIntervalTicks": 30, "rewardScrap": 1 },
+    { "id": "ironwood.lancer", "name": "Ironwood Pikehand", "role": "ranged", "health": 62, "armor": 1, "damage": 8, "attackRangeMm": 330, "movementMmPerTick": 76, "attackIntervalTicks": 30, "rewardScrap": 2 },
+    { "id": "sunken.reaver", "name": "Silt Reaver", "role": "elite", "health": 72, "armor": 2, "damage": 9, "attackRangeMm": 350, "movementMmPerTick": 80, "attackIntervalTicks": 30, "rewardScrap": 2 },
+    { "id": "ironwood.warden", "name": "Ironwood Warden", "role": "elite", "health": 68, "armor": 1, "damage": 9, "attackRangeMm": 340, "movementMmPerTick": 78, "attackIntervalTicks": 30, "rewardScrap": 2 },
+    { "id": "sunken.tidebreaker", "name": "Tidebreaker", "role": "elite", "health": 76, "armor": 2, "damage": 9, "attackRangeMm": 360, "movementMmPerTick": 82, "attackIntervalTicks": 30, "rewardScrap": 2 },
     { "id": "boss.scrapmaw", "name": "Scrapmaw", "role": "boss", "health": 140, "armor": 2, "damage": 10, "attackRangeMm": 320, "movementMmPerTick": 24, "attackIntervalTicks": 42, "rewardScrap": 5, "windupTicks": 18, "cleave": true }
   ]
 }

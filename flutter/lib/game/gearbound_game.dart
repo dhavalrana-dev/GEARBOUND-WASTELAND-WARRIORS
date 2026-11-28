@@ -124,6 +124,16 @@ class WorkshopBoardView extends PositionComponent
   double _gridLeft = 0;
   double _gridTop = 0;
 
+  /// Compact labels drawn on each output gear in both board orientations.
+  String? outputRateLabel(GearNode node) {
+    if (node.outputKind == GearOutputKind.none) return null;
+    final interval = network.nodes[node.id]?.effectiveIntervalTicks ?? 0;
+    final rate = interval <= 0 ? '--' : (30 / interval).toStringAsFixed(2);
+    return 'T${node.tier}  $rate/s';
+  }
+
+  String outputLaneLabel(GearNode node) => 'L${node.targetLane + 1}';
+
   void resizeTo(Vector2 canvasSize) {
     size = canvasSize;
     _portrait = canvasSize.y > canvasSize.x;
@@ -319,7 +329,9 @@ class WorkshopBoardView extends PositionComponent
             : result?.state == NetworkState.unpowered
             ? const ui.Color(0xFFE47A66)
             : const ui.Color(0xFFE9BA64);
-        if (node.tier > 1) {
+        if (node.outputKind != GearOutputKind.none) {
+          _drawOutputLabels(canvas, rect, node);
+        } else if (node.tier > 1) {
           canvas.drawParagraph(
             _paragraph('T${node.tier}', 9, 0xFFFFE8C8, bold: true),
             ui.Offset(rect.left + 3, rect.bottom - 13),
@@ -355,6 +367,53 @@ class WorkshopBoardView extends PositionComponent
     canvas.drawParagraph(
       _paragraph('5 × 5 MECHANICAL GRID', 9, 0xFF8EAAA9, bold: true),
       ui.Offset(_gridLeft, labelTop),
+    );
+  }
+
+  void _drawOutputLabels(ui.Canvas canvas, ui.Rect rect, GearNode node) {
+    final chipHeight = math.max(11.0, _cell * 0.18);
+    final laneWidth = math.max(16.0, _cell * 0.25);
+    final rateLabel = outputRateLabel(node)!;
+    final rateRect = ui.Rect.fromLTWH(
+      rect.left + 2,
+      rect.bottom - chipHeight - 1,
+      rect.width - 4,
+      chipHeight,
+    );
+    canvas.drawRRect(
+      ui.RRect.fromRectAndRadius(rateRect, const ui.Radius.circular(4)),
+      ui.Paint()..color = const ui.Color(0xDD182126),
+    );
+    canvas.drawParagraph(
+      _paragraph(
+        rateLabel,
+        math.max(7.0, _cell * 0.12),
+        0xFFFFE8C8,
+        bold: true,
+        width: rateRect.width - 4,
+      ),
+      ui.Offset(rateRect.left + 2, rateRect.top + 1),
+    );
+
+    final laneRect = ui.Rect.fromLTWH(
+      rect.left + 2,
+      rect.top + 2,
+      laneWidth,
+      chipHeight,
+    );
+    canvas.drawRRect(
+      ui.RRect.fromRectAndRadius(laneRect, const ui.Radius.circular(4)),
+      ui.Paint()..color = const ui.Color(0xDD182126),
+    );
+    canvas.drawParagraph(
+      _paragraph(
+        outputLaneLabel(node),
+        math.max(7.0, _cell * 0.12),
+        0xFFB3E1D7,
+        bold: true,
+        width: laneRect.width - 2,
+      ),
+      ui.Offset(laneRect.left + 1, laneRect.top + 1),
     );
   }
 

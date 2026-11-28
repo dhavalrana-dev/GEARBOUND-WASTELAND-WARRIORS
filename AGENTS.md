@@ -4,6 +4,7 @@
 - Working title: **GEARBOUND: Wasteland Warriors**. Build an original game; references inform broad mechanics and presentation only.
 - Unity 6.3 LTS is the reference runtime. Shared, versioned JSON is authoritative for tunable rules. Keep simulation code engine-independent where practical.
 - Ship a validated vertical slice before widening content. Record real implementation and verification status in `docs/DEVELOPMENT_STATUS.md`.
+- Track phase progress in `.kiro/specs/gearbound-production/tasks.md` (Kiro spec: `requirements.md`, `design.md`, `tasks.md`; steering in `.kiro/steering/`). Tick a box only when its evidence is recorded, then refresh the table with `python -I tools/build/phase_progress.py`.
 
 ## Repository rules
 - Keep source art under `assets-source/`; runtime exports under each engine's asset folder.
@@ -31,5 +32,5 @@
 - Unity editor: `C:\Program Files\Unity\Hub\Editor\6000.3.27f1\Editor\Unity.exe`
 - Run Unity EditMode tests from PowerShell with `-batchmode -nographics -projectPath unity -runTests -testPlatform EditMode -testResults artifacts/unity-editmode.xml -logFile artifacts/unity-test.log`.
 - Flutter/Dart toolchain is expected at `E:\flutter\bin`; record command failures instead of inferring SDK compatibility.
-- Shared data checks: `python -I tools/data-validation/validate_shared.py`, `python -I tools/simulation/reference_rules.py --check`, `python -I tools/build/sync_flutter_shared.py --check`, `tools/simulation/generate_combat_traces.ps1 -Check`.
+- Shared data checks: `python -I tools/data-validation/validate_shared.py`, `python -I tools/simulation/reference_rules.py --check`, `python -I tools/build/sync_flutter_shared.py --check`, `tools/simulation/generate_combat_traces.ps1 -Check`, `python -I tools/build/phase_progress.py --check`, and from `flutter/`: `dart run tool/workshop_cases.dart --check` and `dart run tool/baseline_check.dart` (also compile it with `dart compile exe` to check AOT).
 - `.gitattributes` pins JSON, Dart, C#, Python and Markdown to LF; byte-for-byte fixture checks depend on it.

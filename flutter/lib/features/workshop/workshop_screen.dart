@@ -230,7 +230,12 @@ class _WorkshopScreenState extends State<WorkshopScreen> {
     }
     final interval = result?.effectiveIntervalTicks ?? 0;
     final seconds = interval == 0 ? '-' : (interval / 30).toStringAsFixed(1);
-    return 'Tier ${node.tier} · $state · lane ${node.targetLane + 1} · one soldier every ${seconds}s';
+    final outputLabel = switch (node.outputKind) {
+      GearOutputKind.spawnInfantry => 'one soldier',
+      GearOutputKind.fireProjectile => 'one shot',
+      GearOutputKind.none => 'output',
+    };
+    return 'Tier ${node.tier} · $state · lane ${node.targetLane + 1} · $outputLabel every ${seconds}s';
   }
 
   void _show(WorkshopAction result) {

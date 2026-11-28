@@ -125,6 +125,31 @@ void main() {
     expect(find.text('Nothing to undo.'), findsNothing);
   });
 
+  testWidgets(
+    'output gear labels include tier, rate and lane in both layouts',
+    (tester) async {
+      useTallPhone(tester);
+      final content = (await tester.runAsync(
+        () => SharedContent.load(rootBundle),
+      ))!;
+      final game = await pumpWorkshop(tester, content);
+      await tester.pump(const Duration(milliseconds: 50));
+      final view = game.world.children.whereType<WorkshopBoardView>().single;
+      final output = game.session.board.nodes.firstWhere(
+        (node) => node.outputKind != GearOutputKind.none,
+      );
+
+      for (final size in [Vector2(432, 1280), Vector2(1280, 432)]) {
+        view.resizeTo(size);
+        expect(
+          view.outputRateLabel(output),
+          matches(RegExp(r'^T\d+  \d+\.\d{2}/s$')),
+        );
+        expect(view.outputLaneLabel(output), 'L${output.targetLane + 1}');
+      }
+    },
+  );
+
   testWidgets('a real pointer drag on the canvas moves a gear', (tester) async {
     useTallPhone(tester);
     final content = (await tester.runAsync(

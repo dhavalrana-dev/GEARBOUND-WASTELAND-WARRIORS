@@ -1,11 +1,13 @@
 import '../combat/battle_session.dart';
 import '../data/shared_content.dart';
 
-/// Hand-authored starter route scripts. Later nodes use a deterministic
-/// escalation fallback until their encounters receive their own content pass.
+/// A route node's first wave. With [content] (as the game always passes it),
+/// every node comes from shared/missions/campaign_route.json and its mission
+/// file (GB-024).
 ///
-/// When [content] is supplied, nodes listed in shared/missions/campaign_route.json
-/// use the shared mission data instead of the scripts below.
+/// Without [content] this returns the pre-migration scripted encounters. They
+/// are kept only as the baseline that test/progression/route_migration_test.dart
+/// compares the shared missions against; the game never plays them.
 WaveDefinition encounterForLevel(int levelIndex, {SharedContent? content}) {
   if (levelIndex < 0 || levelIndex >= 12) {
     throw RangeError.range(levelIndex, 0, 11, 'levelIndex');
