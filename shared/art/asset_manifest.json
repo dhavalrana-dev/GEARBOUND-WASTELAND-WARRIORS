@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "description": "Vertical-slice production asset manifest. Records start as 'planned'; see docs/ASSET_VALIDATION_GUIDE.md §1 for the status lifecycle. No asset here has been approved; style_reference_board and style_mood_board are concepts.",
+ "description": "Vertical-slice production asset manifest. Records start as 'planned'; see docs/ASSET_VALIDATION_GUIDE.md \u00a71 for the status lifecycle. No asset here has been approved; style_reference_board and style_mood_board are concepts.",
  "assets": [
   {
    "assetId": "style_mood_board",
@@ -30,7 +30,7 @@
    "reviewer": null,
    "acceptanceEvidence": [],
    "priority": "P0",
-   "notes": "ART-01 illustrated mood board study only. Not an approved character master, production asset, or benchmark; owner review and commercial-use terms check are pending."
+   "notes": "ART-01 illustrated mood board study only. Not an approved character master, production asset, or benchmark; owner review and commercial-use terms check are pending. Pre-review findings (weapon, ranged units, fortress, gear view, line weight) are in the prompt record; use for palette, mood and composition only."
   },
   {
    "assetId": "style_palette_sheet",

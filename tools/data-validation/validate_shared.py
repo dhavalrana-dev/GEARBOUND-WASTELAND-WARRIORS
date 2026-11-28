@@ -332,8 +332,11 @@ def main() -> int:
         where = "art/asset_manifest.json"
         statuses = ["planned", "concept", "approved_concept", "source_ready", "rigged", "animated",
                     "runtime_integrated", "qa_passed", "approved"]
-        known_owners = ({g["id"] for g in gears} | enemy_ids | set(currencies_ids)
-                        | {"hero.rivet", "fortress.wayfarer", "region.copperwash", "project", "board", "ui", "vfx",
+        hero_file = load("heroes/heroes.json") or {}
+        hero_ids = {h.get("id") for h in hero_file.get("heroes", [])}
+        # Provisional owners have no shared data file yet; hero IDs come from heroes.json.
+        known_owners = ({g["id"] for g in gears} | enemy_ids | set(currencies_ids) | hero_ids
+                        | {"fortress.wayfarer", "region.copperwash", "project", "board", "ui", "vfx",
                            "route", "rewards", "audio", "store", "booster.vanguard",
                            "event.scrapstorm", "event.gear_frenzy", "event.engineering_trials"})
         seen_assets = set()

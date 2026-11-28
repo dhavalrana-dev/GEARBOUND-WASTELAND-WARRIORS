@@ -170,6 +170,7 @@ The records and minimum states are listed in `ASSET_INVENTORY.md` §"Visual benc
 **Naming:**
 - Lowercase snake_case, with stable logical IDs independent of revision numbers. Examples: `chr_rivet_arm_near_upper_v001.png`, `gear_transmission_t01_wheel_v001.png`, `env_copperwash_bg_far_v001.png`, `ui_event_scrapstorm_banner_v001.png`, `fx_gear_merge_v001.png`.
 - No spaces and no "final-final".
+- **Exception:** `industrial-comic-style-study_v001.png` keeps its hyphenated name, because its provenance record requires the file to stay unchanged. Its manifest ID, `style_mood_board`, follows the rule; new files use snake_case.
 
 **Manifest:** every asset has a record. It tracks:
 - the paths, dimensions, pivot and trim, atlas and draw order;

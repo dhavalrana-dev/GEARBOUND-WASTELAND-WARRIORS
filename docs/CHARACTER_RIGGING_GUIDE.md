@@ -109,7 +109,7 @@ The metadata is shared by both engines and written to a schema in `shared/schema
 
 | Field | Content |
 |---|---|
-| `characterId` | Runtime ID, or a provisional owner (`hero.rivet`) |
+| `characterId` | Runtime ID (`hero.rivet`, `raider.basic`), or a provisional owner where no data ID exists |
 | `masterCanvas`, `groundOrigin`, `pixelsPerUnit` | Coordinate system |
 | `bones[]` | `id`, `parent`, local position, rotation and scale at rest, rotation limits, `depth` (near or far), `anatomicalSide` |
 | `parts[]` | `assetId` (manifest), `bone`, pivot, trim offset, `drawOrder` |

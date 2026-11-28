@@ -32,3 +32,27 @@ Avoid: isometric tactical view, free-camera perspective, photorealism, generic p
 - Use it only to discuss broad palette, silhouette, material and composition direction at ART-01.
 - Preserve it unchanged as provenance. Any future edit gets a new version and a new prompt record.
 - Before `approved_concept`, confirm the generation tool's commercial-use terms and obtain owner review under `ASSET_VALIDATION_GUIDE.md`.
+
+## Pre-review findings (2026-11-28, agent check against the specifications; not the owner's review)
+
+Compared with `CHARACTER_DESIGN.md`, `VISUAL_STYLE_BIBLE.md` and `ENVIRONMENT_PRODUCTION.md`:
+
+**Matches the spec:**
+- the palette, with warm upper-left light and a quiet sandy ground;
+- three lanes, with the fortress on the left and the raider gate on the right;
+- no text anywhere;
+- Rivet's raised goggles, oversized glove and copper-and-teal jacket;
+- gear tiers that read through construction.
+
+**Departs from the spec:**
+1. **Rivet's weapon** is a plain sledgehammer, not the crescent wrench-hammer hybrid.
+2. **Rivet is drawn as a woman.** Rivet's gender is not specified yet (ART-ID-06, an owner decision at ART-02).
+3. **Ranged weapons and units the data doesn't have:**
+   - Rivetguard carries a firearm and one raider a crossbow, but Rivetguard is melee infantry and no ranged friendly unit exists (ART-ID-03, ART-ID-07).
+   - The turret is drawn as a tracked field unit in a lane; in the game, the Spark Turret is a board gear that fires into the lanes.
+4. **The fortress** is a static stone fort, not the Wayfarer rolling workshop on treads.
+5. **The gears** stand upright on stands. Board gears are seen from slightly above and mesh on the 5×5 grid.
+6. **Lane depth:** the scale difference between the far and near lanes is weaker than the proposed 0.84 / 0.92 / 1.00.
+7. **Rendering:** the outlines are thinner and the shading softer, with gradients, than the spec's bold silhouette lines and hard-edged cel shadows, so it reads closer to generic polished mobile art.
+
+**Use:** this study guides the discussion of palette, mood and composition only. It is not a reference for Rivet's weapon, the units, the fortress or the gear presentation.

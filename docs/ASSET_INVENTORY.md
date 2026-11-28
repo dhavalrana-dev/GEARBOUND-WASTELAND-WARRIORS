@@ -59,10 +59,12 @@ The benchmark is built and approved **before** any mass production (`ART_DIRECTI
 | ID | Issue | Proposed resolution |
 |---|---|---|
 | ART-ID-01 | The Copperwash boss is named "Scrapjaw" on route node `copperwash-05` (`campaign_progress.dart`) and "Scrapmaw" for enemy `boss.scrapmaw` (`enemies.json`) | Pick one name before concept approval, then change the display string in one place. IDs stay stable. |
-| ART-ID-02 | Rivet, the fortress and the Copperwash region have no shared data IDs | The manifest uses provisional owners `hero.rivet`, `fortress.wayfarer` and `region.copperwash`. Add data IDs when hero and region definitions move into shared JSON. |
+| ART-ID-02 | The fortress and the Copperwash region have no shared data IDs | **Partly resolved:** `hero.rivet` is a real ID in `shared/heroes/heroes.json` since GB-055, and the validator now reads hero IDs from that file. `fortress.wayfarer` and `region.copperwash` stay provisional until fortress and region definitions move into shared JSON. |
 | ART-ID-03 | The art brief lists a "configured ranged friendly unit", but none exists | Not planned until a ranged gear exists. |
 | ART-ID-04 | Spark Turret (`turret.spark`) is in the catalogue, but turret output isn't implemented | **Resolved:** GB-037 implemented turrets; the gear art is P0. Projectile impact VFX (`fx_projectile_impact`) is already P0. |
 | ART-ID-05 | Rivet animations for heavy attack, dash, special, run, a second light attack and knockback have no simulation mechanic yet | P1, produced once the Phase 03.2 mechanics exist. The special now exists (GB-055), so `anim_rivet_special` is P0. |
+| ART-ID-06 | Rivet's gender is not specified in any design document; the mood board study (`style_mood_board`) depicts Rivet as a woman | Owner decision at ART-02; record it in `CHARACTER_DESIGN.md` §3. |
+| ART-ID-07 | The mood board study shows a ranged Rivetguard, a ranged raider and a turret as a tracked field unit, none of which exist in the data | Treat as exploration only. Rivetguard stays melee infantry, and the Spark Turret is a board gear that fires into lanes, unless the game design changes first. |
 
 ## Status lifecycle
 

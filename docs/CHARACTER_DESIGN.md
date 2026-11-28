@@ -51,6 +51,8 @@ Enemies are readable as threats from their silhouette and crimson accents togeth
 
 **Personality:** inventive, resourceful, energetic and approachable, able to fix a machine and to fight. Never a generic futuristic soldier.
 
+**Open at ART-02:** Rivet's gender is not yet specified (ART-ID-06). The first mood board study depicts Rivet as a woman with a plain sledgehammer; the hammer does not match the required crescent wrench-hammer hybrid, so that study is not a reference for the weapon.
+
 **Gameplay links:**
 - Rivet's attacks and the Wrench Quake special (GB-055) need readable anticipation and impact poses.
 - The SP bar and the special use Special Violet only for the special itself.
@@ -72,7 +74,7 @@ The approved master is the authoritative reference for all later Rivet assets.
 
 | Character | Runtime ID | Role and shape language | Signature | Priority |
 |---|---|---|---|---|
-| Rivet | Hero in `BattleSession` (provisional owner `hero.rivet`) | Hero; balanced angular and round | Goggles, mechanical glove, wrench-hammer | P0 |
+| Rivet | `hero.rivet` (`shared/heroes/heroes.json`) | Hero; balanced angular and round | Goggles, mechanical glove, wrench-hammer | P0 |
 | Rivetguard | Spawned by gear `unit.rivetguard` | Infantry; compact trapezoid | Round riveted helmet, shield-pack, teal lamp | P0 |
 | Scrap Raider | `raider.basic` | Basic enemy; lean wedge | Scrap shoulder plate, crimson rag scarf | P0 |
 | Rustrunner | `raider.runner` | Fast enemy; forward lean | Long legs, a single wheel or skate on the back | P0 |
