@@ -11,7 +11,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "name", "health", "armor", "damage", "attackRangeMm", "movementMmPerTick", "attackIntervalTicks", "special"],
+        "required": ["id", "name", "health", "armor", "damage", "attackRangeMm", "movementMmPerTick", "attackIntervalTicks", "special", "recovery"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*$" },
           "name": { "type": "string", "minLength": 1 },
@@ -31,6 +31,16 @@
               "spPerHit": { "type": "integer", "minimum": 0 },
               "damage": { "type": "integer", "minimum": 1 },
               "radiusMm": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          },
+          "recovery": {
+            "type": "object",
+            "description": "A knocked-out hero returns at the fortress line, in the same lane, after `ticks` combat ticks with healthPercent of maximum health (at least 1); a hero who is down when a wave ends recovers at once.",
+            "required": ["ticks", "healthPercent"],
+            "properties": {
+              "ticks": { "type": "integer", "minimum": 1 },
+              "healthPercent": { "type": "integer", "minimum": 1, "maximum": 100 }
             },
             "additionalProperties": false
           }

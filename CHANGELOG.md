@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Hero recovery (GB-067, Phase 03 task 3.8): a knocked-out hero returns at the fortress line after 300 ticks with 50% health (data in `heroes.json`), and recovers at once if a wave ends while down; HUD countdown. New combat trace `hero-knockout-recovery` matches in both engines; older traces unchanged.
 - Unity workshop checkpoints (GB-066, Phase 02 task 2.11): C# `WorkshopController.ToJson`/`Restore` and `Wallet.ToJson`/`FromJson` read and write the Flutter checkpoint format; the new `checkpoint-resume` fixture case makes Unity resume from Dart-written checkpoints step for step.
 - Offer holds in the workshop shop (GB-065, Phase 02 task 2.9): hold an offer to keep it through rerolls and the next wave's shop; a reroll with every offer held is refused without charge. Dart and C# rules match through the new `offer-holds` case in `workshop_cases.json`.
 - Add an original ART-01 mood-board concept for the Tactile Industrial Comic 2.5D visual direction; embed it in the working board and record its prompt and provenance. It remains unapproved concept art.

@@ -17,6 +17,10 @@
         "spPerHit": 10,
         "damage": 25,
         "radiusMm": 1200
+      },
+      "recovery": {
+        "ticks": 300,
+        "healthPercent": 50
       }
     }
   ]

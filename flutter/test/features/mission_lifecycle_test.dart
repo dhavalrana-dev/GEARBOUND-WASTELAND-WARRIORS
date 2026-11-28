@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gearbound/combat/battle_session.dart';
+import 'package:gearbound/combat/combat_simulation.dart';
 import 'package:gearbound/data/shared_content.dart';
 import 'package:gearbound/features/workshop/workshop_screen.dart';
 import 'package:gearbound/game/gearbound_game.dart';
@@ -282,5 +283,28 @@ void main() {
     expect(s.specialReady, isFalse); // queued
     s.tick();
     expect(s.heroSp, lessThan(s.special.spMax));
+  });
+
+  testWidgets('a knocked-out hero shows a recovery countdown', (tester) async {
+    usePhone(tester);
+    final game = await open(tester);
+    await tester.tap(find.text('START WAVE'));
+    await tester.pump();
+    final s = game.session;
+    expect(find.byKey(const ValueKey('hero-recovery')), findsNothing);
+    s.combat.combatants.firstWhere((u) => u.id == s.heroId)
+      ..health = 0
+      ..state = CombatState.dead;
+    s.heroRecoveryRemaining = 89;
+    game.onSessionChanged!();
+    await tester.pump();
+    expect(
+      find.text('Rivet is down: back at the fortress in 3s'),
+      findsOneWidget,
+    );
+    s.heroRecoveryRemaining = 0;
+    game.onSessionChanged!();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('hero-recovery')), findsNothing);
   });
 }

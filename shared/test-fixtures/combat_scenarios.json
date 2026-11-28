@@ -320,6 +320,39 @@
         }
       ],
       "heroCommands": []
+    },
+    {
+      "id": "hero-knockout-recovery",
+      "waveId": "wave.3",
+      "worldLengthMm": 6000,
+      "maxTicks": 3600,
+      "heroStartHealth": 20,
+      "heroRecovers": true,
+      "gears": [
+        {
+          "id": "core",
+          "kind": "core",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "id": "press-a",
+          "kind": "infantry",
+          "x": 1,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 0
+        },
+        {
+          "id": "press-b",
+          "kind": "infantry",
+          "x": 3,
+          "y": 2,
+          "intervalTicks": 90,
+          "targetLane": 2
+        }
+      ],
+      "heroCommands": []
     }
   ]
 }

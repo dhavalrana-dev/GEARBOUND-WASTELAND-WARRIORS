@@ -91,12 +91,24 @@ CombatScenarioResult _run(
       (tick: c['tick'] as int, lane: c['lane'] as int),
   ];
 
+  // Optional: the hero recovers after a knockout (scenarios recorded before
+  // recovery leave it off, so their hashes are unchanged).
+  final heroRecovers = s['heroRecovers'] as bool? ?? false;
   final session = BattleSession(
     board: board,
     network: GearNetwork.rebuild(board),
     wave: buildWave(wave, enemies),
     combat: CombatSimulation(worldLengthMm: s['worldLengthMm'] as int),
-  )..start();
+    recovery: heroRecovers ? HeroRecovery.rivet : null,
+  );
+  // Optional: the hero starts the wave hurt, as after a checkpoint that
+  // carried its health.
+  final startHealth = s['heroStartHealth'] as int?;
+  if (startHealth != null) {
+    session.combat.combatants.firstWhere((u) => u.id == session.heroId).health =
+        startHealth;
+  }
+  session.start();
   final maxTicks = s['maxTicks'] as int;
   // Optional: the hero uses the special as soon as it is ready.
   final autoSpecial = s['heroUsesSpecialWhenReady'] as bool? ?? false;
@@ -134,6 +146,7 @@ CombatScenarioResult _run(
         ..write(';');
     }
     if (autoSpecial) line.write('sp:${session.heroSp}');
+    if (heroRecovers) line.write('rc:${session.heroRecoveryRemaining};');
     // Projectiles join the hash only when present (older hashes unchanged).
     for (final p in session.combat.projectiles) {
       line.write('P${p.id}:${p.lane}:${p.positionMm};');

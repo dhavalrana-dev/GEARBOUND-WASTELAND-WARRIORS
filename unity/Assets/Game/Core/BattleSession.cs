@@ -73,6 +73,26 @@ namespace Gearbound.Core
         public static readonly HeroSpecial Rivet = new HeroSpecial("special.wrench_quake", 100, 10, 25, 1200);
     }
 
+    /// <summary>How a knocked-out hero comes back, from shared/heroes/heroes.json (<c>recovery</c>).</summary>
+    public sealed class HeroRecovery
+    {
+        /// <summary>Combat ticks the hero stays out after a knockout.</summary>
+        public int Ticks { get; }
+        /// <summary>Share of maximum health the hero returns with (at least 1).</summary>
+        public int HealthPercent { get; }
+
+        public HeroRecovery(int ticks, int healthPercent)
+        {
+            if (ticks < 1 || healthPercent < 1 || healthPercent > 100) throw new ArgumentOutOfRangeException("Hero recovery values are outside their allowed range.");
+            Ticks = ticks; HealthPercent = healthPercent;
+        }
+
+        /// <summary>Rivet's recovery; a test keeps this equal to heroes.json.</summary>
+        public static readonly HeroRecovery Rivet = new HeroRecovery(300, 50);
+
+        public int HealthFor(int maxHealth) => Math.Max(1, maxHealth * HealthPercent / 100);
+    }
+
     public sealed class BattleSession
     {
         private readonly IReadOnlyList<WaveDefinition> waves;
@@ -87,6 +107,10 @@ namespace Gearbound.Core
         public int ElapsedTicks { get; private set; }
         public int HeroId { get; }
         public HeroSpecial Special { get; }
+        /// <summary>Null means a knocked-out hero stays out for the rest of the wave (the original traces' behavior).</summary>
+        public HeroRecovery Recovery { get; }
+        /// <summary>Combat ticks until a knocked-out hero returns; 0 while the hero is up.</summary>
+        public int HeroRecoveryRemaining { get; private set; }
 
         /// <summary>Special points: gained when the hero's attacks land, spent in full by UseHeroSpecial. Carries across waves.</summary>
         public int HeroSp { get; private set; }
@@ -115,9 +139,10 @@ namespace Gearbound.Core
 
         public BattleSession(GearBoard board, GearNetworkResult network, WaveDefinition wave, int heroId = 1,
             CombatSimulation combat = null, GearOutputSystem outputs = null, IEnumerable<WaveDefinition> laterWaves = null,
-            HeroSpecial special = null)
+            HeroSpecial special = null, bool heroRecovers = true, HeroRecovery recovery = null)
         {
             Special = special ?? HeroSpecial.Rivet;
+            Recovery = heroRecovers ? recovery ?? HeroRecovery.Rivet : null;
             Board = board ?? throw new ArgumentNullException(nameof(board));
             Network = network ?? throw new ArgumentNullException(nameof(network));
             if (wave == null) throw new ArgumentNullException(nameof(wave));
@@ -161,6 +186,13 @@ namespace Gearbound.Core
                     windupTicks: spawn.WindupTicks, cleave: spawn.Cleave));
             }
 
+            // Recovery comes after spawns and before the special and combat, in both engines.
+            if (HeroRecoveryRemaining > 0)
+            {
+                HeroRecoveryRemaining--;
+                if (HeroRecoveryRemaining == 0) ReviveHero();
+            }
+
             if (specialQueued)
             {
                 specialQueued = false;
@@ -175,6 +207,8 @@ namespace Gearbound.Core
             Combat.Tick();
             foreach (var hit in Combat.LastHits)
                 if (hit.attackerId == HeroId) HeroSp = Math.Min(Special.SpMax, HeroSp + Special.SpPerHit);
+            if (Recovery != null && HeroRecoveryRemaining == 0 && Combat.Combatants.Any(u => u.Id == HeroId && !u.IsAlive))
+                HeroRecoveryRemaining = Recovery.Ticks;
             Outputs.Tick(Board, Network, Combat);
             ElapsedTicks++;
 
@@ -191,7 +225,23 @@ namespace Gearbound.Core
                     // The hero returns to the fortress line, keeping health and lane.
                     var hero = Combat.Combatants.FirstOrDefault(unit => unit.Id == HeroId);
                     if (hero != null) hero.PositionMm = 0;
+                    // A hero who is down recovers now rather than missing the next wave.
+                    if (HeroRecoveryRemaining > 0) ReviveHero();
                 }
+            }
+        }
+
+        private void ReviveHero()
+        {
+            HeroRecoveryRemaining = 0;
+            foreach (var hero in Combat.Combatants)
+            {
+                if (hero.Id != HeroId || hero.IsAlive) continue;
+                hero.Health = Recovery.HealthFor(hero.MaxHealth);
+                hero.PositionMm = 0;
+                hero.AttackCooldownTicks = 0;
+                hero.WindupRemaining = 0;
+                hero.State = CombatState.Idle;
             }
         }
     }

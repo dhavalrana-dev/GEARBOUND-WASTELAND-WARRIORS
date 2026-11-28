@@ -55,7 +55,7 @@ Updated 2026-11-28.
 - No production art.
 - Unity is a simulation and rules library only, with no playable client or UI.
 - Route nodes 2–12 are single-wave (GB-051).
-- No status effects, knockback or hero recovery.
+- No status effects or knockback. Hero recovery after a knockout exists since session 25 (GB-067).
 - No ad SDK, consent, IAP or backend.
 - Android debug and profile builds run on the emulator only; no physical phone yet and no performance data (see `TOOLCHAIN_REPORT.md`). A Windows desktop debug build is also available for review.
 - iOS needs macOS and Xcode.
@@ -76,7 +76,7 @@ Updated 2026-11-28.
 | 00 | Repository and simulation foundation | **Complete** (2026-11-28): schemas enforced; baseline identical on the Dart VM, Windows AOT, and the Android emulator in debug and AOT |
 | 01 | Toolchain and build readiness | Partial (7/9): Flutter debug and profile APKs and the Unity IL2CPP baseline APK run on the emulator; Windows runner (GB-059); `cmdline-tools` (owner) and iOS (macOS) remain; a physical phone is Phase 15 |
 | 02 | Complete mechanical workshop | **Implemented in Flutter** (shop, drag, move, undo, previews); workshop rules ported to Unity C# with a shared fixture (GB-036); device test and Unity UI pending |
-| 03 | Combat and multi-wave mission flow | In progress: multi-wave, intermission, lifecycle, checkpoints, hero special, boss telegraphs (wind-up and cleave) and turret projectiles done; status effects and hero recovery pending |
+| 03 | Combat and multi-wave mission flow | In progress: multi-wave, intermission, lifecycle, checkpoints, hero special, boss telegraphs (wind-up and cleave) and turret projectiles and hero recovery done; status effects and knockback pending |
 | 04 | Visual preproduction | In progress: v3 specifications, diagram board and illustrated mood-board study at concept; ART-01 approval, painted material sheet and illustrated compositions pending |
 | 05 | Production vertical slice | Planned |
 | 06 | Unity and Flutter playable parity | Partial: simulation, workshop rules, economy and ad-policy parity; no Unity client (GB-046) |
@@ -180,7 +180,7 @@ Updated 2026-11-28.
 **Status (2026-11-28):**
 - 03.1 done in both engines (GB-025): init, prep, wave, intermission with rewards, victory or defeat, result.
 - 03.2 partial: lane commands and the Wrench Quake special (GB-055). Other hero actions not evaluated yet.
-- 03.3 partial: armor, shields, wind-up and cleave (GB-058) and turret projectiles (GB-037). Status effects, knockback and hero recovery pending.
+- 03.3 partial: armor, shields, wind-up and cleave (GB-058) and turret projectiles (GB-037). Hero recovery done (GB-067); status effects and knockback pending.
 - 03.4 partial: fortress, wave, SP and telegraph feedback with temporary visuals.
 - 03.5 done in Flutter (GB-052, GB-053); not device-tested.
 - Playable builds: the Android debug APK on the emulator and the Windows desktop debug runner. Not yet on a physical phone.

@@ -43,6 +43,7 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 | Multi-wave BattleSession (intermission, soldier withdrawal, hero reset, reward totals) | Yes | Yes | Mirrored unit tests (no shared trace yet) |
 | Workshop seed derivation `mixSeed32` (fmix32) | Yes | Yes | workshop_cases `mixSeed32` vectors ✔ both |
 | Hero SP and special (Wrench Quake) | Yes | Yes | combat_traces `boss-wave-hero-special` ✔ both; heroes.json parity tests |
+| Hero knockout recovery (timer, revive at the fortress line, intermission revive) | Yes | Yes | combat_traces `hero-knockout-recovery` ✔ both (hash includes the timer); heroes.json `recovery` parity tests |
 | Attack wind-up and cleave (boss telegraphs) | Yes | Yes | combat_traces (boss scenarios + `boss-cleave-crowded-lane`) ✔ both |
 | Turret projectiles (lane shots, cap 24) | Yes | Yes | combat_traces `turret-side-lanes` ✔ both |
 | Presentation / input | No (device-baseline scene only) | Prototype (canvas primitives) | — |
@@ -54,7 +55,7 @@ Run `python -I tools/simulation/reference_rules.py --check` to confirm fixtures 
 
 Each tick, both runners hash `tick|phase|fortress|` plus `id:lane:pos:hp:shield:state;` for every combatant in ID order, then `P{id}:{lane}:{pos};` for every live projectile (empty without turrets, so older hashes are unchanged), using 32-bit FNV-1a. A checkpoint hash every 30 ticks locates the first point of divergence.
 
-**Status:** all 7 scenarios match exactly in Dart and in the Unity editor (verified 2026-11-27). Combat currently uses no randomness. When critical hits or other random effects arrive, they must draw from `SeededRandom` in a documented order, and new scenarios must cover them.
+**Status:** all 8 scenarios match exactly in Dart and in the Unity editor (verified 2026-11-28; `hero-knockout-recovery` added with optional `heroStartHealth` and `heroRecovers` fields, and the timer is hashed as `rc:{ticks};` only when recovery is on). Combat currently uses no randomness. When critical hits or other random effects arrive, they must draw from `SeededRandom` in a documented order, and new scenarios must cover them.
 
 ## Visual parity (planned, `RENDERING_ARCHITECTURE.md` §7)
 
